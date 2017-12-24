@@ -12,7 +12,7 @@ chat-connor-fun
         -js
         index.html
     -models
-    views
+    -views
     main.go
 ```
 
