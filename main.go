@@ -10,11 +10,14 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db/user"
 	_"github.com/lib/pq"
 	"github.com/labstack/echo/middleware"
+	_"github.com/mattn/go-sqlite3"
+	"github.com/aaronaaeng/chat.connor.fun/controllers"
 )
 
 
 func createApiRoutes(e *echo.Echo) {
-
+	e.POST("/api/v1/user", controllers.CreateUser)
+	e.POST("/api/v1/login", controllers.LoginUser)
 }
 
 func addMiddlewares(e *echo.Echo, c config.Config) {
@@ -24,7 +27,7 @@ func addMiddlewares(e *echo.Echo, c config.Config) {
 }
 
 func initDatabaseRepositories(c config.Config) {
-	database, err := sqlx.Open("postgres", c.DatabaseURL)
+	database, err := sqlx.Open("sqlite3", "./test.db")
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +51,6 @@ func main() {
 	}
 	e.Renderer = t
 	e.GET("/", views.Index)
-
 
 	createApiRoutes(e)
 	e.Logger.Fatal(e.Start(":4000"))
