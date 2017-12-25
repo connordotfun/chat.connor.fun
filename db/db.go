@@ -1,11 +1,9 @@
 package db
 
-import "github.com/aaronaaeng/chat.connor.fun/model"
-
-type postgresDb struct {
-
-}
-
-func insertNewUser(u model.User) {
-
+type Repository interface{
+	Create(interface{}) error
+	Update(interface{}) error
+	GetAll() ([]*interface{}, error)
+	GetById(id int) (interface{}, error)
+	Delete(interface{}) error
 }
