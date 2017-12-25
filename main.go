@@ -12,16 +12,14 @@ func createApiRoutes(e *echo.Echo) {
 
 }
 
-type Template struct {
-	templates *template.Template
-}
+func addMiddlewares(e *echo.Echo) {
 
-func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
 }
 
 func main() {
 	e := echo.New()
+
+	addMiddlewares(e)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/*.html")),
@@ -31,5 +29,13 @@ func main() {
 
 
 	createApiRoutes(e)
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":4000"))
+}
+
+type Template struct {
+	templates *template.Template
+}
+
+func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+	return t.templates.ExecuteTemplate(w, name, data)
 }
