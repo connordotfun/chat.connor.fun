@@ -12,18 +12,18 @@ import (
 func CreateUser(c echo.Context) error {
 	var u model.User
 	if err := c.Bind(&u); err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
+		return c.JSON(http.StatusInternalServerError, err)
 	}
 	hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	u.Secret = string(hashedSecret)
-	userId, err := user.Repo.Create(u)
+	createdUser, err := user.Repo.Create(u)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, nil)
+		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
-	createdUser := model.User{Id: userId, Username: u.Username, Secret: ""}
+	createdUser.Secret = "" //don't return secret
 	return c.JSON(http.StatusCreated, createdUser)
 }
 

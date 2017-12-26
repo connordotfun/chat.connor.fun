@@ -27,7 +27,7 @@ func addMiddlewares(e *echo.Echo, c config.Config) {
 }
 
 func initDatabaseRepositories(c config.Config) {
-	database, err := sqlx.Open("sqlite3", "./test.db")
+	database, err := sqlx.Open("postgres", "postgresql://localhost:5432?sslmode=disable")
 	if err != nil {
 		panic(err)
 	}

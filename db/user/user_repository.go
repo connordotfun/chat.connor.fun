@@ -20,12 +20,12 @@ func Init(database *sqlx.DB) (Repository, error) {
 	return Repo, nil
 }
 
-func (r Repository) Create(user model.User) (int64, error) {
-	res, err := r.db.NamedExec(insertUserQuery, user)
+func (r Repository) Create(user model.User) (*model.User, error) {
+	_, err := r.db.NamedExec(insertUserQuery, user)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return res.LastInsertId()
+	return r.GetByUsername(user.Username)
 }
 
 func (r Repository) Update(user model.User) error {
@@ -56,11 +56,12 @@ func (r Repository) GetById(id int64) (*model.User, error) {
 
 func (r Repository) GetByUsername(username string) (*model.User, error) {
 	var user model.User
-	rows, err := r.db.NamedQuery(getUserByUsernameQuery, map[string]string{"username": username})
+	rows, err := r.db.NamedQuery(getUserByUsernameQuery, map[string]interface{}{"username": username})
 	if err != nil {
 		return nil, err
 	}
-	if err := rows.Scan(&user); err != nil {
+	rows.Next()
+	if err := rows.Scan(&(user.Id), &(user.Username), &(user.Secret)); err != nil {
 		return nil, err
 	}
 	return &user, nil

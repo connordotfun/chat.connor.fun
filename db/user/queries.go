@@ -5,7 +5,7 @@ const (
 	createIfNotExistsQuery = `
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL UNIQUE NOT NULL PRIMARY KEY,
-			username NVARCHAR(255) UNIQUE NOT NULL,
+			username VARCHAR(255) UNIQUE NOT NULL,
 			secret VARCHAR(255) NOT NULL
 		);
 	`
@@ -24,5 +24,9 @@ const (
 
 	insertUserQuery = `
 		INSERT INTO users (username, secret) VALUES (:username, :secret);
+	`
+
+	getLastInsertedQuery = `
+		SELECT currval(pg_get_serial_sequence('users','id'));
 	`
 )
