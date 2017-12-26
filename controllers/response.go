@@ -7,6 +7,6 @@ type ResponseError struct {
 }
 
 type Response struct {
-	Error ResponseError `json:"error"`
+	Error *ResponseError `json:"error"`
 	Data interface{} `json:"data"`
 }

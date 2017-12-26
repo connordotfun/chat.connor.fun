@@ -13,14 +13,14 @@ func CreateUser(c echo.Context) error {
 	var u model.User
 	if err := c.Bind(&u); err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
-			Error: ResponseError{Type: "BAD_BINDING", Message: err.Error()},
+			Error: &ResponseError{Type: "BAD_BINDING", Message: err.Error()},
 			Data: nil,
 		})
 	}
 	hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Response{
-			Error: ResponseError{Type: "BAD_PASSWORD", Message: err.Error()},
+			Error: &ResponseError{Type: "BAD_PASSWORD", Message: err.Error()},
 			Data: nil,
 		})
 	}
@@ -28,7 +28,7 @@ func CreateUser(c echo.Context) error {
 	createdUser, err := user.Repo.Create(u)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Response{
-			Error: ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
+			Error: &ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
 			Data: nil,
 		})
 	}
@@ -43,21 +43,21 @@ func LoginUser(c echo.Context) error {  //TODO: generate JWTs
 	var toLoginUser model.User
 	if err := c.Bind(&toLoginUser); err != nil {
 		return c.JSON(http.StatusBadRequest, Response{
-			Error: ResponseError{Type: "BAD_BINDING", Message: err.Error()},
+			Error: &ResponseError{Type: "BAD_BINDING", Message: err.Error()},
 			Data: nil,
 		})
 	}
 	matchedUser, err := user.Repo.GetByUsername(toLoginUser.Username)
 	if err != nil { //TODO: Handle user not found case
 		return c.JSON(http.StatusBadRequest, Response{
-			Error: ResponseError{Type: "USER_NOT_FOUND", Message: err.Error()},
+			Error: &ResponseError{Type: "USER_NOT_FOUND", Message: err.Error()},
 			Data: nil,
 		})
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(matchedUser.Secret), []byte(toLoginUser.Secret)) != nil {
 		return c.JSON(http.StatusUnauthorized, Response{
-			Error: ResponseError{Type: "PASSWORD_MATCH_FAILED", Message: err.Error()},
+			Error: &ResponseError{Type: "PASSWORD_MATCH_FAILED", Message: "Passwords don't match!"},
 			Data: nil,
 		})
 	} else {
