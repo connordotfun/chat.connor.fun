@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"strings"
+	"fmt"
 )
 
 const actionCreate = 0x000F
@@ -129,6 +130,7 @@ func (p Permission) UnmarshalJSON(b []byte) error {
 	}
 	p.Path = perm["path"]
 	p.code = generateVerbCode(perm["verbs"])
+	fmt.Printf(p.String() + "\n")
 	return nil
 }
 
@@ -144,4 +146,8 @@ func (p Permission) IsPermitted(method string, path string) bool {
 	pathMatch := path == p.Path
 	methodMatch := p.DoesMethodMatch(path)
 	return pathMatch && methodMatch
+}
+
+func (p Permission) String() string {
+	return "Permission: [" + p.Path + ", " + string(p.code) + "]"
 }

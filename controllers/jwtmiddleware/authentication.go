@@ -19,7 +19,7 @@ func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			tokenStr, err := getJWT(c)
 			if err != nil {
-				doAuthorization(next, nil, c)
+				return doAuthorization(next, nil, c)
 			}
 
 			token, err := parseJWT(tokenStr, appConfig)

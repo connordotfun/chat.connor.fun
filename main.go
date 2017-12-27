@@ -14,6 +14,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"fmt"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
+	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 )
 
 
@@ -26,6 +27,10 @@ func addMiddlewares(e *echo.Echo, c config.Config) {
 	if !c.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(jwtmiddleware.JwtAuth(c))
 }
 
 func initDatabaseRepositories(c config.Config) {
