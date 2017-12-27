@@ -20,7 +20,7 @@ import (
 const (
 	testDbHost = "localhost"
 	testDbPort = 5432
-	testDbName = "connorfuntest"
+	testDbName = "connorfuntest_user_controller"
 )
 
 var testDb *sqlx.DB
@@ -32,12 +32,12 @@ func TestMain(m *testing.M) {
 		panic("failed to establish db connection")
 	}
 
-	_, err = db.Exec("DROP DATABASE IF EXISTS connorfuntest")
+	_, err = db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s;", testDbName))
 	if err != nil {
 		panic(err) //Something went horribly wrong
 	}
 
-	_, err = db.Exec("CREATE DATABASE connorfuntest;")
+	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s;", testDbName))
 	if err != nil {
 		panic("Failed to create test db: " + err.Error())
 	}
@@ -58,18 +58,18 @@ func TestMain(m *testing.M) {
 }
 
 func cleanUpTestDb(db *sqlx.DB) {
-	_, err:= db.Query(`SELECT
+	_, err:= db.Query(fmt.Sprintf(`SELECT
 			pg_terminate_backend (pg_stat_activity.pid)
 			FROM
 			pg_stat_activity
 			WHERE
-			pg_stat_activity.datname = 'connorfuntest'`)
+			pg_stat_activity.datname = '%s';`, testDbName))
 
 	if err != nil {
 		panic("FAILED TO KILL BG CONNECTIONS")
 	}
 
-	_, err = db.Exec("DROP DATABASE connorfuntest;")
+	_, err = db.Exec(fmt.Sprintf("DROP DATABASE %s;", testDbName))
 	if err != nil {
 		panic("FAILED TO DROP TEST DB: " + err.Error())
 	}
