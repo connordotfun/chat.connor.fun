@@ -21,3 +21,13 @@ func TestGenerateJWT(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, claims)
 }
+
+func TestGenerateJWT_BadKey(t *testing.T) {
+	jwtStr, err := generateJWT(testJwtUser1, []byte("wrong-secret"))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, jwtStr)
+
+	claims, err := jwtmiddleware.ParseAndValidateJWT(jwtStr, []byte("secret"))
+	assert.Error(t, err)
+	assert.Empty(t, claims)
+}
