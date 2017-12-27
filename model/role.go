@@ -8,7 +8,7 @@ import (
 type Role struct {
 	Name 		string 		  `json:"name"`
 	Override	string		  `json:"override"`
-	Permissions []*Permission `json:"permissions"`
+	Permissions []Permission `json:"permissions"`
 }
 
 

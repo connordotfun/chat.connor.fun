@@ -131,3 +131,17 @@ func (p Permission) UnmarshalJSON(b []byte) error {
 	p.code = generateVerbCode(perm["verbs"])
 	return nil
 }
+
+func (p Permission) DoesMethodMatch(path string) bool {
+	return path == "POST" && p.CanCreate() ||
+		   path == "PUT" && p.CanUpdate() ||
+		   path == "GET" && p.CanRead() ||
+		   path == "DELETE" && p.CanDelete()
+
+}
+
+func (p Permission) IsPermitted(method string, path string) bool {
+	pathMatch := path == p.Path
+	methodMatch := p.DoesMethodMatch(path)
+	return pathMatch && methodMatch
+}

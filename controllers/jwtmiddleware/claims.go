@@ -7,7 +7,7 @@ import (
 
 type Claims struct {
 	User       model.User `json:"users"`
-	Permissions []string `json:"permissions,omitempty"`
+	Permissions []model.Permission `json:"permissions,omitempty"`
 	jwt.StandardClaims
 }
 
