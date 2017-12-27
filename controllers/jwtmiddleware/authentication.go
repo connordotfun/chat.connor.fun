@@ -5,6 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"errors"
 	"github.com/aaronaaeng/chat.connor.fun/config"
+	"net/http"
 )
 
 
@@ -29,7 +30,7 @@ func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
 
 			claims, ok := token.Claims.(Claims);
 			if !token.Valid || !ok {
-				//Handle JWT error case... this should return
+				return c.JSON(http.StatusUnauthorized, invalidTokenResponse)
 			}
 
 			return doAuthorization(next, &claims, c)

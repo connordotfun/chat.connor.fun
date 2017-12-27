@@ -1,0 +1,30 @@
+{
+  "admin": {
+    "parent": "NONE",
+    "override": "ALLOW_ALL"
+  },
+
+  "banned": {
+    "parent": "NONE",
+    "override": "ALLOW_NONE"
+  },
+
+  "anon_user": {
+    "parent": "NONE",
+    "override": "NONE",
+    "permissions": [
+      {"path": "/user",  "verbs": "c"},
+      {"path": "/login", "verbs": "c"},
+      {"path": "/room/*/messages",   "verbs": "r"},
+      {"path": "/room/*/messages/*", "verbs": "r"}
+    ]
+  },
+
+  "normal_user": {
+    "parent": "anon_user",
+    "override": "NONE",
+    "permissions": [
+      {"path": "/room/*/messages",   "verbs": "cr"},
+    ]
+  }
+}
