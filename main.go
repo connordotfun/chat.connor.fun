@@ -15,6 +15,8 @@ import (
 	"fmt"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
+	"io/ioutil"
+	"github.com/slimsag/godocmd/testdata"
 )
 
 
@@ -50,15 +52,21 @@ func initDatabaseRepositories(c config.Config) {
 }
 
 func main() {
+	e := echo.New()
+
 	configData := config.New(true)
 
-	if model.InitRoleMap("assets/roles.json") != nil {
-		fmt.Printf("Error creating User Roles mapping!")
+
+	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	if model.InitRoleMap(roleJsonData) != nil {
+		e.Logger.Fatal(fmt.Errorf("error creating roles data"))
 	}
 
 	initDatabaseRepositories(configData)
 
-	e := echo.New()
 
 	addMiddlewares(e, configData)
 

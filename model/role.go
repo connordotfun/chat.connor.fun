@@ -1,7 +1,6 @@
 package model
 
 import (
-	"io/ioutil"
 	"encoding/json"
 )
 
@@ -18,13 +17,8 @@ type RoleMap struct {
 
 var Roles RoleMap
 
-func InitRoleMap(defFile string) error {
-	rolesData, err := ioutil.ReadFile(defFile)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(rolesData, &Roles.data)
+func InitRoleMap(rolesJsonData []byte) error {
+	err := json.Unmarshal(rolesJsonData, &Roles.data)
 	if err != nil {
 		return err
 	}
