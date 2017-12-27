@@ -1,13 +1,17 @@
-package roles
+package controllers
 
 import (
-	"testing"
 	"github.com/jmoiron/sqlx"
-	"github.com/aaronaaeng/chat.connor.fun/db/users"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/aaronaaeng/chat.connor.fun/db/users"
+	"testing"
+	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	_"github.com/lib/pq"
+	"github.com/labstack/echo"
+	"net/http/httptest"
+	"strings"
+	"net/http"
 )
 
 const (
@@ -81,7 +85,7 @@ func testRowCountEquals(t *testing.T, expected int) {
 
 func initTables() {
 	_, _ = users.Init(testDb) //these must be inited in the right order
-	_, _ = Init(testDb)
+	_, _ = roles.Init(testDb)
 }
 
 func cleanUpTables(t *testing.T) {
@@ -90,67 +94,38 @@ func cleanUpTables(t *testing.T) {
 	_, err = testDb.Exec("DROP TABLE users")
 }
 
-func TestInit(t *testing.T) {
-	_, _ = users.Init(testDb)
-	_, err := Init(testDb)
 
-	assert.NoError(t, err)
-	assert.NotEmpty(t, Repo)
+const (
+	testUserJson1 = `
+		{"username": "test", "secret": "test"}
+	`
+	testUserJsonResponse1 = `{"error":null,"data":{"id":1,"username":"test"}}`
+)
 
-	_, err = testDb.Exec("DROP TABLE user_roles")
-	assert.NoError(t, err)
-	_, _ = testDb.Exec("DROP TABLE users")
-}
-
-func TestRepository_AddRole(t *testing.T) {
-	initTables()
-	err := Repo.AddRole(123, "foobarrole") //not valid uid
-	assert.Error(t, err)
-
-	testRowCountEquals(t, 0)
-
-	user, err := users.Repo.Create(model.User{Username: "test", Secret: "test"})
-
-	validId := user.Id
-
-	err = Repo.AddRole(validId, "foobarrole")
-	assert.NoError(t, err)
-
-	testRowCountEquals(t, 1)
-
-	cleanUpTables(t)
-}
-
-func TestRepository_GetUserRoles(t *testing.T) {
+func TestCreateUser(t *testing.T) {
 	initTables()
 
-	user1 := model.User{Username: "user1", Secret: "test"}
-	user2 := model.User{Username: "user2", Secret: "test"}
-	user3 := model.User{Username: "user3", Secret: "test"}
+	e := echo.New()
+	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
 
-	validUser1, _ := users.Repo.Create(user1)
-	validUser2, _ := users.Repo.Create(user2)
-	validUser3, _ := users.Repo.Create(user3)
+	c := e.NewContext(req, rec)
 
-	Repo.AddRole(validUser1.Id, "role1")
-	Repo.AddRole(validUser1.Id, "role2")
-	Repo.AddRole(validUser1.Id, "role3")
+	assert.NoError(t, CreateUser(c))
+	assert.Equal(t, http.StatusCreated, rec.Code)
+	assert.Equal(t, testUserJsonResponse1, rec.Body.String())
 
-	Repo.AddRole(validUser2.Id, "role4")
-	Repo.AddRole(validUser2.Id, "role5")
+	//recreate
 
-	user1Roles, err := Repo.GetUserRoles(validUser1.Id)
-	assert.NoError(t, err)
-	user2Roles, err := Repo.GetUserRoles(validUser2.Id)
-	assert.NoError(t, err)
-	user3Roles, err := Repo.GetUserRoles(validUser3.Id)
-	assert.NoError(t, err)
+	req = httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec = httptest.NewRecorder()
 
-	assert.Len(t, user1Roles, 3)
-	assert.Len(t, user2Roles, 2)
-	assert.Len(t, user3Roles, 0)
+	c = e.NewContext(req, rec)
 
-	//This test could be improved in the future
+	assert.NoError(t, CreateUser(c))
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 
 	cleanUpTables(t)
 }
