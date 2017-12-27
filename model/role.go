@@ -3,7 +3,6 @@ package model
 import (
 	"io/ioutil"
 	"encoding/json"
-	"fmt"
 )
 
 type Role struct {
@@ -26,7 +25,6 @@ func InitRoleMap(defFile string) error {
 	}
 
 	err = json.Unmarshal(rolesData, &Roles.data)
-	fmt.Printf("permission: " + Roles.data["normal_user"].Permissions[0].Path)
 	if err != nil {
 		return err
 	}

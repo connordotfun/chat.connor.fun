@@ -13,10 +13,10 @@
     "parent": "NONE",
     "override": "NONE",
     "permissions": [
-      {"path": "/user",  "verbs": "c"},
-      {"path": "/login", "verbs": "c"},
-      {"path": "/room/*/messages",   "verbs": "r"},
-      {"path": "/room/*/messages/*", "verbs": "r"}
+      {"path": "/api/v1/users",  "verbs": "c"},
+      {"path": "/api/v1/login", "verbs": "c"},
+      {"path": "/api/v1/room/*/messages",   "verbs": "r"},
+      {"path": "/api/v1/room/*/messages/*", "verbs": "r"}
     ]
   },
 
@@ -24,10 +24,10 @@
     "parent": "anon_user",
     "override": "NONE",
     "permissions": [
-      {"path": "/user",  "verbs": "c"},
-      {"path": "/login", "verbs": "c"},
-      {"path": "/room/*/messages",   "verbs": "cr"},
-      {"path": "/room/*/messages/*", "verbs": "r"}
+      {"path": "/api/v1/users",  "verbs": "c"},
+      {"path": "/api/v1/login", "verbs": "c"},
+      {"path": "/api/v1/room/*/messages",   "verbs": "cr"},
+      {"path": "/api/v1/room/*/messages/*", "verbs": "r"}
     ]
   }
 }
