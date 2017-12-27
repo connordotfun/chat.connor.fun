@@ -68,9 +68,24 @@ func LoginUser(c echo.Context) error {  //TODO: generate JWTs
 			Data: nil,
 		})
 	} else {
+		userToReturn := model.User{Id: matchedUser.Id, Username: matchedUser.Username, Secret: ""}
+		jwtStr, err := generateJWT(userToReturn)
+
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, Response{
+				Error: &ResponseError{Type: "JWT_FAILED", Message: "Server failed to sign JWT"},
+				Data: nil,
+			})
+		}
+
+		returnData := map[string]interface{} {
+			"token": jwtStr,
+			"user": userToReturn,
+		}
+
 		return c.JSON(http.StatusOK, Response{
 			Error: nil,
-			Data: model.User{Id: matchedUser.Id, Username: matchedUser.Username, Secret: ""},
+			Data: returnData,
 		})
 	}
 }

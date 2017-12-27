@@ -6,9 +6,10 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/aaronaaeng/chat.connor.fun/controllers"
+	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 )
 
-func doAuthorization(next echo.HandlerFunc, claims *Claims, c echo.Context) error {
+func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context) error {
 	permissions := model.NewPermissionSet()
 	var principleRole *model.Role
 	if claims != nil { //there are authenticated claims

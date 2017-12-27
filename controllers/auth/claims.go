@@ -1,4 +1,4 @@
-package jwtmiddleware
+package auth
 
 import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
@@ -8,7 +8,7 @@ import (
 type Claims struct {
 	User       model.User `json:"users"`
 	Permissions []model.Permission `json:"permissions,omitempty"`
-	jwt.StandardClaims
+	*jwt.StandardClaims
 }
 
 func (c Claims) Valid() error { //TODO: validate users is some way

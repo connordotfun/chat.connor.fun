@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"net/http"
+	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 )
 
 
@@ -26,7 +27,7 @@ func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
 				return c.JSON(http.StatusBadRequest, invalidTokenResponse)
 			}
 
-			claims, ok := token.Claims.(Claims);
+			claims, ok := token.Claims.(auth.Claims);
 			if !token.Valid || !ok {
 				return c.JSON(http.StatusUnauthorized, invalidTokenResponse)
 			}
