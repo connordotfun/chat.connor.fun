@@ -24,7 +24,10 @@
     "parent": "anon_user",
     "override": "NONE",
     "permissions": [
+      {"path": "/user",  "verbs": "c"},
+      {"path": "/login", "verbs": "c"},
       {"path": "/room/*/messages",   "verbs": "cr"},
+      {"path": "/room/*/messages/*", "verbs": "r"}
     ]
   }
 }

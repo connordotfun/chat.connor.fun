@@ -1,17 +1,32 @@
 package model
 
+import (
+	"io/ioutil"
+	"encoding/json"
+)
 
 type Role struct {
-	Name string `json:"name"`
+	Name 		string 		  `json:"name"`
+	Override	string		  `json:"override"`
+	Permissions []*Permission `json:"permissions"`
 }
 
-const normalUser = "NORMAL_USER"
-const admin = "ADMIN"
 
-func NormalUser() Role {
-	return Role{Name: normalUser}
+type RoleMap struct {
+	data map[string]Role
 }
 
-func Admin() Role {
-	return Role{Name: admin}
+var Roles RoleMap
+
+func InitRoleMap(defFile string) error {
+	rolesData, err := ioutil.ReadFile(defFile)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(rolesData, &Roles.data)
+	if err != nil {
+		return err
+	}
+	return err
 }

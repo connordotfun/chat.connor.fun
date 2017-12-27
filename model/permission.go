@@ -1,5 +1,10 @@
 package model
 
+import (
+	"encoding/json"
+	"strings"
+)
+
 const actionCreate = 0x000F
 const actionUpdate = 0x00F0
 const actionRead = 0x0F00
@@ -70,4 +75,59 @@ func (p Permission) SetNotRead()  {
 
 func (p Permission) SetNotDelete()  {
 	p.setNotAction(actionDelete)
+}
+
+func (p Permission) generateVerbsStr() string {
+	verbs := ""
+	if p.CanCreate() {
+		verbs += "c"
+	}
+	if p.CanRead() {
+		verbs += "r"
+	}
+	if p.CanUpdate() {
+		verbs += "u"
+	}
+	if p.CanDelete() {
+		verbs += "d"
+	}
+	return verbs
+}
+
+func generateVerbCode(verbs string) AccessCode {
+	var code AccessCode
+	if strings.Contains(verbs, "c") {
+		code |= actionCreate
+	}
+	if strings.Contains(verbs, "r") {
+		code |= actionRead
+	}
+	if strings.Contains(verbs, "u") {
+		code |= actionUpdate
+	}
+	if strings.Contains(verbs, "d") {
+		code |= actionDelete
+	}
+	return code
+}
+
+func (p Permission) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Path string
+		Verbs string
+	}{
+		Path: p.Path,
+		Verbs: p.generateVerbsStr(),
+	})
+}
+
+func (p Permission) UnmarshalJSON(b []byte) error {
+	var perm map[string]string
+	err := json.Unmarshal(b, &perm)
+	if err != nil {
+		return err
+	}
+	p.Path = perm["path"]
+	p.code = generateVerbCode(perm["verbs"])
+	return nil
 }

@@ -12,6 +12,8 @@ import (
 	"github.com/labstack/echo/middleware"
 	_"github.com/mattn/go-sqlite3"
 	"github.com/aaronaaeng/chat.connor.fun/controllers"
+	"github.com/aaronaaeng/chat.connor.fun/model"
+	"fmt"
 )
 
 
@@ -39,6 +41,10 @@ func initDatabaseRepositories(c config.Config) {
 
 func main() {
 	configData := config.New(true)
+
+	if model.InitRoleMap("assets/roles.json") != nil {
+		fmt.Printf("Error creating User Roles mapping!")
+	}
 
 	initDatabaseRepositories(configData)
 
