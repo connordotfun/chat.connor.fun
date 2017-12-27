@@ -47,7 +47,7 @@ func (r Repository) GetById(id int64) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = rows.Scan(&user)
+	err = rows.StructScan(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (r Repository) GetByUsername(username string) (*model.User, error) {
 		return nil, err
 	}
 	rows.Next()
-	if err := rows.Scan(&(user.Id), &(user.Username), &(user.Secret)); err != nil {
+	if err := rows.StructScan(&user); err != nil {
 		return nil, err
 	}
 	return &user, nil

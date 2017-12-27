@@ -13,4 +13,9 @@ const (
 	insertRelationQuery = `
 		INSERT INTO user_roles (user_id, role) VALUES (:user_id, :role);
 	`
+
+	getRolesByUserQuery = `
+		SELECT role FROM user_roles
+			WHERE user_id = :user_id;
+	`
 )
