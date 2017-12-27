@@ -75,17 +75,6 @@ func cleanUpTestDb(db *sqlx.DB) {
 	}
 }
 
-func testRowCountEquals(t *testing.T, expected int) {
-	rows, err := testDb.Queryx("SELECT COUNT(*) FROM user_roles")
-	assert.NoError(t, err)
-
-	assert.True(t, rows.Next())
-	var count int
-	err = rows.Scan(&count)
-	assert.NoError(t, err)
-	assert.Equal(t, expected, count)
-}
-
 func initTables() {
 	_, _ = users.Init(testDb) //these must be inited in the right order
 	_, _ = roles.Init(testDb)
