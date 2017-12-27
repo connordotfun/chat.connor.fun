@@ -10,7 +10,6 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db/users"
 	_"github.com/lib/pq"
 	"github.com/labstack/echo/middleware"
-	_"github.com/mattn/go-sqlite3"
 	"github.com/aaronaaeng/chat.connor.fun/controllers"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"fmt"
