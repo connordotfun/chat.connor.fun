@@ -1,0 +1,19 @@
+@import './_colors.scss';
+@mixin box {
+    border: 2px solid;
+    border-bottom-color: #535353;
+    border-right-color: #535353;
+    border-left-color: #dbdbdb;
+    border-top-color: #dbdbdb;
+    background-color: #bfbfbf;
+}
+
+@mixin box-inner {
+    border: 2px solid;
+    border-bottom-color: #c7c7c7;
+    border-right-color: #c7c7c7;
+    border-left-color: #808080;
+    border-top-color: #808080;
+    background-color: #fff;
+    padding: 10px;
+}
