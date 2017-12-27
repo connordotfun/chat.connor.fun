@@ -3,7 +3,7 @@ package roles
 
 const (
 	createIfNotExistsQuery = `
-		CREATE TABLE user_roles IF NOT EXISTS (
+		CREATE TABLE IF NOT EXISTS user_roles (
 			user_id INTEGER NOT NULL REFERENCES users (id),
 			role VARCHAR(255) NOT NULL,
 			PRIMARY KEY (user_id, role)
