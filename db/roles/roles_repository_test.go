@@ -92,6 +92,7 @@ func cleanUpTables(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
+	_, _ = users.Init(testDb)
 	_, err := Init(testDb)
 
 	assert.NoError(t, err)
@@ -99,6 +100,7 @@ func TestInit(t *testing.T) {
 
 	_, err = testDb.Exec("DROP TABLE user_roles")
 	assert.NoError(t, err)
+	_, _ = testDb.Exec("DROP TABLE users")
 }
 
 func TestRepository_AddRole(t *testing.T) {

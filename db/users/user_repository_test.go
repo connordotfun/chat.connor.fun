@@ -12,7 +12,7 @@ import (
 const (
 	testDbHost = "localhost"
 	testDbPort = 5432
-	testDbName = "connorfuntest"
+	testDbName = "connorfuntest_userrepo"
 )
 
 var testDb *sqlx.DB
@@ -24,12 +24,12 @@ func TestMain(m *testing.M) {
 		panic("failed to establish db connection: " + err.Error())
 	}
 
-	_, err = db.Exec("DROP DATABASE IF EXISTS connorfuntest")
+	_, err = db.Exec("DROP DATABASE IF EXISTS connorfuntest_userrepo")
 	if err != nil {
 		panic(err) //Something went horribly wrong
 	}
 
-	_, err = db.Exec("CREATE DATABASE connorfuntest;")
+	_, err = db.Exec("CREATE DATABASE connorfuntest_userrepo;")
 	if err != nil {
 		panic("Failed to create test db: " + err.Error())
 	}
@@ -55,13 +55,13 @@ func cleanUpTestDb(db *sqlx.DB) {
 			FROM
 			pg_stat_activity
 			WHERE
-			pg_stat_activity.datname = 'connorfuntest'`)
+			pg_stat_activity.datname = 'connorfuntest_userrepo'`)
 
 	if err != nil {
 		panic("FAILED TO KILL BG CONNECTIONS")
 	}
 
-	_, err = db.Exec("DROP DATABASE connorfuntest;")
+	_, err = db.Exec("DROP DATABASE connorfuntest_userrepo;")
 	if err != nil {
 		panic("FAILED TO DROP TEST DB: " + err.Error())
 	}
