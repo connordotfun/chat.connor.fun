@@ -1,0 +1,13 @@
+@import '../../_colors.scss';
+@import '../../_box.scss';
+
+.buddy-list {
+    @include box;
+
+    .inner {
+        @include box-inner;
+        font-family: 'Times New Roman', serif;
+        margin: 15px 15px;
+        list-style: none;
+    }
+}
