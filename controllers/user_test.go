@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"net/http"
+	"encoding/json"
 )
 
 const (
@@ -126,6 +127,12 @@ func TestCreateUser(t *testing.T) {
 
 	assert.NoError(t, CreateUser(c))
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+
+	var response Response
+	err := json.Unmarshal([]byte(rec.Body.String()), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "USER_CREATE_FAILED", response.Error.Type)
+
 
 	cleanUpTables(t)
 }
