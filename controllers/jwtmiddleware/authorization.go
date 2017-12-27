@@ -51,7 +51,8 @@ func doAuthorization(next echo.HandlerFunc, claims *Claims, c echo.Context) erro
 	}
 	if principleRole.Name == "banned" {
 		return c.JSON(http.StatusForbidden, controllers.Response{
-			Error: &controllers.ResponseError{Type: "BANNED", Message: "User banned"}
+			Error: &controllers.ResponseError{Type: "BANNED", Message: "User banned"},
+			Data: nil,
 		})
 	}
 
