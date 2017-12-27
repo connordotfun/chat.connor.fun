@@ -22,29 +22,35 @@ func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
 				return doAuthorization(next, nil, c)
 			}
 
-			token, err := parseJWT(tokenStr, appConfig)
+			claims, err := ParseAndValidateJWT(tokenStr, []byte(appConfig.JWTSecretKey))
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, invalidTokenResponse)
 			}
 
-			claims, ok := token.Claims.(auth.Claims);
-			if !token.Valid || !ok {
-				return c.JSON(http.StatusUnauthorized, invalidTokenResponse)
-			}
-
-			return doAuthorization(next, &claims, c)
+			return doAuthorization(next, claims, c)
 		}
 	}
 }
 
-func parseJWT(tokenStr string, c config.Config) (*jwt.Token, error) {
-	return jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+func ParseAndValidateJWT(tokenStr string, jwtSecretKey []byte) (*auth.Claims, error) {
+
+	var claims auth.Claims
+	token, err := jwt.ParseWithClaims(tokenStr, &claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("expected JWT to be HMAC sgined")
 		}
 
-		return []byte(c.JWTSecretKey), nil
+		return jwtSecretKey, nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New("failed to validate token")
+	}
+
+	return &claims, nil
 }
 
 func getJWT(c echo.Context) (string, error) {

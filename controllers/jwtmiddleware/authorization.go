@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
-	"github.com/aaronaaeng/chat.connor.fun/controllers"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 )
 
@@ -20,8 +19,8 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 		if claims.User.Username != "" { //this is very hacky
 			userRoles, err := roles.Repo.GetUserRoles(claims.User.Id)
 			if err != nil {
-				return c.JSON(http.StatusInternalServerError, controllers.Response{
-					Error: &controllers.ResponseError{Type: "ROLES_ACCESS_FAILED", Message: err.Error()},
+				return c.JSON(http.StatusInternalServerError, model.Response{
+					Error: &model.ResponseError{Type: "ROLES_ACCESS_FAILED", Message: err.Error()},
 					Data: nil,
 				})
 			}
@@ -51,8 +50,8 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 		return next(c)
 	}
 	if principleRole.Name == "banned" {
-		return c.JSON(http.StatusForbidden, controllers.Response{
-			Error: &controllers.ResponseError{Type: "BANNED", Message: "User banned"},
+		return c.JSON(http.StatusForbidden, model.Response{
+			Error: &model.ResponseError{Type: "BANNED", Message: "User banned"},
 			Data: nil,
 		})
 	}
@@ -60,8 +59,8 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 	if isAuthorized(permissions, c.Request()) {
 		return next(c)
 	} else {
-		return c.JSON(http.StatusForbidden, controllers.Response{
-			Error: &controllers.ResponseError{Type: "UNAUTHORIZED", Message: "Cannot access resource"},
+		return c.JSON(http.StatusForbidden, model.Response{
+			Error: &model.ResponseError{Type: "UNAUTHORIZED", Message: "Cannot access resource"},
 			Data: nil,
 		})
 	}

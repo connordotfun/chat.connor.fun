@@ -13,6 +13,8 @@ import (
 	"strings"
 	"net/http"
 	"encoding/json"
+	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
+	"github.com/aaronaaeng/chat.connor.fun/model"
 )
 
 const (
@@ -101,6 +103,10 @@ const (
 		{"username": "test", "secret": "test"}
 	`
 	testUserJsonResponse1 = `{"error":null,"data":{"id":1,"username":"test"}}`
+
+	testUserJson2 = `
+		{"username": "test2", "secret": "test"}
+	`
 )
 
 func TestCreateUser(t *testing.T) {
@@ -128,11 +134,45 @@ func TestCreateUser(t *testing.T) {
 	assert.NoError(t, CreateUser(c))
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 
-	var response Response
+	var response model.Response
 	err := json.Unmarshal([]byte(rec.Body.String()), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, "USER_CREATE_FAILED", response.Error.Type)
 
+
+	cleanUpTables(t)
+}
+
+func TestLoginUser(t *testing.T) {
+	initTables()
+
+	e := echo.New()
+	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+
+	assert.NoError(t, CreateUser(c))
+
+
+	req = httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec = httptest.NewRecorder()
+
+	c = e.NewContext(req, rec)
+
+	assert.NoError(t, LoginUser(c))
+
+	var response model.Response
+	err := json.Unmarshal([]byte(rec.Body.String()), &response)
+	assert.NoError(t, err)
+
+	resData := response.Data.(map[string]interface{})
+
+	assert.NotEmpty(t, resData["token"])
+	_, err = jwtmiddleware.ParseAndValidateJWT(resData["token"].(string), []byte("secret"))
+	assert.NoError(t, err)
 
 	cleanUpTables(t)
 }

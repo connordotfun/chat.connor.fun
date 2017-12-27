@@ -6,9 +6,9 @@ import (
 )
 
 type Claims struct {
-	User       model.User `json:"users"`
+	User       model.User `json:"user"`
 	Permissions []model.Permission `json:"permissions,omitempty"`
-	*jwt.StandardClaims
+	jwt.StandardClaims
 }
 
 func (c Claims) Valid() error { //TODO: validate users is some way

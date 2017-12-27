@@ -1,10 +1,12 @@
 package jwtmiddleware
 
-import "github.com/aaronaaeng/chat.connor.fun/controllers"
+import (
+	"github.com/aaronaaeng/chat.connor.fun/model"
+)
 
 var (
-	invalidTokenResponse = controllers.Response{
-		Error: &controllers.ResponseError{Type: "INVALID_AUTH_TOKEN", Message: "Invalid Token"},
+	invalidTokenResponse = model.Response{
+		Error: &model.ResponseError{Type: "INVALID_AUTH_TOKEN", Message: "Invalid Token"},
 		Data: nil,
 	}
 )
