@@ -6,6 +6,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"net/http"
 	"golang.org/x/crypto/bcrypt"
+	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 )
 
 
@@ -29,6 +30,12 @@ func CreateUser(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Response{
 			Error: &ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
+			Data: nil,
+		})
+	}
+	if err := roles.Repo.AddRole(createdUser.Id, "normal_user"); err != nil {
+		return c.JSON(http.StatusInternalServerError, Response{
+			Error: &ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
 			Data: nil,
 		})
 	}

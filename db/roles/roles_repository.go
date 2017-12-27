@@ -21,10 +21,10 @@ func Init(database *sqlx.DB) (Repository, error) {
 }
 
 
-func (r Repository) AddRole(userId int64, role model.Role) error {
+func (r Repository) AddRole(userId int64, role string) error {
 	params := map[string]interface{} {
 		"user_id": userId,
-		"role": role.Name,
+		"role": role,
 	}
 	_, err := r.db.NamedExec(insertRelationQuery, params)
 	return err
@@ -43,7 +43,8 @@ func (r Repository) GetUserRoles(userId int64) ([]*model.Role, error) {
 		if err != nil {
 			return nil, err
 		}
-		userRoles = append(userRoles, &model.Role{Name:roleName})
+		role := model.Roles.GetRole(roleName)
+		userRoles = append(userRoles, &role)
 	}
 
 	return userRoles, nil

@@ -30,3 +30,7 @@ func InitRoleMap(defFile string) error {
 	}
 	return err
 }
+
+func (m RoleMap) GetRole(name string) Role {
+	return m.data[name]
+}

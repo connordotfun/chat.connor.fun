@@ -14,6 +14,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"fmt"
+	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 )
 
 
@@ -34,6 +35,11 @@ func initDatabaseRepositories(c config.Config) {
 		panic(err)
 	}
 	_, err = users.Init(database)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = roles.Init(database)
 	if err != nil {
 		panic(err)
 	}
