@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/labstack/echo"
-	"github.com/aaronaaeng/chat.connor.fun/db/user"
+	"github.com/aaronaaeng/chat.connor.fun/db/users"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"net/http"
 	"golang.org/x/crypto/bcrypt"
@@ -25,7 +25,7 @@ func CreateUser(c echo.Context) error {
 		})
 	}
 	u.Secret = string(hashedSecret)
-	createdUser, err := user.Repo.Create(u)
+	createdUser, err := users.Repo.Create(u)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Response{
 			Error: &ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
@@ -47,8 +47,8 @@ func LoginUser(c echo.Context) error {  //TODO: generate JWTs
 			Data: nil,
 		})
 	}
-	matchedUser, err := user.Repo.GetByUsername(toLoginUser.Username)
-	if err != nil { //TODO: Handle user not found case
+	matchedUser, err := users.Repo.GetByUsername(toLoginUser.Username)
+	if err != nil { //TODO: Handle users not found case
 		return c.JSON(http.StatusBadRequest, Response{
 			Error: &ResponseError{Type: "USER_NOT_FOUND", Message: err.Error()},
 			Data: nil,

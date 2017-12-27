@@ -7,7 +7,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/views"
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/config"
-	"github.com/aaronaaeng/chat.connor.fun/db/user"
+	"github.com/aaronaaeng/chat.connor.fun/db/users"
 	_"github.com/lib/pq"
 	"github.com/labstack/echo/middleware"
 	_"github.com/mattn/go-sqlite3"
@@ -16,7 +16,7 @@ import (
 
 
 func createApiRoutes(e *echo.Echo) {
-	e.POST("/api/v1/user", controllers.CreateUser)
+	e.POST("/api/v1/users", controllers.CreateUser)
 	e.POST("/api/v1/login", controllers.LoginUser)
 }
 
@@ -31,7 +31,7 @@ func initDatabaseRepositories(c config.Config) {
 	if err != nil {
 		panic(err)
 	}
-	_, err = user.Init(database)
+	_, err = users.Init(database)
 	if err != nil {
 		panic(err)
 	}

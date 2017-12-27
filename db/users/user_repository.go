@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"github.com/aaronaaeng/chat.connor.fun/model"

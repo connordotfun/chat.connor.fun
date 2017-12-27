@@ -6,10 +6,9 @@ import (
 
 type Config struct {
 	JWTSecretKey string
-	DatabaseURL string
-	Debug bool
+	DatabaseURL  string
+	Debug        bool
 }
-
 
 func New(debug bool) Config {
 	if !debug {
