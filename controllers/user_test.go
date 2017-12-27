@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/aaronaaeng/chat.connor.fun/config"
 )
 
 const (
@@ -134,7 +135,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestLoginUser(t *testing.T) {
 	initTables()
-
+	config.JWTSecretKey = "secret"
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)

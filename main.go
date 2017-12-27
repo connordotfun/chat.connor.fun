@@ -24,18 +24,18 @@ func createApiRoutes(e *echo.Echo) {
 	e.POST("/api/v1/login", controllers.LoginUser)
 }
 
-func addMiddlewares(e *echo.Echo, c config.Config) {
-	if !c.Debug {
+func addMiddlewares(e *echo.Echo) {
+	if !config.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(jwtmiddleware.JwtAuth(c))
+	e.Use(jwtmiddleware.JwtAuth())
 }
 
-func initDatabaseRepositories(c config.Config) {
-	database, err := sqlx.Open("postgres", "postgresql://localhost:5432?sslmode=disable")
+func initDatabaseRepositories() {
+	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
 		panic(err)
 	}
@@ -52,9 +52,7 @@ func initDatabaseRepositories(c config.Config) {
 
 func main() {
 	e := echo.New()
-
-	configData := config.New(true)
-
+	e.Debug = config.Debug
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
 	if err != nil {
@@ -64,10 +62,10 @@ func main() {
 		e.Logger.Fatal(fmt.Errorf("error creating roles data"))
 	}
 
-	initDatabaseRepositories(configData)
+	initDatabaseRepositories()
 
 
-	addMiddlewares(e, configData)
+	addMiddlewares(e)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/*.html")),

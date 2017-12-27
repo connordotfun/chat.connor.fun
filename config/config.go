@@ -4,16 +4,22 @@ import (
 	"os"
 )
 
-type Config struct {
-	JWTSecretKey string
-	DatabaseURL  string
-	Debug        bool
+
+var (
+	JWTSecretKey = getOrDefault("SECRET_KEY", "debug-secret-key")
+	DatabaseURL = getOrDefault("DATABASE_URL", "postgresql://localhost:5432?sslmode=disable")
+	Debug = !isEnvPresent("CHAT_CONNOR_FUN_PROD")
+)
+
+func getOrDefault(envVar string, def string) string {
+	val, present := os.LookupEnv(envVar)
+	if present {
+		return val
+	}
+	return def
 }
 
-func New(debug bool) Config {
-	if !debug {
-		return Config{os.Getenv("SECRET_KEY"), os.Getenv("DATABASE_URL"), false}
-	} else {
-		return Config{JWTSecretKey: "hopefully-very-secret-key", DatabaseURL: "todo", Debug: true}
-	}
+func isEnvPresent(envVar string) bool {
+	_, present := os.LookupEnv(envVar)
+	return present
 }

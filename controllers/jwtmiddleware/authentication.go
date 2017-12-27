@@ -14,7 +14,7 @@ const (
 	tokenName = "Bearer"
 )
 
-func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
+func JwtAuth() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			tokenStr, err := getJWT(c)
@@ -22,7 +22,7 @@ func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
 				return doAuthorization(next, nil, c)
 			}
 
-			claims, err := ParseAndValidateJWT(tokenStr, []byte(appConfig.JWTSecretKey))
+			claims, err := ParseAndValidateJWT(tokenStr, []byte(config.JWTSecretKey))
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, invalidTokenResponse)
 			}

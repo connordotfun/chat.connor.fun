@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"golang.org/x/crypto/bcrypt"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
+	"github.com/aaronaaeng/chat.connor.fun/config"
 )
 
 
@@ -69,7 +70,7 @@ func LoginUser(c echo.Context) error {  //TODO: generate JWTs
 		})
 	} else {
 		userToReturn := model.User{Id: matchedUser.Id, Username: matchedUser.Username, Secret: ""}
-		jwtStr, err := generateJWT(userToReturn, []byte("secret"))
+		jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
 
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, model.Response{
