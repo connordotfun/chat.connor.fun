@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	_"github.com/lib/pq"
 )
 
 const (
@@ -134,8 +135,8 @@ func TestRepository_GetUserRoles(t *testing.T) {
 	Repo.AddRole(validUser1.Id, "role2")
 	Repo.AddRole(validUser1.Id, "role3")
 
-	Repo.AddRole(validUser2.Id, "role1")
-	Repo.AddRole(validUser2.Id, "role2")
+	Repo.AddRole(validUser2.Id, "role4")
+	Repo.AddRole(validUser2.Id, "role5")
 
 	user1Roles, err := Repo.GetUserRoles(validUser1.Id)
 	assert.NoError(t, err)
@@ -148,7 +149,7 @@ func TestRepository_GetUserRoles(t *testing.T) {
 	assert.Len(t, user2Roles, 2)
 	assert.Len(t, user3Roles, 0)
 
-
+	//This test could be improved in the future
 
 	cleanUpTables(t)
 }

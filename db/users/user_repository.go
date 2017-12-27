@@ -47,11 +47,14 @@ func (r Repository) GetById(id int64) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = rows.StructScan(&user)
-	if err != nil {
-		return nil, err
+	if rows.Next() {
+		err = rows.StructScan(&user)
+		if err != nil {
+			return nil, err
+		}
+		return &user, nil
 	}
-	return &user, nil
+	return nil, nil //No such user
 }
 
 func (r Repository) GetByUsername(username string) (*model.User, error) {
@@ -60,12 +63,14 @@ func (r Repository) GetByUsername(username string) (*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	rows.Next()
-	if err := rows.StructScan(&user); err != nil {
-		return nil, err
-	}
-	return &user, nil
 
+	if rows.Next() {
+		if err := rows.StructScan(&user); err != nil {
+			return nil, err
+		}
+		return &user, nil
+	}
+	return nil, nil
 }
 
 func (r Repository) Delete(user model.User) error {
