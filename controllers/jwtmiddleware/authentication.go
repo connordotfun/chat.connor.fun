@@ -23,7 +23,7 @@ func JwtAuth(appConfig config.Config) echo.MiddlewareFunc {
 
 			token, err := parseJWT(tokenStr, appConfig)
 			if err != nil {
-				doAuthorization(next, nil, c)
+				return c.JSON(http.StatusBadRequest, invalidTokenResponse)
 			}
 
 			claims, ok := token.Claims.(Claims);
