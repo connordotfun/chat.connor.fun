@@ -16,7 +16,6 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"io/ioutil"
-	"github.com/slimsag/godocmd/testdata"
 )
 
 

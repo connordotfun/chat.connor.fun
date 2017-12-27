@@ -31,7 +31,7 @@ func (r Repository) AddRole(userId int64, role string) error {
 }
 
 func (r Repository) GetUserRoles(userId int64) ([]*model.Role, error) {
-	rows, err := r.db.Queryx(getRolesByUserQuery, map[string]interface{}{"user_id": userId})
+	rows, err := r.db.NamedQuery(getRolesByUserQuery, map[string]interface{}{"user_id": userId})
 	if err != nil {
 		return nil, err
 	}
