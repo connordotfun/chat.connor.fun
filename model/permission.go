@@ -111,10 +111,10 @@ func generateVerbCode(verbs string) AccessCode {
 	return code
 }
 
-func (p *Permission) MarshalJSON() ([]byte, error) {
+func (p Permission) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Path string
-		Verbs string
+		Path string `json:"path"`
+		Verbs string `json:"verbs"`
 	}{
 		Path: p.Path,
 		Verbs: p.generateVerbsStr(),
