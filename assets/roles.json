@@ -13,6 +13,7 @@
     "parent": "NONE",
     "override": "NONE",
     "permissions": [
+      {"path": "/", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
       {"path": "/api/v1/room/*/messages",   "verbs": "r"},
@@ -24,6 +25,7 @@
     "parent": "anon_user",
     "override": "NONE",
     "permissions": [
+      {"path": "/", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
       {"path": "/api/v1/room/*/messages",   "verbs": "cr"},

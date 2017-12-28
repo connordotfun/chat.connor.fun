@@ -1,4 +1,4 @@
-package views
+package controllers
 
 import (
 	"github.com/labstack/echo"

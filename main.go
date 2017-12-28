@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo"
 	"html/template"
 	"io"
-	"github.com/aaronaaeng/chat.connor.fun/views"
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db/users"
@@ -71,7 +70,7 @@ func main() {
 		templates: template.Must(template.ParseGlob("frontend/*.html")),
 	}
 	e.Renderer = t
-	e.GET("/", views.Index)
+	e.GET("/", controllers.Index)
 
 	createApiRoutes(e)
 	e.Logger.Fatal(e.Start(":4000"))
