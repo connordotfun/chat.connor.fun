@@ -13,8 +13,10 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"fmt"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
-	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
+	_"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"io/ioutil"
+	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
+	"strings"
 )
 
 
@@ -30,7 +32,9 @@ func addMiddlewares(e *echo.Echo) {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Use(jwtmiddleware.JwtAuth())
+	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
+		return strings.HasPrefix(c.Path(), "/web") //skip static assets
+	}))
 }
 
 func initDatabaseRepositories() {
@@ -51,6 +55,7 @@ func initDatabaseRepositories() {
 
 func main() {
 	e := echo.New()
+	e.Static("/web", "frontend")
 	e.Debug = config.Debug
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
@@ -67,7 +72,7 @@ func main() {
 	addMiddlewares(e)
 
 	t := &Template{
-		templates: template.Must(template.ParseGlob("frontend/*.html")),
+		templates: template.Must(template.ParseGlob("frontend/public/*.html")),
 	}
 	e.Renderer = t
 	e.GET("/", controllers.Index)
