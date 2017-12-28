@@ -9,14 +9,18 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 )
 
+type Skipper func(context echo.Context) bool
 
 const (
 	tokenName = "Bearer"
 )
 
-func JwtAuth() echo.MiddlewareFunc {
+func JwtAuth(skipper Skipper) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			if skipper(c) {
+				return next(c)
+			}
 			tokenStr, err := getJWT(c)
 			if err != nil {
 				return doAuthorization(next, nil, c)

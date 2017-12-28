@@ -8,5 +8,8 @@ import (
 
 //GET('/')
 func Index(c echo.Context) error {
-	return c.Render(http.StatusOK, "index.html", nil)
+	templateVars := map[string]interface{} {
+		"publicUrl": "/web/public",
+	}
+	return c.Render(http.StatusOK, "index.html", templateVars)
 }
