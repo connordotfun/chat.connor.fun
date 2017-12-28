@@ -46,14 +46,16 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 		principleRole = &anon
 	}
 
-	if principleRole.Name == "admin" {
-		return next(c)
-	}
-	if principleRole.Name == "banned" {
-		return c.JSON(http.StatusForbidden, model.Response{
-			Error: &model.ResponseError{Type: "BANNED", Message: "User banned"},
-			Data: nil,
-		})
+	if principleRole != nil {
+		if principleRole.Name == "admin" {
+			return next(c)
+		}
+		if principleRole.Name == "banned" {
+			return c.JSON(http.StatusForbidden, model.Response{
+				Error: &model.ResponseError{Type: "BANNED", Message: "User banned"},
+				Data: nil,
+			})
+		}
 	}
 
 	if isAuthorized(permissions, c.Request()) {
