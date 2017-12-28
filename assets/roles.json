@@ -1,0 +1,35 @@
+{
+  "admin": {
+    "parent": "NONE",
+    "override": "ALLOW_ALL"
+  },
+
+  "banned": {
+    "parent": "NONE",
+    "override": "ALLOW_NONE"
+  },
+
+  "anon_user": {
+    "parent": "NONE",
+    "override": "NONE",
+    "permissions": [
+      {"path": "/", "verbs": "r"},
+      {"path": "/api/v1/users",  "verbs": "c"},
+      {"path": "/api/v1/login", "verbs": "c"},
+      {"path": "/api/v1/room/*/messages",   "verbs": "r"},
+      {"path": "/api/v1/room/*/messages/*", "verbs": "r"}
+    ]
+  },
+
+  "normal_user": {
+    "parent": "anon_user",
+    "override": "NONE",
+    "permissions": [
+      {"path": "/", "verbs": "r"},
+      {"path": "/api/v1/users",  "verbs": "c"},
+      {"path": "/api/v1/login", "verbs": "c"},
+      {"path": "/api/v1/room/*/messages",   "verbs": "cr"},
+      {"path": "/api/v1/room/*/messages/*", "verbs": "r"}
+    ]
+  }
+}
