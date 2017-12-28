@@ -86,15 +86,6 @@ func cleanUpTables(t *testing.T) {
 
 
 const (
-	testUserJson1 = `
-		{"username": "test", "secret": "test"}
-	`
-	testUserJsonResponse1 = `{"error":null,"data":{"id":1,"username":"test"}}`
-
-	testUserJson2 = `
-		{"username": "test2", "secret": "test"}
-	`
-
 	testJsonRoleData = `
 		{
 		  "anon_user": {
