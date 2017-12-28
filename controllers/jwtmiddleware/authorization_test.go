@@ -119,7 +119,7 @@ func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
  	assert.NoError(t, roles.Repo.AddRole(user.Id, "normal_user"))
 
  	e := echo.New()
-	req := httptest.NewRequest("POST", "/bar", strings.NewReader(testUserJson1))
+	req := httptest.NewRequest("POST", "/bar", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
@@ -149,7 +149,7 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	assert.NoError(t, roles.Repo.AddRole(user.Id, "normal_user"))
 
 	e := echo.New()
-	req := httptest.NewRequest("POST", "/foo/foo", strings.NewReader(testUserJson1))
+	req := httptest.NewRequest("POST", "/foo/foo", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
@@ -178,7 +178,7 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
 
 	e := echo.New()
-	req := httptest.NewRequest("POST", "/foo/bar", strings.NewReader(testUserJson1))
+	req := httptest.NewRequest("POST", "/foo/bar", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
@@ -202,7 +202,7 @@ func TestDoAuthorization_NoAuth_Fail(t *testing.T) {
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
 
 	e := echo.New()
-	req := httptest.NewRequest("POST", "/foo/foo", strings.NewReader(testUserJson1))
+	req := httptest.NewRequest("POST", "/foo/foo", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
