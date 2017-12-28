@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"github.com/aaronaaeng/chat.connor.fun/config"
-	"github.com/slimsag/godocmd/testdata"
 )
 
 
