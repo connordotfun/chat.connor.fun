@@ -22,6 +22,10 @@ type HubMap struct {
 	data sync.Map
 }
 
+func NewHubMap() *HubMap {
+	return &HubMap{}
+}
+
 func (rm *HubMap) Store(roomName string, hub *Hub) {
 	rm.data.Store(roomName, hub)
 }

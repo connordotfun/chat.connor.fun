@@ -17,12 +17,14 @@ import (
 	"io/ioutil"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"strings"
+	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
 )
 
 
 func createApiRoutes(e *echo.Echo) {
 	e.POST("/api/v1/users", controllers.CreateUser)
 	e.POST("/api/v1/login", controllers.LoginUser)
+
 }
 
 func addMiddlewares(e *echo.Echo) {
@@ -66,6 +68,8 @@ func main() {
 		e.Logger.Fatal(fmt.Errorf("error creating roles data"))
 	}
 
+	hubMap := chat.NewHubMap()
+
 	initDatabaseRepositories()
 
 
@@ -76,6 +80,15 @@ func main() {
 	}
 	e.Renderer = t
 	e.GET("/", controllers.Index)
+
+	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
+		return chat.HandleWebsocket(hubMap, false, c)
+	})
+
+	e.POST("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
+		return chat.HandleWebsocket(hubMap, true, c)
+	})
+
 
 	createApiRoutes(e)
 	e.Logger.Fatal(e.Start(":4000"))

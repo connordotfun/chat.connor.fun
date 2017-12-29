@@ -26,7 +26,7 @@ func isOriginValid(origin string, host string) bool {
 	return expected == origin
 }
 
-func HandleWebsocket(hubs *HubMap, c echo.Context) error {
+func HandleWebsocket(hubs *HubMap, allowWrite bool, c echo.Context) error {
 	if !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 		return c.NoContent(http.StatusForbidden)
 	}
@@ -49,7 +49,7 @@ func HandleWebsocket(hubs *HubMap, c echo.Context) error {
 		return err //upgrade failed
 	}
 
-	client := &Client{hub: hub, conn: conn, send: make(chan *model.ChatMessage)}
+	client := &Client{hub: hub, canWrite: allowWrite, conn: conn, send: make(chan *model.ChatMessage)}
 	client.hub.register <- client
 
 	go client.writer()
