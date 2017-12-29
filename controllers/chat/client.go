@@ -26,11 +26,6 @@ type Client struct {
 	send chan *model.ChatMessage
 }
 
-var (
-	newline = []byte{'\n'}
-	space   = []byte{' '}
-)
-
 func (c *Client) signMessage(messageBytes []byte) (*model.ChatMessage, error) {
 	var message model.ChatMessage
 	err := json.Unmarshal(messageBytes, &message)

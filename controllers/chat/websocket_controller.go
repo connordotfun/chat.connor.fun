@@ -3,11 +3,11 @@ package chat
 import (
 	"github.com/labstack/echo"
 	"net/http"
-
 	"github.com/gorilla/websocket"
 	"log"
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
+	"github.com/aaronaaeng/chat.connor.fun/model"
 )
 
 
@@ -49,7 +49,7 @@ func HandleWebsocket(hubs *HubMap, c echo.Context) error {
 		return err //upgrade failed
 	}
 
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte)}
+	client := &Client{hub: hub, conn: conn, send: make(chan *model.ChatMessage)}
 	client.hub.register <- client
 
 	go client.writer()
