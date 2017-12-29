@@ -69,6 +69,7 @@ func lookupHub(name string, hubs *HubMap) (*Hub, error) {
 			return nil, nil
 		}
 		hub = NewHub() //init a new hub to activate the room
+		//TODO: run the hub
 		hubs.Store(name, hub)
 	}
 	return hub, nil

@@ -2,12 +2,13 @@ package chat
 
 import (
 	"sync"
+	"github.com/aaronaaeng/chat.connor.fun/model"
 )
 
 type Hub struct {
 	clients map[*Client]bool
 
-	broadcast chan []byte
+	broadcast chan *model.ChatMessage
 
 	register chan *Client
 	unregister chan *Client
@@ -37,7 +38,7 @@ func (rm *HubMap) Delete(roomName string) {
 func NewHub() *Hub {
 	return &Hub{
 		clients: make(map[*Client]bool),
-		broadcast: make(chan []byte),
+		broadcast: make(chan *model.ChatMessage),
 		register: make(chan *Client),
 		unregister: make(chan *Client),
 		stop: make(chan bool),

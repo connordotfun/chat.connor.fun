@@ -4,7 +4,9 @@ import (
 	"github.com/gorilla/websocket"
 	"time"
 	"github.com/labstack/gommon/log"
-	"bytes"
+	"github.com/aaronaaeng/chat.connor.fun/model"
+	"encoding/json"
+	"errors"
 )
 
 
@@ -17,15 +19,32 @@ const (
 
 
 type Client struct {
+	canWrite bool
+	user *model.User
 	hub *Hub
 	conn *websocket.Conn
-	send chan []byte
+	send chan *model.ChatMessage
 }
 
 var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
 )
+
+func (c *Client) signMessage(messageBytes []byte) (*model.ChatMessage, error) {
+	var message model.ChatMessage
+	err := json.Unmarshal(messageBytes, &message)
+	if err != nil {
+		return nil, err
+	}
+	message.CreateDate = time.Now().Unix()
+	if c.user != nil {
+		message.Creator = model.User{Id: c.user.Id, Username: c.user.Username}
+	} else {
+		return nil, errors.New("message has no creator")
+	}
+	return &message, nil
+}
 
 func (c *Client) writer() {
 	defer func() {
@@ -45,9 +64,27 @@ func (c *Client) writer() {
 			}
 			return
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1)) //Don't know why I do this... def didn't copy this line of code
-		c.hub.broadcast <- message //eventually we need to process the message
+		if c.canWrite {
+			signedMessage, err := c.signMessage(message)
+			if err != nil {
+				log.Printf("error signing message: %v", err)
+			} else {
+				c.hub.broadcast <- signedMessage //eventually we need to process the message
+			}
+		}
 	}
+}
+
+func (c *Client) createMessageList(initialMessage *model.ChatMessage) ([]byte, error) {
+	messageCount := len(c.send) + 1
+	messageList := make([]*model.ChatMessage, messageCount)
+
+	messageList[0] = initialMessage
+	for i := 1; i < messageCount; i++ {
+		messageList[i] = <-c.send
+	}
+
+	return json.Marshal(messageList)
 }
 
 func (c *Client) reader() {
@@ -76,14 +113,14 @@ func (c *Client) reader() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
 
-			// Add queued chat messages to the current websocket message.
-			n := len(c.send)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.send)
+			toTransmit, err := c.createMessageList(message)
+			if err != nil {
+				log.Printf("Failed to marshal messages: %v", err)
+				return
 			}
+
+			w.Write(toTransmit)
 
 			if err := w.Close(); err != nil {
 				return
