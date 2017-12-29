@@ -140,8 +140,25 @@ func (p Permission) DoesMethodMatch(path string) bool {
 
 }
 
+func (p Permission) DoesPathMatch(path string) bool {
+	if path == "/" && path == p.Path {
+		return true
+	}
+	splitPath := strings.Split(path, "/")
+	splitPermission := strings.Split(p.Path, "/")
+	if len(splitPath) == len(splitPermission) {
+		for i := 0; i < len(splitPath); i++ {
+			if splitPermission[i] != "*" && splitPath[i] != splitPermission[i] {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
 func (p Permission) IsPermitted(method string, path string) bool {
-	pathMatch := path == p.Path
+	pathMatch := p.DoesPathMatch(path)
 	methodMatch := p.DoesMethodMatch(method)
 	return pathMatch && methodMatch
 }

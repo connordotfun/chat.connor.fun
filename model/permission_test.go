@@ -34,3 +34,22 @@ func TestPermissionJSONUnmarshal(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, pActual, p)
 }
+
+func TestPermission_IsPermitted_SimplePath(t *testing.T) {
+	p := Permission{Path: "/foo/bar/foo/bar", code: actionRead | actionDelete}
+
+	assert.True(t, p.IsPermitted("GET", "/foo/bar/foo/bar"), "failed same method and path")
+	assert.True(t, p.IsPermitted("DELETE", "/foo/bar/foo/bar"), "failed same method and path")
+	assert.False(t, p.IsPermitted("GET", "/foo/bar/foo/baz"), "failed same method and wrong path")
+
+	assert.False(t, p.IsPermitted("POST", "/foo/bar/foo/bar"), "failed wrong method same path")
+}
+
+func TestPermission_IsPermitted_(t *testing.T) {
+	p := Permission{Path: "/foo/*/foo/bar", code: actionRead}
+
+	assert.True(t, p.IsPermitted("GET", "/foo/1/foo/bar"))
+	assert.True(t, p.IsPermitted("GET", "/foo/2/foo/bar"))
+
+	assert.False(t, p.IsPermitted("GET", "/foo/2/foo/abcd"))
+}
