@@ -7,6 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"github.com/aaronaaeng/chat.connor.fun/config"
+	"github.com/slimsag/godocmd/testdata"
+	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 )
 
 
@@ -25,14 +27,50 @@ func isOriginValid(origin string, host string) bool {
 	return expected == origin
 }
 
-func HandleWebsocket(c echo.Context) {
+func HandleWebsocket(hubs *HubMap, c echo.Context) error {
 	if !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
-		c.NoContent(http.StatusForbidden)
+		return c.NoContent(http.StatusForbidden)
 	}
+
+	roomName := c.Param("room")
+	hub, err := lookupHub(roomName, hubs)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if hub == nil { //no error, but not found
+		return c.NoContent(http.StatusNotFound)
+	}
+
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		log.Println(err)
-		c.NoContent(http.StatusBadRequest)
+		if conn != nil {
+			conn.Close()
+		}
+		return err //upgrade failed
 	}
-	//TODO: Need a way to store the different rooms without race conditions or bottlenecking
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte)}
+	client.hub.register <- client
+
+	go client.writer()
+	go client.reader()
+
+	return nil
+}
+
+func lookupHub(name string, hubs *HubMap) (*Hub, error) {
+	hub, ok := hubs.Load(name)
+	if !ok { //hub not in memory, check the database
+		room, err := rooms.Repo.GetByName(name)
+		if err != nil {
+			return nil, err
+		}
+		if room == nil { //room does not exist
+			return nil, nil
+		}
+		hub = NewHub() //init a new hub to activate the room
+		hubs.Store(name, hub)
+	}
+	return hub, nil
 }

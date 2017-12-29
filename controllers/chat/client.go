@@ -1,11 +1,19 @@
 package chat
 
-import "golang.org/x/net/websocket"
+import "github.com/gorilla/websocket"
 
 type Client struct {
-	room *Room
+	hub *Hub
 	conn *websocket.Conn
 	send chan []byte
 }
 
+
+func (c *Client) writer() {
+
+}
+
+func (c *Client) reader() {
+
+}
 
