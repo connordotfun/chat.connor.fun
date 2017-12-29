@@ -35,7 +35,8 @@ func addMiddlewares(e *echo.Echo) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
-		return strings.HasPrefix(c.Path(), "/web") //skip static assets
+		return strings.HasPrefix(c.Path(), "/web") ||
+				strings.HasPrefix(c.Path(), "/favicon.ico")//skip static assets
 	}))
 }
 

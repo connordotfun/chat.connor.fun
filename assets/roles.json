@@ -16,8 +16,8 @@
       {"path": "/", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
-      {"path": "/api/v1/room/*/messages/ws",   "verbs": "r"},
-      {"path": "/api/v1/room/*/messages/*", "verbs": "r"}
+      {"path": "/api/v1/rooms/*/messages/ws",   "verbs": "r"},
+      {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"}
     ]
   },
 
@@ -28,8 +28,8 @@
       {"path": "/", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
-      {"path": "/api/v1/room/*/messages/ws",   "verbs": "cr"},
-      {"path": "/api/v1/room/*/messages/*", "verbs": "r"}
+      {"path": "/api/v1/rooms/*/messages/ws",   "verbs": "cr"},
+      {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"}
     ]
   }
 }
