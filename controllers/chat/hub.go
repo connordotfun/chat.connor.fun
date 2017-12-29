@@ -2,7 +2,6 @@ package chat
 
 import (
 	"sync"
-	"github.com/aaronaaeng/chat.connor.fun/model"
 )
 
 type Hub struct {
@@ -15,6 +14,8 @@ type Hub struct {
 
 	stop chan bool
 }
+
+type HubDeallocater func(hub *Hub)
 
 type HubMap struct {
 	data sync.Map
@@ -29,6 +30,9 @@ func (rm *HubMap) Load(roomName string) (value *Hub, ok bool) {
 	return res.(*Hub), ok
 }
 
+func (rm *HubMap) Delete(roomName string) {
+	rm.data.Delete(roomName)
+}
 
 func NewHub() *Hub {
 	return &Hub{
@@ -40,9 +44,14 @@ func NewHub() *Hub {
 	}
 }
 
-func (r *Hub) runRoom() {
+func (r *Hub) runRoom(deallocate HubDeallocater) {
 	for {
 		select {
+			case stop := <-r.stop:
+				if stop {
+					deallocate(r)
+					return
+				}
 			case client := <- r.register:
 				r.clients[client] = true
 			case client := <- r.unregister:
