@@ -32,7 +32,10 @@ func (rm *HubMap) Store(roomName string, hub *Hub) {
 
 func (rm *HubMap) Load(roomName string) (value *Hub, ok bool) {
 	res, ok := rm.data.Load(roomName)
-	return res.(*Hub), ok
+	if ok {
+		return res.(*Hub), ok
+	}
+	return nil, ok
 }
 
 func (rm *HubMap) Delete(roomName string) {

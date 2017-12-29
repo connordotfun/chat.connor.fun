@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/gommon/log"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"encoding/json"
-	"errors"
+	_"errors"
 )
 
 
@@ -36,7 +36,7 @@ func (c *Client) signMessage(messageBytes []byte) (*model.ChatMessage, error) {
 	if c.user != nil {
 		message.Creator = model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
-		return nil, errors.New("message has no creator")
+		//return nil, errors.New("message has no creator")
 	}
 	return &message, nil
 }

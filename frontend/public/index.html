@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -25,6 +25,36 @@
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
+    <div id ="fuckingaround">
+        <script>
+            function sendMessage() {
+                console.log("sending message");
+                var message = {
+                    text: document.getElementById("textbox").value
+                };
+                document.getElementById("textbox").value = "";
+                exampleSocket.send(JSON.stringify(message))
+            }
+            var exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/foo/messages/ws");
+            exampleSocket.onmessage = function (ev) {
+                console.log("message sent")
+                var node = document.createElement("LI");                 // Create a <li> node
+                var textnode = document.createTextNode(ev.data);         // Create a text node
+                node.appendChild(textnode);                              // Append the text to <li>
+                document.getElementById("fuckingaround").appendChild(node);     // Append <li> to <ul> with id="myList"
+            }
+
+            var message = {
+                "text": "this si a message"
+            }
+            exampleSocket.onopen = function (ev) {
+                exampleSocket.send(JSON.stringify(message))
+            }
+        </script>
+        <input id="textbox" type="text"/>
+        <a href="javascript:void(0)" onclick="sendMessage()">Submit</a>
+
+    </div>
     <div id="root"></div>
     <!--
       This HTML file is a template.

@@ -83,7 +83,7 @@ func main() {
 	e.GET("/", controllers.Index)
 
 	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
-		return chat.HandleWebsocket(hubMap, false, c)
+		return chat.HandleWebsocket(hubMap, true, c)
 	})
 
 	e.POST("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {

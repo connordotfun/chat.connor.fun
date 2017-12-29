@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"github.com/aaronaaeng/chat.connor.fun/config"
-	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
+	_"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 )
 
@@ -61,15 +61,15 @@ func HandleWebsocket(hubs *HubMap, allowWrite bool, c echo.Context) error {
 func lookupHub(name string, hubs *HubMap) (*Hub, error) {
 	hub, ok := hubs.Load(name)
 	if !ok { //hub not in memory, check the database
-		room, err := rooms.Repo.GetByName(name)
-		if err != nil {
-			return nil, err
-		}
-		if room == nil { //room does not exist
-			return nil, nil
-		}
+		//room, err := rooms.Repo.GetByName(name)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//if room == nil { //room does not exist
+		//	return nil, nil
+		//}
 		hub = NewHub() //init a new hub to activate the room
-		//TODO: run the hub
+		go hub.runRoom(nil)
 		hubs.Store(name, hub)
 	}
 	return hub, nil
