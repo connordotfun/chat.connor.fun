@@ -14,6 +14,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
+	"github.com/aaronaaeng/chat.connor.fun/context"
 )
 const (
 	testDbHost = "localhost"
@@ -123,7 +124,9 @@ func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := e.NewContext(req, rec)
+	c := &context.AuthorizedContextImpl{
+		Context: e.NewContext(req, rec),
+	}
 
 	failHandler := func(c echo.Context) error {
 		assert.Fail(t, "Handler was called")
@@ -153,10 +156,15 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := e.NewContext(req, rec)
+	c := &context.AuthorizedContextImpl{
+		Context: e.NewContext(req, rec),
+	}
 
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
+		ac := c.(context.AuthorizedContext)
+		assert.True(t, ac.GetAccessCode().CanCreate())
+		assert.NotNil(t, ac.GetRequestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -182,10 +190,15 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := e.NewContext(req, rec)
+	c := &context.AuthorizedContextImpl{
+		Context: e.NewContext(req, rec),
+	}
 
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
+		ac := c.(context.AuthorizedContext)
+		assert.True(t, ac.GetAccessCode().CanCreate())
+		assert.Nil(t, ac.GetRequestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -206,7 +219,9 @@ func TestDoAuthorization_NoAuth_Fail(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := e.NewContext(req, rec)
+	c := &context.AuthorizedContextImpl{
+		Context: e.NewContext(req, rec),
+	}
 
 	failHandler := func(c echo.Context) error {
 		assert.Fail(t, "Handler was called")
