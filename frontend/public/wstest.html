@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WS Test</title>
+</head>
+<body>
+
+<div id ="fuckingaround">
+    <script>
+        function sendMessage() {
+            console.log("sending message");
+            var message = {
+                text: document.getElementById("textbox").value
+            };
+            document.getElementById("textbox").value = "";
+            exampleSocket.send(JSON.stringify(message))
+        }
+
+
+        var exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/foo/messages/ws");
+        exampleSocket.onmessage = function (ev) {
+            console.log("message sent");
+            var node = document.createElement("LI");                 // Create a <li> node
+            var textnode = document.createTextNode(ev.data);         // Create a text node
+            node.appendChild(textnode);                              // Append the text to <li>
+            document.getElementById("fuckingaround").appendChild(node);     // Append <li> to <ul> with id="myList"
+        };
+
+    </script>
+    <input id="textbox" type="text"/>
+    <a href="javascript:void(0)" onclick="sendMessage()">Submit</a>
+
+</div>
+</body>
+</html>

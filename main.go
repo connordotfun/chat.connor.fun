@@ -81,6 +81,7 @@ func main() {
 	}
 	e.Renderer = t
 	e.GET("/", controllers.Index)
+	e.GET("/wstest", controllers.WSTestView)
 
 	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
 		return chat.HandleWebsocket(hubMap, true, c)
