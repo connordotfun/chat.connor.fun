@@ -78,9 +78,7 @@ there are no special requirements for username or passwords.
   ```
 * **Success Response:**
   
-  <_What should the status code be on success and is there any returned data? This is useful when people need to to know what their callbacks should expect!_>
-
-  * **Code:** 200 <br />
+  * **Code:** `200 Success` <br />
     **Content:** 
     ```json
     {
@@ -98,3 +96,38 @@ there are no special requirements for username or passwords.
 * **Error Response:**
 
   TODO
+  
+## Join Chat Room
+
+Requests a websocket connection into a chatroom. Use `new WebSocket()` to use this
+api call.
+
+To use authentication, pass the JWT token string as the first protocol parameter to
+the `WebSocket` object.
+
+Communication over the websocket must be in json format. < TODO >
+
+This api call can be made with or with authentication. If without authentication,
+the user will join the chat room in a read only state. Any attempt to send a message
+into the chat room will cause the connection to be terminated.
+
+* **URL**
+
+    `/api/v1/rooms/<room:string>/messages/ws`
+    
+* **URL Params**
+
+    `room: string` - name of the room
+    
+* **Data Params**
+
+    None
+    
+* **Success Response**
+
+    * **Code:** `101 Change of Protocol`
+    
+* **Error Response**
+
+    TODO
+    
