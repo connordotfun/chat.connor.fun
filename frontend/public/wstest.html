@@ -16,20 +16,29 @@
             document.getElementById("textbox").value = "";
             exampleSocket.send(JSON.stringify(message))
         }
-
-
-        var exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/foo/messages/ws");
-        exampleSocket.onmessage = function (ev) {
+        
+        function addMessageToList(ev) {
             console.log("message sent");
-            var node = document.createElement("LI");                 // Create a <li> node
-            var textnode = document.createTextNode(ev.data);         // Create a text node
-            node.appendChild(textnode);                              // Append the text to <li>
-            document.getElementById("fuckingaround").appendChild(node);     // Append <li> to <ul> with id="myList"
-        };
+            var node = document.createElement("LI");
+            var textnode = document.createTextNode(ev.data);
+            node.appendChild(textnode);
+            document.getElementById("fuckingaround").appendChild(node);
+        }
+
+
+        var exampleSocket;
+        function connectToRoom() {
+            room = document.getElementById("roombox").value;
+            exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/ws");
+            exampleSocket.onmessage = addMessageToList
+        }
+
 
     </script>
     <input id="textbox" type="text"/>
     <a href="javascript:void(0)" onclick="sendMessage()">Submit</a>
+    <input id="roombox" type="text"/>
+    <a href="javascript:void(0)" onclick="connectToRoom()">Connect</a>
 
 </div>
 </body>
