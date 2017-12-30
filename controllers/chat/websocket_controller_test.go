@@ -26,10 +26,10 @@ func newTestHandler(e *echo.Echo, handler echo.HandlerFunc, code model.AccessCod
 }
 
 func (t *testHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	c := context.AuthorizedContext{
+	c := &context.AuthorizedContextImpl{
 		Context: t.e.NewContext(r, w),
-		Code: t.code,
 	}
+	c.SetAccessCode(t.code)
 	t.err = t.handler(c)
 }
 

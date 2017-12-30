@@ -124,7 +124,7 @@ func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := context.AuthorizedContext{
+	c := &context.AuthorizedContextImpl{
 		Context: e.NewContext(req, rec),
 	}
 
@@ -156,15 +156,15 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := context.AuthorizedContext{
+	c := &context.AuthorizedContextImpl{
 		Context: e.NewContext(req, rec),
 	}
 
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.Code.CanCreate())
-		assert.NotNil(t, ac.Requestor)
+		assert.True(t, ac.GetAccessCode().CanCreate())
+		assert.NotNil(t, ac.GetRequestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -190,15 +190,15 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := context.AuthorizedContext{
+	c := &context.AuthorizedContextImpl{
 		Context: e.NewContext(req, rec),
 	}
 
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.Code.CanCreate())
-		assert.Nil(t, ac.Requestor)
+		assert.True(t, ac.GetAccessCode().CanCreate())
+		assert.Nil(t, ac.GetRequestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -219,7 +219,7 @@ func TestDoAuthorization_NoAuth_Fail(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	c := context.AuthorizedContext{
+	c := &context.AuthorizedContextImpl{
 		Context: e.NewContext(req, rec),
 	}
 

@@ -29,7 +29,15 @@
         var exampleSocket;
         function connectToRoom() {
             room = document.getElementById("roombox").value;
-            exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/write/ws", "thiswillbreak");
+            token = null;
+            if (document.getElementById("tokenbox").value != "") {
+                token = document.getElementById("tokenbox").value;
+            }
+            if (token == null) {
+                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/ws");
+            } else {
+                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/ws", token);
+            }
             exampleSocket.onmessage = addMessageToList
         }
 
@@ -39,6 +47,7 @@
     <a href="javascript:void(0)" onclick="sendMessage()">Submit</a>
     <input id="roombox" type="text"/>
     <a href="javascript:void(0)" onclick="connectToRoom()">Connect</a>
+    <input id="tokenbox" type="text"/>
 
 </div>
 </body>

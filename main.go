@@ -35,7 +35,7 @@ func addMiddlewares(e *echo.Echo) {
 	//this must be added first
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &context.AuthorizedContext{Context: c}
+			cc := &context.AuthorizedContextImpl{Context: c}
 			return h(cc)
 		}
 	})

@@ -34,18 +34,19 @@ func JwtAuth(skipper Skipper, extractor jwtExtractor) echo.MiddlewareFunc {
 				return next(c)
 			}
 			tokenStr, err := extractor(c)
-			if err != nil {
-				return doAuthorization(next, nil, c)
-			}
 			ac := c.(context.AuthorizedContext)
-			ac.JwtString = tokenStr
+			if err != nil {
+				return doAuthorization(next, nil, ac)
+			}
+
+			ac.SetJWTString(tokenStr)
 
 			claims, err := ParseAndValidateJWT(tokenStr, []byte(config.JWTSecretKey))
 			if err != nil {
 				return c.JSON(http.StatusBadRequest, invalidTokenResponse)
 			}
 
-			return doAuthorization(next, claims, c)
+			return doAuthorization(next, claims, ac)
 		}
 	}
 }
@@ -82,9 +83,8 @@ func JWTBearerTokenExtractor(c echo.Context) (string, error) {
 
 func JWTProtocolHeaderExtractor(c echo.Context) (string, error) {
 	protocolHeader := c.Request().Header.Get("Sec-WebSocket-Protocol")
-	tokenNameLength := len("jwt")
-	if len(protocolHeader) > tokenNameLength + 1 && protocolHeader[:tokenNameLength] == "jwt" {
-		return protocolHeader[:tokenNameLength + 1], nil
+	if len(protocolHeader) > 0 {
+		return protocolHeader, nil
 	}
 	return "", errors.New("no JWT protocol token")
 }
