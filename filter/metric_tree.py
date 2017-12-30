@@ -1,9 +1,8 @@
 import numpy as np
 
 class Tree:
-
-    default_tolerance = 3
     root = None
+    tolerance = 3
 
     class Node(object):
         def __init__(self, word):
@@ -28,28 +27,33 @@ class Tree:
         
         parent.children[dist] = new_node
 
-    def get_closest(self, word, tolerance=default_tolerance):
+    def get_score(self, word, modifier):
         results = []
-        corrections = self.__get_closest_rec(word, self.root, tolerance)
+        corrections = self.__get_score_rec(word, self.root)
         for node in corrections:
             results.append(node.word)
         dist_list = [self.__distance(results[i], word) for i in range(len(results))]
 
-        sorted_results = [word for _,word in sorted(zip(dist_list, results))]
-        return sorted_results[0]
+        if len(dist_list) > 0:
+            closest = min(dist_list)
+            score = (len(word) - closest + modifier)/len(word)
+        else:
+            score = 0
 
-    def __get_closest_rec(self, word, root, tolerance):
+        return score
+
+    def __get_score_rec(self, word, root):
         dist = self.__distance(word, root.word)
         similar_words = []
-        if dist < tolerance:
+        if dist < self.tolerance:
             similar_words.append(root)
 
-        min_val = max(1, dist - tolerance)
-        max_val = dist + tolerance
+        min_val = max(1, dist - self.tolerance)
+        max_val = dist + self.tolerance
 
         for i in range(min_val, max_val+1):
             if i in root.children:
-                similar_words += self.__get_closest_rec(word, root.children[i], tolerance)
+                similar_words += self.__get_score_rec(word, root.children[i])
 
         return similar_words
 
@@ -96,7 +100,7 @@ class Tree:
 
 
 # # print(tree.root.children[1].word)
-# print(tree.get_closest("test"))
+# print(tree.get_score("test"))
 
 
 # # print(tree.default_tolerance)
