@@ -13,7 +13,7 @@ const (
 func TestPermissionJSONMarshal(t *testing.T) {
 	p := Permission{
 		Path: "a/b/foo/bar",
-		code: 0xFFFF,
+		Code: 0xFFFF,
 	}
 
 	jsonP, err := json.Marshal(p)
@@ -28,7 +28,7 @@ func TestPermissionJSONUnmarshal(t *testing.T) {
 
 	pActual := Permission{
 		Path: "a/b/foo/bar",
-		code: 0xFFFF,
+		Code: 0xFFFF,
 	}
 
 	assert.NoError(t, err)
@@ -36,7 +36,7 @@ func TestPermissionJSONUnmarshal(t *testing.T) {
 }
 
 func TestPermission_IsPermitted_SimplePath(t *testing.T) {
-	p := Permission{Path: "/foo/bar/foo/bar", code: actionRead | actionDelete}
+	p := Permission{Path: "/foo/bar/foo/bar", Code: actionRead | actionDelete}
 
 	assert.True(t, p.IsPermitted("GET", "/foo/bar/foo/bar"), "failed same method and path")
 	assert.True(t, p.IsPermitted("DELETE", "/foo/bar/foo/bar"), "failed same method and path")
@@ -46,7 +46,7 @@ func TestPermission_IsPermitted_SimplePath(t *testing.T) {
 }
 
 func TestPermission_IsPermitted_(t *testing.T) {
-	p := Permission{Path: "/foo/*/foo/bar", code: actionRead}
+	p := Permission{Path: "/foo/*/foo/bar", Code: actionRead}
 
 	assert.True(t, p.IsPermitted("GET", "/foo/1/foo/bar"))
 	assert.True(t, p.IsPermitted("GET", "/foo/2/foo/bar"))

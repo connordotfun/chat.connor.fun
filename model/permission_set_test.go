@@ -14,10 +14,10 @@ func TestNewPermissionSet(t *testing.T) {
 func TestPermissionSet_Add(t *testing.T) {
 	ps := NewPermissionSet()
 
-	p1 := Permission{Path: "/foo/bar", code: 0x00F0}
-	p2 := Permission{Path: "/foo/bar/1", code: 0x00FF}
-	p3 := Permission{Path: "/foo/bar/2", code: 0x0FF0}
-	p4 := Permission{Path: "/foo/bar/3", code: 0xF0F0}
+	p1 := Permission{Path: "/foo/bar", Code: 0x00F0}
+	p2 := Permission{Path: "/foo/bar/1", Code: 0x00FF}
+	p3 := Permission{Path: "/foo/bar/2", Code: 0x0FF0}
+	p4 := Permission{Path: "/foo/bar/3", Code: 0xF0F0}
 
 	ps.Add(p1)
 
@@ -38,8 +38,8 @@ func TestPermissionSet_Add(t *testing.T) {
 func TestPermissionSet_Contains(t *testing.T) {
 	ps := NewPermissionSet()
 
-	p1 := Permission{Path: "/foo/bar", code: 0x00F0}
-	p2 := Permission{Path: "/foo/bar/1", code: 0x00FF}
+	p1 := Permission{Path: "/foo/bar", Code: 0x00F0}
+	p2 := Permission{Path: "/foo/bar/1", Code: 0x00FF}
 
 	assert.False(t, ps.Contains(p1))
 
@@ -52,10 +52,10 @@ func TestPermissionSet_Contains(t *testing.T) {
 func TestPermissionSet_Permissions(t *testing.T) {
 	ps := NewPermissionSet()
 
-	p1 := Permission{Path: "/foo/bar", code: 0x00F0}
-	p2 := Permission{Path: "/foo/bar/1", code: 0x00FF}
-	p3 := Permission{Path: "/foo/bar/2", code: 0x0FF0}
-	p4 := Permission{Path: "/foo/bar/3", code: 0xF0F0}
+	p1 := Permission{Path: "/foo/bar", Code: 0x00F0}
+	p2 := Permission{Path: "/foo/bar/1", Code: 0x00FF}
+	p3 := Permission{Path: "/foo/bar/2", Code: 0x0FF0}
+	p4 := Permission{Path: "/foo/bar/3", Code: 0xF0F0}
 
 	ps.Add(p1, p2, p3, p4)
 

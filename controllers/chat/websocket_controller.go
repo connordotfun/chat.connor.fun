@@ -8,6 +8,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	_"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/aaronaaeng/chat.connor.fun/context"
 )
 
 
@@ -26,10 +27,11 @@ func isOriginValid(origin string, host string) bool {
 	return expected == origin
 }
 
-func HandleWebsocket(hubs *HubMap, allowWrite bool, c echo.Context) error {
+func HandleWebsocket(hubs *HubMap, c echo.Context) error {
 	if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 		return c.NoContent(http.StatusForbidden)
 	}
+	ac := c.(context.AuthorizedContext)
 
 	roomName := c.Param("room")
 	hub, err := lookupHub(roomName, hubs)
@@ -49,7 +51,7 @@ func HandleWebsocket(hubs *HubMap, allowWrite bool, c echo.Context) error {
 		return err //upgrade failed
 	}
 
-	client := &Client{hub: hub, canWrite: allowWrite, conn: conn, send: make(chan *model.ChatMessage)}
+	client := &Client{hub: hub, user: ac.Requestor, canWrite: ac.Code.CanCreate(), conn: conn, send: make(chan *model.ChatMessage)}
 	client.hub.register <- client
 
 	go client.writer()

@@ -18,6 +18,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"strings"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
+	"github.com/aaronaaeng/chat.connor.fun/context"
 )
 
 
@@ -31,13 +32,26 @@ func addMiddlewares(e *echo.Echo) {
 	if !config.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
+	//this must be added first
+	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			cc := &context.AuthorizedContext{Context: c}
+			return h(cc)
+		}
+	})
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
 		return strings.HasPrefix(c.Path(), "/web") ||
-				strings.HasPrefix(c.Path(), "/favicon.ico")//skip static assets
-	}))
+				strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
+				strings.HasSuffix(c.Path(), "ws")
+	}, jwtmiddleware.JWTBearerTokenExtractor))
+
+	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
+		return !strings.HasSuffix(c.Path(), "ws")
+	}, jwtmiddleware.JWTProtocolHeaderExtractor))
 }
 
 func initDatabaseRepositories() {
@@ -84,13 +98,8 @@ func main() {
 	e.GET("/wstest", controllers.WSTestView)
 
 	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
-		return chat.HandleWebsocket(hubMap, true, c)
+		return chat.HandleWebsocket(hubMap, c)
 	})
-
-	e.POST("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
-		return chat.HandleWebsocket(hubMap, true, c)
-	})
-
 
 	createApiRoutes(e)
 	e.Logger.Fatal(e.Start(":4000"))

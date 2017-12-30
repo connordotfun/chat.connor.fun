@@ -11,16 +11,26 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"encoding/json"
 	"time"
+	"github.com/aaronaaeng/chat.connor.fun/context"
 )
 
-type testHanlder struct {
+type testHandler struct {
 	e *echo.Echo
 	handler echo.HandlerFunc
+	code model.AccessCode
 	err error
 }
 
-func (t *testHanlder) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	t.err = t.handler(t.e.NewContext(r, w))
+func newTestHandler(e *echo.Echo, handler echo.HandlerFunc, code model.AccessCode) *testHandler {
+	return &testHandler{e, handler, code, nil}
+}
+
+func (t *testHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c := context.AuthorizedContext{
+		Context: t.e.NewContext(r, w),
+		Code: t.code,
+	}
+	t.err = t.handler(c)
 }
 
 type testWsClient struct {
@@ -59,17 +69,16 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 	hubMap := NewHubMap()
 
 	shouldBeTrue := false
-	handler := testHanlder{
-		e: e,
-		handler: func(c echo.Context) error {
-			shouldBeTrue = true
-			return HandleWebsocket(hubMap, true, c)
-		},
+
+	handlerFunc := func(c echo.Context) error {
+		shouldBeTrue = true
+		return HandleWebsocket(hubMap, c)
 	}
+	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
 
-	s := httptest.NewServer(&handler)
+	s := httptest.NewServer(handler)
 
-	d := wstest.NewDialer(&handler, nil)
+	d := wstest.NewDialer(handler, nil)
 
 	conn, resp, err := d.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
@@ -90,18 +99,16 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 	hubMap := NewHubMap()
 
 	shouldBeTrue := false
-	handler := testHanlder{
-		e: e,
-		handler: func(c echo.Context) error {
-			shouldBeTrue = true
-			return HandleWebsocket(hubMap, true, c)
-		},
+	handlerFunc := func(c echo.Context) error {
+		shouldBeTrue = true
+		return HandleWebsocket(hubMap, c)
 	}
+	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
 
-	s := httptest.NewServer(&handler)
+	s := httptest.NewServer(handler)
 
-	dClient1 := wstest.NewDialer(&handler, nil)
-	dClient2 := wstest.NewDialer(&handler, nil)
+	dClient1 := wstest.NewDialer(handler, nil)
+	dClient2 := wstest.NewDialer(handler, nil)
 
 	client1Conn, resp, err := dClient1.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
@@ -144,17 +151,15 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 	hubMap := NewHubMap()
 
 	shouldBeTrue := false
-	handler := testHanlder{
-		e: e,
-		handler: func(c echo.Context) error {
-			shouldBeTrue = true
-			return HandleWebsocket(hubMap, true, c)
-		},
+	handlerFunc := func(c echo.Context) error {
+		shouldBeTrue = true
+		return HandleWebsocket(hubMap, c)
 	}
+	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
 
-	s := httptest.NewServer(&handler)
+	s := httptest.NewServer(handler)
 
-	d := wstest.NewDialer(&handler, nil)
+	d := wstest.NewDialer(handler, nil)
 
 	conn, resp, err := d.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
@@ -178,17 +183,14 @@ func TestHandleWebsocket_ReadOnly(t *testing.T) {
 	hubMap := NewHubMap()
 
 	shouldBeTrue := false
-	handler := testHanlder{
-		e: e,
-		handler: func(c echo.Context) error {
-			shouldBeTrue = true
-			return HandleWebsocket(hubMap, false, c)
-		},
+	handlerFunc := func(c echo.Context) error {
+		shouldBeTrue = true
+		return HandleWebsocket(hubMap, c)
 	}
+	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("r"))
+	s := httptest.NewServer(handler)
 
-	s := httptest.NewServer(&handler)
-
-	d := wstest.NewDialer(&handler, nil)
+	d := wstest.NewDialer(handler, nil)
 
 	conn, resp, err := d.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)

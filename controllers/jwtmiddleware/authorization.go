@@ -6,9 +6,11 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
+	"github.com/aaronaaeng/chat.connor.fun/context"
 )
 
 func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context) error {
+	ac := c.(context.AuthorizedContext)
 	permissions := model.NewPermissionSet()
 	var principleRole *model.Role
 	if claims != nil { //there are authenticated claims
@@ -17,6 +19,7 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 			c.JSON(http.StatusUnauthorized, invalidTokenResponse)
 		}
 		if claims.User.Username != "" { //this is very hacky
+			ac.Requestor = &claims.User
 			userRoles, err := roles.Repo.GetUserRoles(claims.User.Id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, model.Response{
@@ -58,8 +61,10 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 		}
 	}
 
-	if isAuthorized(permissions, c.Request()) {
-		return next(c)
+	authorized, accessCode := isAuthorized(permissions, c.Request())
+	ac.Code = accessCode
+	if authorized {
+		return next(ac)
 	} else {
 		return c.JSON(http.StatusForbidden, model.Response{
 			Error: &model.ResponseError{Type: "UNAUTHORIZED", Message: "Cannot access resource"},
@@ -68,15 +73,15 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 	}
 }
 
-func isAuthorized(permissionSet *model.PermissionSet, r *http.Request) bool { //TODO: this will be rrreally slow
+func isAuthorized(permissionSet *model.PermissionSet, r *http.Request) (bool, model.AccessCode) { //TODO: this will be rrreally slow
 	method := r.Method
 	resourcePath := r.URL.Path
 
 	permissions := permissionSet.Permissions()
 	for _, permission := range permissions {
 		if permission.IsPermitted(method, resourcePath) {
-			return true
+			return true, permission.Code
 		}
 	}
-	return false
+	return false, 0
 }

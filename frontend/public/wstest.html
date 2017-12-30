@@ -29,7 +29,7 @@
         var exampleSocket;
         function connectToRoom() {
             room = document.getElementById("roombox").value;
-            exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/ws");
+            exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/write/ws", "thiswillbreak");
             exampleSocket.onmessage = addMessageToList
         }
 
