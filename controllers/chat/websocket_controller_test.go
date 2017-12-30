@@ -69,7 +69,7 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 
 	s := httptest.NewServer(&handler)
 
-	d := wstest.NewDialer(&handler, t.Log)
+	d := wstest.NewDialer(&handler, nil)
 
 	conn, resp, err := d.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
@@ -100,8 +100,8 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 
 	s := httptest.NewServer(&handler)
 
-	dClient1 := wstest.NewDialer(&handler, t.Log)
-	dClient2 := wstest.NewDialer(&handler, t.Log)
+	dClient1 := wstest.NewDialer(&handler, nil)
+	dClient2 := wstest.NewDialer(&handler, nil)
 
 	client1Conn, resp, err := dClient1.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
@@ -154,7 +154,7 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 
 	s := httptest.NewServer(&handler)
 
-	d := wstest.NewDialer(&handler, t.Log)
+	d := wstest.NewDialer(&handler, nil)
 
 	conn, resp, err := d.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
@@ -188,7 +188,7 @@ func TestHandleWebsocket_ReadOnly(t *testing.T) {
 
 	s := httptest.NewServer(&handler)
 
-	d := wstest.NewDialer(&handler, t.Log)
+	d := wstest.NewDialer(&handler, nil)
 
 	conn, resp, err := d.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
 	assert.NoError(t, err)
