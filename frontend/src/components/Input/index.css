@@ -1,0 +1,12 @@
+.Input {
+    grid-area: input;
+    border-radius: 0;
+}
+
+.Input input {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    font-family: "Millenium";
+    font-size: 0.9em;
+}

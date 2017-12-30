@@ -1,0 +1,31 @@
+.Message {
+    display: grid;
+    height: auto;
+    max-height: 100px;
+    grid-column-gap: 15px;
+    grid-template-columns: 40px 1fr;
+    grid-template-rows: 20px 1fr;
+    grid-template-areas: "avatar username"
+                         "avatar message";
+    margin: 7.5px auto;
+    font-family: "Millenium";
+}
+
+.Message .avatar {
+    grid-area: avatar;
+}
+
+.Message .avatar img {
+    width: 100%;
+    height: auto;
+}
+
+.Message .handle {
+    grid-area: username;
+    font-weight: 700;
+    font-size: 0.8em;
+}
+
+.Message .content {
+    grid-area: message;
+}

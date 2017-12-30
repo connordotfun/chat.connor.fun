@@ -1,0 +1,28 @@
+.Chat {
+    box-sizing: border-box;
+    padding: 5px;
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    display: grid;
+  }
+  
+  @media screen and (max-width:1023px) {
+    .Chat {
+        grid-template-rows: 55px 1fr 40px;
+        grid-template-columns: 1fr;
+        grid-template-areas: "header"
+                            "chat"
+                            "input";
+    }
+  }
+  
+  @media screen and (min-width:1024px) {
+    .Chat {
+        grid-template-rows: 30px 1fr 30px;
+        grid-template-columns: 250px;
+        grid-template-areas: "header header"
+                            "sidebar chat"
+                            "sidebar input";
+    }
+  }
