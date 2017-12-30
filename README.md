@@ -44,6 +44,7 @@ The repository must be placed at `$GOPATH/src/github.com/aaronaaeng/chat.connor.
 - `github.com/labstack/echo`
 - `github.com/lib/pq`
 - `github.com/gorilla/websocket`
+- `github.com/posener/wstest`
 
 ### Running 
 

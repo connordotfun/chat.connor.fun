@@ -63,9 +63,12 @@ func (c *Client) writer() {
 			signedMessage, err := c.signMessage(message)
 			if err != nil {
 				log.Printf("error signing message: %v", err)
+				return //client sent invalid message, kick
 			} else {
 				c.hub.broadcast <- signedMessage //eventually we need to process the message
 			}
+		} else {
+			return //client isn't allowed to send, kick
 		}
 	}
 }

@@ -27,7 +27,7 @@ func isOriginValid(origin string, host string) bool {
 }
 
 func HandleWebsocket(hubs *HubMap, allowWrite bool, c echo.Context) error {
-	if !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
+	if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 		return c.NoContent(http.StatusForbidden)
 	}
 
