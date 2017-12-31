@@ -5,9 +5,10 @@ import { useStrict } from 'mobx';
 import { Provider } from 'mobx-react';
 
 import { BrowserRouter, Switch, Route } from 'react-router-dom'
-import './index.css';
-import Chat from './views/Chat';
-import registerServiceWorker from './registerServiceWorker';
+import './index.css'
+import Chat from './views/Chat'
+import Landing from './views/Landing'
+import registerServiceWorker from './registerServiceWorker'
 
 import authStore from './stores/authStore';
 import commonStore from './stores/commonStore';
@@ -24,7 +25,7 @@ ReactDOM.render(
     <Provider {...stores}>
         <BrowserRouter>
             <Switch>
-            {/* <Route exact path="/" component={Home} /> */}
+            <Route exact path="/" component={Landing} />
             <Route path="/at/:room" component={Chat} />
             </Switch>
         </BrowserRouter>
