@@ -1,9 +1,4 @@
-package Go_Filter
-
-import (
-	"math"
-	"fmt"
-)
+package filter
 
 type node struct {
 	word string
@@ -17,19 +12,23 @@ func newNode(inputWord string) *node {
 	}
 }
 
-type MetricTree struct {
+type metricTree struct {
 	root *node
 	tolerance int
 }
 
-func NewTree() *MetricTree {
-	return &MetricTree{
+func newTree(bannedList []string) *metricTree {
+	tree := &metricTree{
 		root: nil,
 		tolerance: 3,
 	}
+	for _, bannedWord := range bannedList{
+		tree.insertWord(bannedWord)
+	}
+	return tree
 }
 
-func (tree *MetricTree) InsertWord(word string) {
+func (tree *metricTree) insertWord(word string) {
 	if tree.root == nil {
 		tree.root = newNode(word)
 	} else {
@@ -37,7 +36,7 @@ func (tree *MetricTree) InsertWord(word string) {
 	}
 }
 
-func (tree *MetricTree) insertWordInternal(node *node) {
+func (tree *metricTree) insertWordInternal(node *node) {
 	var parent = tree.root
 
 	var dist = tree.distance(parent.word, node.word)
@@ -50,7 +49,7 @@ func (tree *MetricTree) insertWordInternal(node *node) {
 	parent.children[dist] = node
 }
 
-func (tree *MetricTree) GetScore(word string, modifier float64) (score float64){
+func (tree *metricTree) getScore(word string, modifier float64) (score float64){
 	distList := []int{}
 	resultStrings := tree.getScoreRec(word, tree.root)
 	for i := 0; i < len(resultStrings); i++ {
@@ -65,7 +64,7 @@ func (tree *MetricTree) GetScore(word string, modifier float64) (score float64){
 	return
 }
 
-func (tree *MetricTree) getScoreRec(word string, root *node) []string {
+func (tree *metricTree) getScoreRec(word string, root *node) []string {
 	dist := tree.distance(word, root.word)
 	similarWords := []string{}
 	if dist < tree.tolerance {
@@ -82,7 +81,7 @@ func (tree *MetricTree) getScoreRec(word string, root *node) []string {
 	return similarWords
 }
 
-func (tree *MetricTree) distance(s1, s2 string) int {
+func (tree *metricTree) distance(s1, s2 string) int {
 	s1Len := len(s1)
 	s2Len := len(s2)
 
@@ -122,7 +121,7 @@ func (tree *MetricTree) distance(s1, s2 string) int {
 	return dist[s1Len][s2Len]
 }
 
-func (tree *MetricTree) minIntSlice(v []int) (m int) {
+func (tree *metricTree) minIntSlice(v []int) (m int) {
 	m = v[0]
 	for _, e := range v {
 		if e < m {
@@ -141,6 +140,14 @@ func min(a, b int) int {
 }
 
 func max(a, b int) int {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
+
+func maxFloat(a, b float64) float64{
 	if a > b {
 		return a
 	} else {
