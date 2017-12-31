@@ -7,16 +7,15 @@ class Tree:
     class Node(object):
         def __init__(self, word):
             self.word = word
-            self.uses = 0
             self.children = {}
 
-    def add_word(self, word):
+    def insert_word(self, word):
         if self.root == None:
             self.root = self.Node(word)
         else:
-            self.__add_word_rec(self.Node(word))
+            self.__insert_word_internal(self.Node(word))
 
-    def __add_word_rec(self, new_node):
+    def __insert_word_internal(self, new_node):
         parent = self.root
 
         dist = self.__distance(new_node.word, parent.word)
@@ -91,12 +90,12 @@ class Tree:
 
 # tree = Tree()
 
-# # tree.add_word("test")
-# tree.add_word("testt")
-# tree.add_word("tst")
+# # tree.insert_word("test")
+# tree.insert_word("testt")
+# tree.insert_word("tst")
 
-# tree.add_word("Test")
-# tree.add_word("tesT")
+# tree.insert_word("Test")
+# tree.insert_word("tesT")
 
 
 # # print(tree.root.children[1].word)

@@ -5,17 +5,21 @@ class Filter:
     base_ban_list = ["apple", "orange", "flatiron"]
     base_allowed_list = ["the", "is", "a"]
 
-    replacement_dict = { "@" : ("a", -.2), "!" : ("i", -.2), "&" : ("an", .2), "." : ("", -.05), "$" : ("s", -.2) }
+    replacement_dict = { "@" : ("a", -.2), "!" : ("i", -.2), "&" : ("an", .2), "." : ("", -.05), "$" : ("s", -.2), "3" : ("e", -.2) }
 
     tree = metric_tree.Tree()
     tolerance = .85
 
     def __init__(self):
         for banned in self.base_ban_list:
-            self.tree.add_word(banned)
+            self.tree.insert_word(banned)
+
+    def add_word(self, word):
+        self.tree.insert_word(word)
 
     def censor_sentence(self, sentence, user_pcs=0):
         words = sentence.split(' ')
+        new_pcs = user_pcs
 
         for word in words:
             modifier = 0
@@ -31,10 +35,11 @@ class Filter:
 
                 if score > self.tolerance-(user_pcs/100):
                     sentence = sentence.replace(word, "*"*len(word))
+                    new_pcs += 1
         
-        return sentence      
+        return sentence, new_pcs
 
 
 filt = Filter()
 
-print(filt.censor_sentence("the @pple is orang3", 0))
+print(filt.censor_sentence("the @pple is orang3", 5)[0])
