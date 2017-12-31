@@ -18,7 +18,7 @@ const (
 var testDb *sqlx.DB
 
 func TestMain(m *testing.M) {
-	//Init the connorfuntest db and reconnect to the new db
+	//New the connorfuntest db and reconnect to the new db
 	db, err := sqlx.Open("postgres", "postgresql://localhost:5432?sslmode=disable")
 	if err != nil {
 		panic("failed to establish db connection: " + err.Error())
@@ -78,8 +78,9 @@ func testRowCountEquals(t *testing.T, expected int) {
 	assert.Equal(t, expected, count)
 }
 
-func initTables() {
-	_, _ = Init(testDb) //these must be inited in the right order
+func initTables() *Repository {
+	repo, _ := New(testDb) //these must be inited in the right order
+	return repo
 }
 
 func cleanUpTables(t *testing.T) {
@@ -89,38 +90,38 @@ func cleanUpTables(t *testing.T) {
 
 
 func TestInit(t *testing.T) {
-	_, err := Init(testDb)
+	repo, err := New(testDb)
 
 	assert.NoError(t, err)
-	assert.NotEmpty(t, Repo)
+	assert.NotNil(t, repo)
 
 	_, err = testDb.Exec("DROP TABLE users")
 	assert.NoError(t, err)
 }
 
 func TestRepository_Create(t *testing.T) {
-	initTables()
+	repo := initTables()
 
 	user1 := model.User{Username: "user1", Secret: "test"}
 	user2 := model.User{Username: "user2", Secret: "test"}
 
-	validUser1, err := Repo.Create(user1)
+	validUser1, err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser1)
+	assert.NotNil(t, validUser1)
 	assert.Equal(t, user1.Username, validUser1.Username)
 
 	testRowCountEquals(t, 1)
 
-	validUser2, err := Repo.Create(user2)
+	validUser2, err := repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser2)
+	assert.NotNil(t, validUser2)
 	assert.Equal(t, user2.Username, validUser2.Username)
 
 	testRowCountEquals(t, 2)
 
 	assert.NotEqual(t, validUser1.Id, validUser2.Id)
 
-	_, err = Repo.Create(user1)
+	_, err = repo.Add(user1)
 	assert.Error(t, err)
 
 	testRowCountEquals(t, 2)
@@ -129,48 +130,48 @@ func TestRepository_Create(t *testing.T) {
 }
 
 func TestRepository_GetAll(t *testing.T) {
-	initTables()
+	repo := initTables()
 
 	user1 := model.User{Username: "user1", Secret: "test"}
 	user2 := model.User{Username: "user2", Secret: "test"}
 
-	validUser1, err := Repo.Create(user1)
+	validUser1, err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser1)
+	assert.NotNil(t, validUser1)
 	assert.Equal(t, user1.Username, validUser1.Username)
 
-	validUser2, err := Repo.Create(user2)
+	validUser2, err := repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser2)
+	assert.NotNil(t, validUser2)
 	assert.Equal(t, user2.Username, validUser2.Username)
 
-	allUsers, err := Repo.GetAll()
+	allUsers, err := repo.GetAll()
 	assert.Len(t, allUsers, 2)
 
 	cleanUpTables(t)
 }
 
 func TestRepository_GetById(t *testing.T) {
-	initTables()
+	repo := initTables()
 
 	user1 := model.User{Username: "user1", Secret: "test"}
 	user2 := model.User{Username: "user2", Secret: "test"}
 
-	validUser1, err := Repo.Create(user1)
+	validUser1, err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser1)
+	assert.NotNil(t, validUser1)
 	assert.Equal(t, user1.Username, validUser1.Username)
 
-	validUser2, err := Repo.Create(user2)
+	validUser2, err := repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser2)
+	assert.NotNil(t, validUser2)
 	assert.Equal(t, user2.Username, validUser2.Username)
 
-	selectedUser, err := Repo.GetById(validUser1.Id)
+	selectedUser, err := repo.GetById(validUser1.Id)
 	assert.NoError(t, err)
 	assert.Equal(t, validUser1, selectedUser)
 
-	noUser, err := Repo.GetById(12345)
+	noUser, err := repo.GetById(12345)
 	assert.NoError(t, err)
 	assert.Nil(t, noUser)
 
@@ -178,26 +179,26 @@ func TestRepository_GetById(t *testing.T) {
 }
 
 func TestRepository_GetByUsername(t *testing.T) {
-	initTables()
+	repo := initTables()
 
 	user1 := model.User{Username: "user1", Secret: "test"}
 	user2 := model.User{Username: "user2", Secret: "test"}
 
-	validUser1, err := Repo.Create(user1)
+	validUser1, err := repo.Add(user1)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, validUser1)
 	assert.Equal(t, user1.Username, validUser1.Username)
 
-	validUser2, err := Repo.Create(user2)
+	validUser2, err := repo.Add(user2)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, validUser2)
 	assert.Equal(t, user2.Username, validUser2.Username)
 
-	selectedUser, err := Repo.GetByUsername(validUser1.Username)
+	selectedUser, err := repo.GetByUsername(validUser1.Username)
 	assert.NoError(t, err)
 	assert.Equal(t, validUser1, selectedUser)
 
-	noUser, err := Repo.GetByUsername("not a real username")
+	noUser, err := repo.GetByUsername("not a real username")
 	assert.NoError(t, err)
 	assert.Nil(t, noUser)
 

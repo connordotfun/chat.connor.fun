@@ -5,22 +5,19 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-var Repo Repository //this must be inited before being used
-
 type Repository struct {
 	db *sqlx.DB
 }
 
-func Init(database *sqlx.DB) (Repository, error) {
-	_, err := database.Exec(createIfNotExistsQuery)
+func New(db *sqlx.DB) (*Repository, error) {
+	_, err := db.Exec(createIfNotExistsQuery)
 	if err != nil {
-		return Repository{db:nil}, err
+		return nil, err
 	}
-	Repo = Repository{db: database}
-	return Repo, nil
+	return &Repository{db}, err
 }
 
-func (r Repository) Create(user model.User) (*model.User, error) {
+func (r Repository) Add(user model.User) (*model.User, error) {
 	_, err := r.db.NamedExec(insertUserQuery, user)
 	if err != nil {
 		return nil, err
@@ -71,8 +68,4 @@ func (r Repository) GetByUsername(username string) (*model.User, error) {
 		return &user, nil
 	}
 	return nil, nil
-}
-
-func (r Repository) Delete(user model.User) error {
-	return nil
 }

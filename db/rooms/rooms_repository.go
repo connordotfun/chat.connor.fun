@@ -11,7 +11,7 @@ type Repository struct {
 
 var Repo Repository
 
-func Init(db *sqlx.DB) (Repository, error) {
+func New(db *sqlx.DB) (Repository, error) {
 	_, err := db.Exec(createIfNotExistsRoomsQuery)
 	if err != nil {
 		return Repository{db: nil}, err
@@ -21,7 +21,7 @@ func Init(db *sqlx.DB) (Repository, error) {
 }
 
 
-func (r Repository) Create(room *model.ChatRoom) (*model.ChatRoom, error){
+func (r Repository) Add(room *model.ChatRoom) (*model.ChatRoom, error){
 	_, err := r.db.Exec(insertRoomQuery, &room)
 	if err != nil {
 		return nil, err
