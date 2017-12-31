@@ -125,7 +125,7 @@ func TestCreateUser(t *testing.T) {
 	c = e.NewContext(req, rec)
 
 	assert.NoError(t, createUserFunc(c))
-	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 
 	var response model.Response
 	err := json.Unmarshal([]byte(rec.Body.String()), &response)
