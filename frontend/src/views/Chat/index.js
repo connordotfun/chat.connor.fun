@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import Header from '../../components/Header'
 import Messages from '../../components/Messages'
 import Input from '../../components/Input'
-import './index.css';
+import './index.css'
 
 @observer
 class Chat extends Component {
@@ -18,7 +18,7 @@ class Chat extends Component {
 
     @action
     componentWillMount() {
-        this._socket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + this.props.match.params.room +  "/messages/ws", this._token);
+        this._socket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + this.props.match.params.room +  "/messages/ws", this._token)
         this._socket.onmessage = this.onMessage.bind(this)
     }
 
