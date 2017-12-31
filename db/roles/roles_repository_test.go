@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	_"github.com/lib/pq"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 const (
@@ -19,7 +20,7 @@ const (
 var testDb *sqlx.DB
 
 func TestMain(m *testing.M) {
-	//Init the connorfuntest db and reconnect to the new db
+	//New the connorfuntest db and reconnect to the new db
 	db, err := sqlx.Open("postgres", "postgresql://localhost:5432?sslmode=disable")
 	if err != nil {
 		panic("failed to establish db connection")
@@ -79,9 +80,11 @@ func testRowCountEquals(t *testing.T, expected int) {
 	assert.Equal(t, expected, count)
 }
 
-func initTables() {
-	_, _ = users.Init(testDb) //these must be inited in the right order
-	_, _ = Init(testDb)
+func initTables() (db.UserRepository, *pgRolesRepository){
+	userRepo, _ := users.New(testDb) //these must be inited in the right order
+	rolesRepo, _ := New(testDb)
+
+	return userRepo, rolesRepo
 }
 
 func cleanUpTables(t *testing.T) {
@@ -91,11 +94,11 @@ func cleanUpTables(t *testing.T) {
 }
 
 func TestInit(t *testing.T) {
-	_, _ = users.Init(testDb)
-	_, err := Init(testDb)
+	_, _ = users.New(testDb)
+	repo, err := New(testDb)
 
 	assert.NoError(t, err)
-	assert.NotEmpty(t, Repo)
+	assert.NotNil(t, repo)
 
 	_, err = testDb.Exec("DROP TABLE user_roles")
 	assert.NoError(t, err)
@@ -103,17 +106,17 @@ func TestInit(t *testing.T) {
 }
 
 func TestRepository_AddRole(t *testing.T) {
-	initTables()
-	err := Repo.AddRole(123, "foobarrole") //not valid uid
+	userRepo, roleRepo := initTables()
+	err := roleRepo.Add(123, "foobarrole") //not valid uid
 	assert.Error(t, err)
 
 	testRowCountEquals(t, 0)
 
-	user, err := users.Repo.Create(model.User{Username: "test", Secret: "test"})
+	user, err := userRepo.Add(model.User{Username: "test", Secret: "test"})
 
 	validId := user.Id
 
-	err = Repo.AddRole(validId, "foobarrole")
+	err = roleRepo.Add(validId, "foobarrole")
 	assert.NoError(t, err)
 
 	testRowCountEquals(t, 1)
@@ -122,28 +125,28 @@ func TestRepository_AddRole(t *testing.T) {
 }
 
 func TestRepository_GetUserRoles(t *testing.T) {
-	initTables()
+	userRepo, roleRepo := initTables()
 
 	user1 := model.User{Username: "user1", Secret: "test"}
 	user2 := model.User{Username: "user2", Secret: "test"}
 	user3 := model.User{Username: "user3", Secret: "test"}
 
-	validUser1, _ := users.Repo.Create(user1)
-	validUser2, _ := users.Repo.Create(user2)
-	validUser3, _ := users.Repo.Create(user3)
+	validUser1, _ := userRepo.Add(user1)
+	validUser2, _ := userRepo.Add(user2)
+	validUser3, _ := userRepo.Add(user3)
 
-	Repo.AddRole(validUser1.Id, "role1")
-	Repo.AddRole(validUser1.Id, "role2")
-	Repo.AddRole(validUser1.Id, "role3")
+	roleRepo.Add(validUser1.Id, "role1")
+	roleRepo.Add(validUser1.Id, "role2")
+	roleRepo.Add(validUser1.Id, "role3")
 
-	Repo.AddRole(validUser2.Id, "role4")
-	Repo.AddRole(validUser2.Id, "role5")
+	roleRepo.Add(validUser2.Id, "role4")
+	roleRepo.Add(validUser2.Id, "role5")
 
-	user1Roles, err := Repo.GetUserRoles(validUser1.Id)
+	user1Roles, err := roleRepo.GetUserRoles(validUser1.Id)
 	assert.NoError(t, err)
-	user2Roles, err := Repo.GetUserRoles(validUser2.Id)
+	user2Roles, err := roleRepo.GetUserRoles(validUser2.Id)
 	assert.NoError(t, err)
-	user3Roles, err := Repo.GetUserRoles(validUser3.Id)
+	user3Roles, err := roleRepo.GetUserRoles(validUser3.Id)
 	assert.NoError(t, err)
 
 	assert.Len(t, user1Roles, 3)

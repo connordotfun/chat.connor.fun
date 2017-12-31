@@ -19,12 +19,19 @@ import (
 	"strings"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/aaronaaeng/chat.connor.fun/db"
+)
+
+var (
+	userRepository db.UserRepository
+	rolesRepository db.RolesRepository
+	roomRepository db.RoomRepository
 )
 
 
 func createApiRoutes(e *echo.Echo) {
-	e.POST("/api/v1/users", controllers.CreateUser)
-	e.POST("/api/v1/login", controllers.LoginUser)
+	e.POST("/api/v1/users", controllers.CreateUser(userRepository, rolesRepository))
+	e.POST("/api/v1/login", controllers.LoginUser(userRepository))
 
 }
 
@@ -47,11 +54,11 @@ func addMiddlewares(e *echo.Echo) {
 		return strings.HasPrefix(c.Path(), "/web") ||
 				strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
 				strings.HasSuffix(c.Path(), "ws")
-	}, jwtmiddleware.JWTBearerTokenExtractor))
+	}, jwtmiddleware.JWTBearerTokenExtractor, rolesRepository))
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
 		return !strings.HasSuffix(c.Path(), "ws")
-	}, jwtmiddleware.JWTProtocolHeaderExtractor))
+	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
 func initDatabaseRepositories() {
@@ -59,12 +66,12 @@ func initDatabaseRepositories() {
 	if err != nil {
 		panic(err)
 	}
-	_, err = users.Init(database)
+	userRepository, err = users.New(database)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = roles.Init(database)
+	rolesRepository, err = roles.New(database)
 	if err != nil {
 		panic(err)
 	}

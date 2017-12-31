@@ -16,6 +16,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/config"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 const (
@@ -27,7 +28,7 @@ const (
 var testDb *sqlx.DB
 
 func TestMain(m *testing.M) {
-	//Init the connorfuntest db and reconnect to the new db
+	//New the connorfuntest db and reconnect to the new db
 	db, err := sqlx.Open("postgres", "postgresql://localhost:5432?sslmode=disable")
 	if err != nil {
 		panic("failed to establish db connection")
@@ -76,9 +77,10 @@ func cleanUpTestDb(db *sqlx.DB) {
 	}
 }
 
-func initTables() {
-	_, _ = users.Init(testDb) //these must be inited in the right order
-	_, _ = roles.Init(testDb)
+func initTables() (db.UserRepository, db.RolesRepository){
+	usersRepo, _ := users.New(testDb) //these must be inited in the right order
+	rolesRepo, _ := roles.New(testDb)
+	return usersRepo, rolesRepo
 }
 
 func cleanUpTables(t *testing.T) {
@@ -100,7 +102,7 @@ const (
 )
 
 func TestCreateUser(t *testing.T) {
-	initTables()
+	userRepo, rolesRepo := initTables()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -109,7 +111,8 @@ func TestCreateUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	assert.NoError(t, CreateUser(c))
+	createUserFunc := CreateUser(userRepo, rolesRepo)
+	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
 	assert.Equal(t, testUserJsonResponse1, rec.Body.String())
 
@@ -121,8 +124,8 @@ func TestCreateUser(t *testing.T) {
 
 	c = e.NewContext(req, rec)
 
-	assert.NoError(t, CreateUser(c))
-	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.NoError(t, createUserFunc(c))
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 
 	var response model.Response
 	err := json.Unmarshal([]byte(rec.Body.String()), &response)
@@ -134,7 +137,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	initTables()
+	userRepo, rolesRepo := initTables()
 	config.JWTSecretKey = "secret"
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -143,7 +146,8 @@ func TestLoginUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	assert.NoError(t, CreateUser(c))
+	createUserFunc := CreateUser(userRepo, rolesRepo)
+	assert.NoError(t, createUserFunc(c))
 
 
 	req = httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
@@ -152,7 +156,8 @@ func TestLoginUser(t *testing.T) {
 
 	c = e.NewContext(req, rec)
 
-	assert.NoError(t, LoginUser(c))
+	loginUserFunc := LoginUser(userRepo)
+	assert.NoError(t, loginUserFunc(c))
 
 	var response model.Response
 	err := json.Unmarshal([]byte(rec.Body.String()), &response)
