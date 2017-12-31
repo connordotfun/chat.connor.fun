@@ -9,15 +9,12 @@ type Repository struct {
 	db *sqlx.DB
 }
 
-var Repo Repository
-
-func New(db *sqlx.DB) (Repository, error) {
+func New(db *sqlx.DB) (*Repository, error) {
 	_, err := db.Exec(createIfNotExistsRoomsQuery)
 	if err != nil {
-		return Repository{db: nil}, err
+		return nil, err
 	}
-	Repo = Repository{db: db}
-	return Repo, nil
+	return &Repository{db: db}, nil
 }
 
 
