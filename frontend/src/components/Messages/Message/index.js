@@ -8,8 +8,8 @@ class Message extends Component {
                 <div className="avatar" >
                     <img src="https://avatars2.githubusercontent.com/u/3019167?s=460&v=4" />
                 </div>
-                <span className="handle">qonnyr</span>
-                <span className="content">I like chatting with my pals here in farrand</span>
+                <span className="handle">{this.props.sender}</span>
+                <span className="content">{this.props.message}</span>
             </div>
         )
     }
