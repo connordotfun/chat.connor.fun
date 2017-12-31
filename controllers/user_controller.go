@@ -21,7 +21,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 		}
 		hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
+			return c.JSON(http.StatusBadRequest, model.Response{
 				Error: &model.ResponseError{Type: "BAD_PASSWORD", Message: err.Error()},
 				Data: nil,
 			})
@@ -29,7 +29,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 		u.Secret = string(hashedSecret)
 		createdUser, err := userRepo.Add(u)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
+			return c.JSON(http.StatusBadRequest, model.Response{
 				Error: &model.ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
 				Data: nil,
 			})
