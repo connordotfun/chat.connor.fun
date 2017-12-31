@@ -56,7 +56,7 @@ func (tree *metricTree) getScore(word string, modifier float64) (score float64){
 		distList = append(distList, tree.distance(resultStrings[i], word))
 	}
 	if len(distList) > 0 {
-		closest := tree.minIntSlice(distList)
+		closest := minIntSlice(distList)
 		score = float64((float64(len(word)) - float64(closest) + modifier)/float64(len(word)))
 	} else {
 		score = 0.0
@@ -121,7 +121,7 @@ func (tree *metricTree) distance(s1, s2 string) int {
 	return dist[s1Len][s2Len]
 }
 
-func (tree *metricTree) minIntSlice(v []int) (m int) {
+func minIntSlice(v []int) (m int) {
 	m = v[0]
 	for _, e := range v {
 		if e < m {

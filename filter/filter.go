@@ -59,15 +59,15 @@ func (filter *Filter) CleanSentence(inputSentence string, userPCS int) (sentence
 			checkWordDel := strings.Replace(checkWord, ".", "", -1)
 			checkWordSpace := strings.Replace(checkWord, ".", " ", -1)
 
+			separatedWords := strings.Fields(checkWordSpace)
+
 			var scoreDel, scoreSpace float64
 
-			if checkWordDel == checkWordSpace {
-				scoreDel = filter.tree.getScore(checkWordDel, modifier)
-				scoreSpace = 0
-			} else {
-				scoreDel = filter.tree.getScore(checkWordDel, modifier)
-				scoreSpace = filter.tree.getScore(checkWordSpace, modifier)
+			for _, testWord := range separatedWords {
+				scoreSpace = maxFloat(scoreSpace, filter.tree.getScore(testWord, modifier))
 			}
+
+			scoreDel = filter.tree.getScore(checkWordDel, modifier)
 
 			if maxFloat(scoreDel, scoreSpace) > filter.tolerance-(float64(userPCS)/100) {
 				sentence = strings.Replace(sentence, word, "***", -1)
