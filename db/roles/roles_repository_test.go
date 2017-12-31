@@ -80,7 +80,7 @@ func testRowCountEquals(t *testing.T, expected int) {
 	assert.Equal(t, expected, count)
 }
 
-func initTables() (db.UserRepository, *Repository){
+func initTables() (db.UserRepository, *pgRolesRepository){
 	userRepo, _ := users.New(testDb) //these must be inited in the right order
 	rolesRepo, _ := New(testDb)
 

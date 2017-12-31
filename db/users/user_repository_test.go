@@ -78,7 +78,7 @@ func testRowCountEquals(t *testing.T, expected int) {
 	assert.Equal(t, expected, count)
 }
 
-func initTables() *Repository {
+func initTables() *pgUsersRepository {
 	repo, _ := New(testDb) //these must be inited in the right order
 	return repo
 }
