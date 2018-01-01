@@ -31,6 +31,7 @@ var (
 
 func createApiRoutes(e *echo.Echo) {
 	e.POST("/api/v1/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
+	e.GET("/api/v1/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
 	e.POST("/api/v1/login", controllers.LoginUser(userRepository)).Name = "login-user"
 }
 

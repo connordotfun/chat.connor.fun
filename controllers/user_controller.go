@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"strconv"
 )
 
 
@@ -45,6 +46,22 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			Error: nil,
 			Data: createdUser,
 		})
+	}
+}
+
+func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, model.NewErrorResponse("BAD_ID"))
+		}
+
+		user, err := userRepo.GetById(id)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
+		}
+
+		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username}))
 	}
 }
 
