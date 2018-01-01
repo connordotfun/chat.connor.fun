@@ -15,12 +15,14 @@ func newNode(inputWord string) *node {
 type metricTree struct {
 	root *node
 	tolerance int
+	wordSet *wordSet
 }
 
 func newTree(bannedList []string) *metricTree {
 	tree := &metricTree{
 		root: nil,
 		tolerance: 3,
+		wordSet: newWordSet(),
 	}
 	for _, bannedWord := range bannedList{
 		tree.insertWord(bannedWord)
