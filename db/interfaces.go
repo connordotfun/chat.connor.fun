@@ -19,3 +19,10 @@ type RoomRepository interface {
 	Add(room *model.ChatRoom) (*model.ChatRoom, error)
 	GetByName(name string) (*model.ChatRoom, error)
 }
+
+type MessagesRepository interface {
+	Add(message *model.ChatMessage) (*model.ChatMessage, error)
+	GetByUserId(userId int64) ([]*model.ChatMessage, error)
+	GetByRoomName(name string) ([]*model.ChatMessage, error)
+	GetByUserAndRoom(userId int64, name string) ([]*model.ChatMessage, error)
+}
