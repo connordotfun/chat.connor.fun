@@ -30,9 +30,8 @@ var (
 
 
 func createApiRoutes(e *echo.Echo) {
-	e.POST("/api/v1/users", controllers.CreateUser(userRepository, rolesRepository))
-	e.POST("/api/v1/login", controllers.LoginUser(userRepository))
-
+	e.POST("/api/v1/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
+	e.POST("/api/v1/login", controllers.LoginUser(userRepository)).Name = "login-user"
 }
 
 func addMiddlewares(e *echo.Echo) {
@@ -106,7 +105,7 @@ func main() {
 
 	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
 		return chat.HandleWebsocket(hubMap, c)
-	})
+	}).Name = "join-room"
 
 	createApiRoutes(e)
 	e.Logger.Fatal(e.Start(":4000"))
