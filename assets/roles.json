@@ -17,7 +17,7 @@
       {"path": "/wstest", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
-      {"path": "/api/v1/rooms/*/messages/ws",   "verbs": "cr"},
+      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
       {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"}
     ]
   },
@@ -30,7 +30,7 @@
       {"path": "/wstest", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
-      {"path": "/api/v1/rooms/*/messages/ws",   "verbs": "cr"},
+      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
       {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"}
     ]
   }
