@@ -34,9 +34,9 @@
                 token = document.getElementById("tokenbox").value;
             }
             if (token == null) {
-                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/ws");
+                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/ws");
             } else {
-                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/messages/ws", token);
+                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/ws", token);
             }
             exampleSocket.onmessage = addMessageToList
         }

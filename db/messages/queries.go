@@ -8,7 +8,7 @@ const (
 			user_id UUID NOT NULL REFERENCES users (id),
 			room_id UUID NOT NULL REFERENCES rooms (id),
 			text TEXT NOT NULL,
-			create_date Integer NOT NULL,
+			create_date Integer NOT NULL
 		);
 	`
 

@@ -34,7 +34,7 @@ func (c *Client) signMessage(messageBytes []byte) (*model.Message, error) {
 	}
 	message.CreateDate = time.Now().Unix()
 	if c.user != nil {
-		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
+		message.Creator 	= &model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
 		//return nil, errors.New("message has no creator")
 	}
@@ -51,8 +51,10 @@ func (c *Client) writer() {
 	c.conn.SetPongHandler(func(string) error {
 		c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil
 	})
+	log.Printf("starting client writer")
 	for {
 		_, message, err := c.conn.ReadMessage()
+		log.Printf("received message from client (canWrite: %v)", c.canWrite)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)

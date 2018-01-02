@@ -20,6 +20,8 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
 	"github.com/aaronaaeng/chat.connor.fun/context"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
+	"github.com/aaronaaeng/chat.connor.fun/db/messages"
 )
 
 
@@ -31,7 +33,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.Use
 
 	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
 
-	api.GET("/rooms/*/ws", chat.HandleWebsocket(hubMap)).Name = "join-room"
+	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap)).Name = "join-room"
 }
 
 func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
@@ -75,7 +77,17 @@ func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.Rooms
 		panic(err)
 	}
 
-	return userRepository, rolesRepository, nil, nil
+	roomsRepository, err := rooms.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	messagesRepository, err := messages.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	return userRepository, rolesRepository, roomsRepository, messagesRepository
 }
 
 func main() {
@@ -105,7 +117,7 @@ func main() {
 	}
 	e.Renderer = t
 
-
+	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":4000"))
 }
 
