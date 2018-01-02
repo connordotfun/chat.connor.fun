@@ -33,6 +33,8 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.Use
 
 	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
 
+	api.GET("/rooms/:room/messages", controllers.GetMessages(messagesRepository))
+
 	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }
 

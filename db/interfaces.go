@@ -30,4 +30,5 @@ type MessagesRepository interface {
 	GetByUserId(userId uuid.UUID) ([]*model.Message, error)
 	GetByRoomId(roomId uuid.UUID) ([]*model.Message, error)
 	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
+	GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message, error)
 }

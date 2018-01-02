@@ -38,4 +38,11 @@ const (
 			AND
 			room_id = :room_id;
 	`
+
+	selectTopByRoomQuery = `
+		SELECT * FROM messages
+			WHERE room_id = :room_id;
+		ORDER BY create_date DESC
+		LIMIT :count;
+	`
 )

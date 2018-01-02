@@ -86,3 +86,18 @@ func (r repository) GetByUserAndRoom(userId uuid.UUID, roomId uuid.UUID) ([]*mod
 
 	return messages, err
 }
+
+func (r repository) GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message, error) {
+	params := map[string]interface{} {
+		"room_id": roomId,
+		"count": count,
+	}
+	query, err := r.db.PrepareNamed(selectTopByRoomQuery)
+	if err != nil {
+		return nil, err
+	}
+	messages := make([]*model.Message, 0)
+	query.Select(&messages, params)
+
+	return messages, err
+}
