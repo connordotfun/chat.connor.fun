@@ -27,11 +27,34 @@ class AuthStore {
   @action login() {
     this.inProgress = true
     this.errors = undefined
+    axios.post('/api/v1/login', {
+      username: this.values.username,
+      secret: this.values.password
+    })
+    .then((res) => {
+      commonStore.setToken(res.data.data.token)
+    })
+    .catch(action((err) => {
+      this.errors = err.response.data.error
+    }))
+    .finally(action(() => {this.inProgress = false}))
   }
 
   @action register() {
     this.inProgress = true
     this.errors = undefined
+    axios.post('/api/v1/users', {
+      username: this.values.username,
+      secret: this.values.password
+    })
+    .then((res) => {
+      this.login()
+    })
+    .catch(action((err) => {
+      this.errors = err.response.data.error
+    }))
+    .finally(action(() => {this.inProgress = false}))
+
   }
 
   @action logout() {

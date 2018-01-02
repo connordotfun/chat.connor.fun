@@ -1,4 +1,4 @@
-import { observable, action, reaction } from 'mobx';
+import { observable, action, reaction } from 'mobx'
 
 class CommonStore {
   @observable appName = 'chat.connor.fun';
@@ -10,22 +10,22 @@ class CommonStore {
       () => this.token,
       token => {
         if (token) {
-          window.localStorage.setItem('jwt', token);
+          window.localStorage.setItem('jwt', token)
         } else {
-          window.localStorage.removeItem('jwt');
+          window.localStorage.removeItem('jwt')
         }
       }
-    );
+    )
   }
 
   @action setToken(token) {
-    this.token = token;
+    this.token = token
   }
 
   @action setAppLoaded() {
-    this.appLoaded = true;
+    this.appLoaded = true
   }
 
 }
 
-export default new CommonStore();
+export default new CommonStore()
