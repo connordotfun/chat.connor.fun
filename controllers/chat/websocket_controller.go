@@ -39,7 +39,7 @@ func makeResponseHeader(ac context.AuthorizedContext) http.Header {
 	return nil
 }
 
-func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository) echo.HandlerFunc {
+func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db.MessagesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 			return c.NoContent(http.StatusForbidden)
@@ -65,7 +65,7 @@ func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository) echo.HandlerFun
 		}
 
 		client := &Client{hub: hub, user: ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
-			conn: conn, send: make(chan *model.Message)}
+			conn: conn, send: make(chan *model.Message), messagesRepo: messagesRepo}
 		client.hub.register <- client
 
 		go client.writer()
@@ -82,9 +82,13 @@ func lookupHub(name string, hubs *HubMap, roomsRepo db.RoomsRepository) (*Hub, e
 		if err != nil {
 			return nil, err
 		}
-		if room == nil {
+		if room == nil { //create a new room
 			room = &model.ChatRoom{Id: uuid.NewV4(), Name: name}
+			if err := roomsRepo.Add(room); err != nil {
+				return nil, err
+			}
 		}
+
 		hub = NewHub(room) //init a new hub to activate the room
 		go hub.runRoom()
 		hubs.Store(name, hub)

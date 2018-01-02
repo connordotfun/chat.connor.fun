@@ -20,7 +20,7 @@ func New(db *sqlx.DB) (*pgRoomsRepository, error) {
 
 
 func (r pgRoomsRepository) Add(room *model.ChatRoom) error {
-	_, err := r.db.Exec(insertRoomQuery, &room)
+	_, err := r.db.NamedExec(insertRoomQuery, &room)
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,10 @@ func (r pgRoomsRepository) GetById(id uuid.UUID) (*model.ChatRoom, error) {
 }
 
 func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
-	rows, err := r.db.NamedQuery(selectRoomByNameQuery, model.ChatRoom{Name: name})
+	params := map[string]interface{} {
+		"name": name,
+	}
+	rows, err := r.db.NamedQuery(selectRoomByNameQuery, params)
 	if err != nil {
 		return nil, err
 	}

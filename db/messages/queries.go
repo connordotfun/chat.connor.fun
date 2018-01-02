@@ -14,7 +14,7 @@ const (
 
 	insertMessageQuery = `
 		INSERT INTO messages (id, user_id, room_id, text, create_date) VALUES
-			(id :id, :user_id, :room_id, :text, :create_date);
+			(:id, :user_id, :room_id, :text, :create_date);
 	`
 
 	selectOneByIdQuery = `

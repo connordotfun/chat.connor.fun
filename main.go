@@ -26,14 +26,14 @@ import (
 
 
 func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.UserRepository,
-	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository) {
+	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository, messagesRepository db.MessagesRepository) {
 
 	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
 	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
 
 	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
 
-	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap)).Name = "join-room"
+	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }
 
 func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
@@ -108,9 +108,9 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-	usersRepository, rolesRepository, _, _ := initDatabaseRepositories()
+	usersRepository, rolesRepository, roomsRepository, messagesRepository := initDatabaseRepositories()
 	addMiddlewares(e, rolesRepository)
-	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, nil)
+	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, roomsRepository, messagesRepository)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/public/*.html")),

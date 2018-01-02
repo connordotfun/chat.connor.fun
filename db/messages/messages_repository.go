@@ -20,10 +20,11 @@ func New(db *sqlx.DB) (*repository, error) {
 
 func (r repository) Add(m *model.Message) error {
 	params := map[string]interface{} {
-		"userId": m.Creator.Id,
-		"roomId": m.Room.Id,
+		"id": m.Id,
+		"user_id": m.Creator.Id,
+		"room_id": m.Room.Id,
 		"text": m.Text,
-		"createDate": m.CreateDate,
+		"create_date": m.CreateDate,
 	}
 
 	_, err := r.db.NamedExec(insertMessageQuery, params)

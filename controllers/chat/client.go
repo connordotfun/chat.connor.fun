@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	_"errors"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 
@@ -25,9 +26,10 @@ type Client struct {
 	hub *Hub
 	conn *websocket.Conn
 	send chan *model.Message
+	messagesRepo db.MessagesRepository
 }
 
-func (c *Client) signMessage(messageBytes []byte) (*model.Message, error) {
+func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
 	var message model.Message
 	err := json.Unmarshal(messageBytes, &message)
 	if err != nil {
@@ -35,10 +37,14 @@ func (c *Client) signMessage(messageBytes []byte) (*model.Message, error) {
 	}
 	message.Id = uuid.NewV4()
 	message.CreateDate = time.Now().Unix()
+	message.Room = c.hub.Room
 	if c.user != nil {
 		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
 		//return nil, errors.New("message has no creator")
+	}
+	if err := c.messagesRepo.Add(&message); err != nil {
+		return nil, err
 	}
 	return &message, nil
 }
@@ -64,7 +70,7 @@ func (c *Client) writer() {
 			return
 		}
 		if c.canWrite {
-			signedMessage, err := c.signMessage(message)
+			signedMessage, err := c.processMessage(message)
 			if err != nil {
 				log.Printf("error signing message: %v", err)
 				return //client sent invalid message, kick

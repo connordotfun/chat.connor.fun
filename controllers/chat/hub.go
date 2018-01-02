@@ -17,6 +17,7 @@ type Hub struct {
 	stop chan bool
 
 	Room *model.ChatRoom
+	roomsRepo db.RoomsRepository
 }
 
 type HubMap struct {
@@ -55,11 +56,11 @@ func NewHub(room *model.ChatRoom) *Hub {
 }
 
 func (r *Hub) runRoom() {
+	//there's a possible race condition where the room enters the stop state and a client gets added at the same time
 	for {
 		select {
 		case stop := <-r.stop:
 			if stop {
-
 				return
 			}
 		case client := <-r.register:
@@ -84,14 +85,4 @@ func (r *Hub) runRoom() {
 			}
 		}
 	}
-}
-
-func (r *Hub) finalizeRoom(roomsRepo db.RoomsRepository) error {
-	if room, err := roomsRepo.GetById(r.Room.Id); room == nil && err == nil {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	return roomsRepo.Add(r.Room)
 }
