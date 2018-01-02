@@ -9,6 +9,7 @@ import './index.css'
 
 @inject('commonStore')
 @inject('socketStore')
+@inject('authStore')
 @observer
 class Chat extends Component {
     @observable _messages = []
@@ -28,7 +29,7 @@ class Chat extends Component {
     render() {
         return (
             <div className="Chat convex">
-                <Header room={this.props.match.params.room}/>
+                <Header room={this.props.match.params.room} handleLeave={this.props.authStore.logout}/>
                 <Messages messages={this._messages} />
                 <Input />
             </div>
