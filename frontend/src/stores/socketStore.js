@@ -15,8 +15,11 @@ class SocketStore {
     }
 
     this.socket = new WebSocket((window.location.protocol === "https:"? "wss://" : "ws://") + window.location.host + "/api/v1/rooms/" + room +  "/messages/ws", commonStore.token)
-    this.socket.onopen = (e) => { this.connected = true }
+    this.socket.onopen = action((e) => { this.connected = true })
     this.socket.onerror = this.setError
+    this.socket.onclose = action((e) => {
+      this.connected = false
+    })
     this.socket.onmessage = (e) => {
       this.listeners.map((fxn) => fxn(e))
     }
