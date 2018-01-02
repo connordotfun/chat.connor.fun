@@ -3,6 +3,7 @@ package rooms
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/satori/go.uuid"
 )
 
 type pgRoomsRepository struct {
@@ -18,25 +19,25 @@ func New(db *sqlx.DB) (*pgRoomsRepository, error) {
 }
 
 
-func (r pgRoomsRepository) Add(room *model.ChatRoom) (*model.ChatRoom, error){
+func (r pgRoomsRepository) Add(room *model.ChatRoom) error {
 	_, err := r.db.Exec(insertRoomQuery, &room)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	return err
+}
 
-	rows, err := r.db.NamedQuery(selectRoomByNameQuery, &room)
+func (r pgRoomsRepository) GetById(id uuid.UUID) (*model.ChatRoom, error) {
+	params := map[string]interface{} {
+		"id": id,
+	}
+	query, err := r.db.PrepareNamed(selectRoomByIdQuery)
 	if err != nil {
 		return nil, err
 	}
-
-	var insertedRoom model.ChatRoom
-	if rows.Next() {
-		rows.StructScan(&insertedRoom)
-	} else {
-		return nil, err //room not found
-	}
-
-	return &insertedRoom, nil
+	chatRoom := new(model.ChatRoom)
+	query.Select(chatRoom, params)
+	return chatRoom, nil
 }
 
 func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
