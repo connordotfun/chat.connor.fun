@@ -20,7 +20,7 @@
   
   @media screen and (min-width:1024px) {
     .Chat {
-        grid-template-rows: 30px 1fr 30px;
+        grid-template-rows: 35px 1fr 30px;
         grid-template-columns: 250px;
         grid-template-areas: "header header"
                             "sidebar chat"
