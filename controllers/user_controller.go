@@ -42,10 +42,9 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 				Data: nil,
 			})
 		}
-		u.Secret = "" //don't return secret
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: u,
+			Data: model.User{Id: u.Id, Username: u.Username},
 		})
 	}
 }

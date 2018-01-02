@@ -7,7 +7,11 @@ import (
 )
 
 type MockUserRepository struct {
-	Users map[uuid.UUID]*model.User
+	Users map[uuid.UUID]model.User
+}
+
+func NewMockUserRepository() *MockUserRepository {
+	return &MockUserRepository{Users: map[uuid.UUID]model.User{}}
 }
 
 func (r *MockUserRepository) Add(user *model.User) error {
@@ -16,7 +20,7 @@ func (r *MockUserRepository) Add(user *model.User) error {
 			return errors.New("duplicate entry")
 		}
  	}
- 	r.Users[user.Id] = user
+ 	r.Users[user.Id] = *user
  	return nil
 }
 
@@ -33,13 +37,15 @@ func (r *MockUserRepository) GetById(id uuid.UUID) (*model.User, error) {
 	if !ok {
 		return nil, nil
 	}
-	return val, nil
+	toReturn := val
+	return &toReturn, nil
 }
 
 func (r *MockUserRepository) GetByUsername(username string) (*model.User, error) {
 	for _, v := range r.Users {
 		if v.Username == username {
-			return v, nil
+			toReturn := v
+			return &toReturn, nil
 		}
 	}
 	return nil, nil
@@ -48,6 +54,10 @@ func (r *MockUserRepository) GetByUsername(username string) (*model.User, error)
 
 type MockRolesRepository struct {
 	Roles map[uuid.UUID][]string
+}
+
+func NewMockRolesRepository() *MockRolesRepository {
+	return &MockRolesRepository{map[uuid.UUID][]string{}}
 }
 
 func (r *MockRolesRepository) Add(userId uuid.UUID, role string) error {
