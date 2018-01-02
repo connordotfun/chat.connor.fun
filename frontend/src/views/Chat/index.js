@@ -1,25 +1,28 @@
 import React, { Component } from 'react'
 import {observable, action} from 'mobx'
-import { observer } from 'mobx-react'
+import { observer, inject } from 'mobx-react'
 import Header from '../../components/Header'
 import Messages from '../../components/Messages'
-import Input from '../../components/Input'
+import Input from '../../components/ChatInput'
 import './index.css'
 
+
+@inject('commonStore')
+@inject('socketStore')
 @observer
 class Chat extends Component {
-    @observable _messages
-    @observable _socket
-    constructor(props) {
-        super(props)
-        this._token = ""
-        this._messages = []
-    }
+    @observable _messages = []
 
     @action
     componentWillMount() {
-        this._socket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + this.props.match.params.room +  "/messages/ws", this._token)
-        this._socket.onmessage = this.onMessage.bind(this)
+        this.props.socketStore.joinRoom(this.props.match.params.room)
+        this.props.socketStore.addListener(this.onMessage.bind(this))
+    }
+
+    @action
+    componentWillUnmount() {
+        this.props.socketStore.resetListeners()
+        this.props.socketStore.leaveRoom()
     }
 
     render() {
