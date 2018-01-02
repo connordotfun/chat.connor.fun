@@ -45,8 +45,10 @@ func addMiddlewares(e *echo.Echo) {
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
 		return strings.HasPrefix(c.Path(), "/web") ||
-				strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
-				strings.HasSuffix(c.Path(), "ws")
+			strings.HasPrefix(c.Path(), "/at") || // VERY TEMPORARY
+			strings.HasPrefix(c.Path(), "/static") ||
+			strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
+			strings.HasSuffix(c.Path(), "ws")
 	}, jwtmiddleware.JWTBearerTokenExtractor))
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
@@ -72,7 +74,8 @@ func initDatabaseRepositories() {
 
 func main() {
 	e := echo.New()
-	e.Static("/web", "frontend")
+	e.Static("/web", "frontend/build")
+	e.Static("/static", "frontend/build/static")
 	e.Debug = config.Debug
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
@@ -91,10 +94,11 @@ func main() {
 	addMiddlewares(e)
 
 	t := &Template{
-		templates: template.Must(template.ParseGlob("frontend/public/*.html")),
+		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
 	}
 	e.Renderer = t
 	e.GET("/", controllers.Index)
+	e.GET("/at/*", controllers.Index)
 	e.GET("/wstest", controllers.WSTestView)
 
 	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
