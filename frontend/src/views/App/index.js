@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { observer, inject } from 'mobx-react'
-import { Switch, Route, Redirect } from 'react-router-dom'
+import { Switch, Route } from 'react-router-dom'
 
 import Chat from '../Chat'
 import Landing from '../Landing'
@@ -9,12 +9,20 @@ import Landing from '../Landing'
 @observer
 class App extends Component {
     render() {
-        return (       
-            <Switch>
-                <Route exact path="/" component={Landing} />
-                <Route path="/at/:room" component={Chat} />
-            </Switch>
-        )
+        if (this.props.commonStore.token) {
+            return (
+                <Switch>
+                    <Route path="/at/:room" component={Chat}/>
+                </Switch>
+            )
+        } else {
+            return (
+                <Switch>
+                    <Route exact path="/" component={Landing}/>
+                    <Route component={Landing} />
+                </Switch>
+            )
+        }
     }
 }
 
