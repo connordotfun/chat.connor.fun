@@ -17,14 +17,19 @@ const (
 			(id :id, :user_id, :room_id, :text, :create_date);
 	`
 
+	selectOneByIdQuery = `
+		SELECT * FROM messages
+			WHERE id = :id
+	`
+
 	selectByUserIdQuery = `
 		SELECT * FROM messages
-			WHERE user_id = :id;
+			WHERE user_id = :user_id;
 	`
 
 	selectByRoomIdQuery = `
 		SELECT * FROM messages
-			WHERE room_id = :id;
+			WHERE room_id = :user_id;
 	`
 
 	selectByUserAndRoomQuery = `

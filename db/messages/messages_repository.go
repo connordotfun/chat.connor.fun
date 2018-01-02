@@ -30,6 +30,19 @@ func (r repository) Add(m *model.Message) error {
 	return err
 }
 
+func (r repository) GetById(id uuid.UUID) (*model.Message, error) {
+	params := map[string]interface{} {
+		"id": id,
+	}
+	query, err := r.db.PrepareNamed(selectOneByIdQuery)
+	if err != nil {
+		return nil, err
+	}
+	message := new(model.Message)
+	query.Select(message, params)
+	return message, nil
+}
+
 func (r repository) GetByUserId(userId uuid.UUID) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"user_id": userId,
