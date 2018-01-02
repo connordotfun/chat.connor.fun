@@ -3,6 +3,7 @@ import { observable, action, reaction } from 'mobx'
 class CommonStore {
   @observable appName = 'chat.connor.fun';
   @observable token = window.localStorage.getItem('jwt');
+  @observable username = undefined
   @observable appLoaded = false;
 
   constructor() {
@@ -20,6 +21,10 @@ class CommonStore {
 
   @action setToken(token) {
     this.token = token
+  }
+
+  @action setUsername(username) {
+    this.username = username
   }
 
   @action setAppLoaded() {
