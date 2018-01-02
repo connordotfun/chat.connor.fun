@@ -8,6 +8,7 @@ import './index.css'
 @observer
 class Landing extends Component {
     render() {
+        this.props.history.replace('/')
         return (
             <div className="Landing convex">
                 <h1>Welcome!</h1>
