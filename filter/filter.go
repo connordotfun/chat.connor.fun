@@ -2,6 +2,8 @@ package filter
 
 import "unicode"
 
+const BASE_CONFIDENCE = .75
+
 type Filter struct {
 	tree *metricTree
 	userPCS float64
@@ -87,7 +89,7 @@ func (filter *Filter) testGeneral(testSlice []rune) bool {
 	pass := true
 	if !filter.tree.wordSet.isKnown(testSlice) {
 		score := filter.tree.getScore(string(testSlice), 0)
-		if score > (.75 + filter.toleranceModifier)-(filter.userPCS/100) {
+		if score > (BASE_CONFIDENCE + filter.toleranceModifier)-(filter.userPCS/100) {
 			pass = false
 		}
 	}
@@ -115,14 +117,14 @@ func (filter *Filter) testPeriod(input []rune) bool {
 		if len(testSlice) > 4 {
 			for i := 0; i < len(testSlice)-4; i++ {
 				score = maxFloat(score, filter.tree.getScore(string(testSlice[:i+4]), modifier))
-				if score > (.75 + filter.toleranceModifier)-(filter.userPCS/100) {
+				if score > (BASE_CONFIDENCE + filter.toleranceModifier)-(filter.userPCS/100) {
 					break
 				}
 			}
 		} else {
 			score = filter.tree.getScore(string(testSlice), modifier)
 		}
-		if score > (.75 + filter.toleranceModifier)-(filter.userPCS/100) {
+		if score > (BASE_CONFIDENCE + filter.toleranceModifier)-(filter.userPCS/100) {
 			pass = false
 		}
 	}

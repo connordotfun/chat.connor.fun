@@ -18,6 +18,7 @@ func newWordSet() *wordSet{
 			'!': 'i',
 			'3': 'e',
 			'$': 's',
+			'&': 'a',
 		},
 	}
 
