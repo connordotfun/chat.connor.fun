@@ -35,8 +35,8 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.Use
 	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
 
 	api.GET("/rooms/:room/messages", controllers.GetMessages(messagesRepository))
-	api.GET("/rooms/:room/messages/:id", controllers.GetMessage(messagesRepository))
-	api.PUT("/rooms/:room/messages/:id", controllers.UpdateMessage(messagesRepository))
+	api.GET("/messages/:id", controllers.GetMessage(messagesRepository))
+	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository))
 
 	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository))
 	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap))

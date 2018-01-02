@@ -101,3 +101,18 @@ func (r repository) GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message,
 
 	return messages, err
 }
+
+func (r repository) Update(id uuid.UUID, newText string) (*model.Message, error) {
+	params := map[string]interface{} {
+		"id": id,
+		"text": newText,
+	}
+	query, err := r.db.PrepareNamed(updateMessageTextQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	resultMessage := new(model.Message)
+	err = query.Select(params, resultMessage)
+	return resultMessage, err
+}

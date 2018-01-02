@@ -7,6 +7,7 @@ import (
 	"github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
+	"github.com/slimsag/godocmd/testdata"
 )
 
 func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
@@ -43,6 +44,24 @@ func GetMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
 }
 
 func UpdateMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
-	return nil
+	return func(c echo.Context) error {
+		messagesId, err := uuid.FromString(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_ID"))
+		}
+
+		putData := map[string]interface{} {}
+		if err := c.Bind(&putData); err != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_CONTENT"))
+		}
+
+		updatedMessage, err := messagesRepo.Update(messagesId, putData["text"].(string));
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, model.NewErrorResponse("COULD_NOT_UPDATE"))
+		}
+
+		return c.JSON(http.StatusOK, model.NewDataResponse(updatedMessage))
+	}
 }
 

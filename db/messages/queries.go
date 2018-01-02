@@ -45,4 +45,11 @@ const (
 		ORDER BY create_date DESC
 		LIMIT :count;
 	`
+
+	updateMessageTextQuery = `
+		UPDATE messages SET
+			text = :text
+		WHERE id = :id
+		RETURNING *;
+	`
 )
