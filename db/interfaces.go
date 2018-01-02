@@ -26,6 +26,6 @@ type RoomRepository interface {
 type MessagesRepository interface {
 	Add(message *model.Message) error
 	GetByUserId(userId uuid.UUID) ([]*model.Message, error)
-	GetByRoomName(name string) ([]*model.Message, error)
-	GetByUserAndRoom(userId int64, name string) ([]*model.Message, error)
+	GetByRoomId(roomId uuid.UUID) ([]*model.Message, error)
+	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
 }
