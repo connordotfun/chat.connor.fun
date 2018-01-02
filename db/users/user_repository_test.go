@@ -7,6 +7,7 @@ import (
 	"testing"
 	_"github.com/lib/pq"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/satori/go.uuid"
 )
 
 const (
@@ -102,26 +103,24 @@ func TestInit(t *testing.T) {
 func TestRepository_Create(t *testing.T) {
 	repo := initTables()
 
-	user1 := model.User{Username: "user1", Secret: "test"}
-	user2 := model.User{Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
 
-	validUser1, err := repo.Add(user1)
+	err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotNil(t, validUser1)
-	assert.Equal(t, user1.Username, validUser1.Username)
+	assert.NotNil(t, user1)
+	assert.Equal(t, user1.Username, user1.Username)
 
 	testRowCountEquals(t, 1)
 
-	validUser2, err := repo.Add(user2)
+	err = repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotNil(t, validUser2)
-	assert.Equal(t, user2.Username, validUser2.Username)
+	assert.NotNil(t, user2)
+	assert.Equal(t, user2.Username, user2.Username)
 
 	testRowCountEquals(t, 2)
 
-	assert.NotEqual(t, validUser1.Id, validUser2.Id)
-
-	_, err = repo.Add(user1)
+	err = repo.Add(user1)
 	assert.Error(t, err)
 
 	testRowCountEquals(t, 2)
@@ -132,18 +131,14 @@ func TestRepository_Create(t *testing.T) {
 func TestRepository_GetAll(t *testing.T) {
 	repo := initTables()
 
-	user1 := model.User{Username: "user1", Secret: "test"}
-	user2 := model.User{Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
 
-	validUser1, err := repo.Add(user1)
+	err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotNil(t, validUser1)
-	assert.Equal(t, user1.Username, validUser1.Username)
 
-	validUser2, err := repo.Add(user2)
+	err = repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotNil(t, validUser2)
-	assert.Equal(t, user2.Username, validUser2.Username)
 
 	allUsers, err := repo.GetAll()
 	assert.Len(t, allUsers, 2)
@@ -154,24 +149,20 @@ func TestRepository_GetAll(t *testing.T) {
 func TestRepository_GetById(t *testing.T) {
 	repo := initTables()
 
-	user1 := model.User{Username: "user1", Secret: "test"}
-	user2 := model.User{Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
 
-	validUser1, err := repo.Add(user1)
+	err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotNil(t, validUser1)
-	assert.Equal(t, user1.Username, validUser1.Username)
 
-	validUser2, err := repo.Add(user2)
+	err = repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotNil(t, validUser2)
-	assert.Equal(t, user2.Username, validUser2.Username)
 
-	selectedUser, err := repo.GetById(validUser1.Id)
+	selectedUser, err := repo.GetById(user1.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, validUser1, selectedUser)
+	assert.Equal(t, user1, selectedUser)
 
-	noUser, err := repo.GetById(12345)
+	noUser, err := repo.GetById(uuid.NewV4())
 	assert.NoError(t, err)
 	assert.Nil(t, noUser)
 
@@ -181,22 +172,18 @@ func TestRepository_GetById(t *testing.T) {
 func TestRepository_GetByUsername(t *testing.T) {
 	repo := initTables()
 
-	user1 := model.User{Username: "user1", Secret: "test"}
-	user2 := model.User{Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
 
-	validUser1, err := repo.Add(user1)
+	err := repo.Add(user1)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser1)
-	assert.Equal(t, user1.Username, validUser1.Username)
 
-	validUser2, err := repo.Add(user2)
+	err = repo.Add(user2)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, validUser2)
-	assert.Equal(t, user2.Username, validUser2.Username)
 
-	selectedUser, err := repo.GetByUsername(validUser1.Username)
+	selectedUser, err := repo.GetByUsername(user1.Username)
 	assert.NoError(t, err)
-	assert.Equal(t, validUser1, selectedUser)
+	assert.Equal(t, user1, selectedUser)
 
 	noUser, err := repo.GetByUsername("not a real username")
 	assert.NoError(t, err)

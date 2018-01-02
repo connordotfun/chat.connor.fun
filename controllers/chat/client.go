@@ -23,18 +23,18 @@ type Client struct {
 	user *model.User
 	hub *Hub
 	conn *websocket.Conn
-	send chan *model.ChatMessage
+	send chan *model.Message
 }
 
-func (c *Client) signMessage(messageBytes []byte) (*model.ChatMessage, error) {
-	var message model.ChatMessage
+func (c *Client) signMessage(messageBytes []byte) (*model.Message, error) {
+	var message model.Message
 	err := json.Unmarshal(messageBytes, &message)
 	if err != nil {
 		return nil, err
 	}
 	message.CreateDate = time.Now().Unix()
 	if c.user != nil {
-		message.Creator = model.User{Id: c.user.Id, Username: c.user.Username}
+		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
 		//return nil, errors.New("message has no creator")
 	}
@@ -73,9 +73,9 @@ func (c *Client) writer() {
 	}
 }
 
-func (c *Client) createMessageList(initialMessage *model.ChatMessage) ([]byte, error) {
+func (c *Client) createMessageList(initialMessage *model.Message) ([]byte, error) {
 	messageCount := len(c.send) + 1
-	messageList := make([]*model.ChatMessage, messageCount)
+	messageList := make([]*model.Message, messageCount)
 
 	messageList[0] = initialMessage
 	for i := 1; i < messageCount; i++ {

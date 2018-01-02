@@ -62,7 +62,7 @@ func HandleWebsocket(hubs *HubMap, c echo.Context) error {
 	}
 
 	client := &Client{hub: hub, user: ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
-		conn: conn, send: make(chan *model.ChatMessage)}
+		conn: conn, send: make(chan *model.Message)}
 	client.hub.register <- client
 
 	go client.writer()

@@ -3,6 +3,7 @@ package roles
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/satori/go.uuid"
 )
 
 type pgRolesRepository struct {
@@ -18,7 +19,7 @@ func New(database *sqlx.DB) (*pgRolesRepository, error) {
 }
 
 
-func (r pgRolesRepository) Add(userId int64, role string) error {
+func (r pgRolesRepository) Add(userId uuid.UUID, role string) error {
 	params := map[string]interface{} {
 		"user_id": userId,
 		"role": role,
@@ -27,7 +28,7 @@ func (r pgRolesRepository) Add(userId int64, role string) error {
 	return err
 }
 
-func (r pgRolesRepository) GetUserRoles(userId int64) ([]*model.Role, error) {
+func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]*model.Role, error) {
 	rows, err := r.db.NamedQuery(getRolesByUserQuery, map[string]interface{}{"user_id": userId})
 
 	if err != nil {

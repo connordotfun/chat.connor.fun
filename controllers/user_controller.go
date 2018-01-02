@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db"
-	"strconv"
+	"github.com/satori/go.uuid"
 )
 
 
@@ -20,6 +20,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 				Data: nil,
 			})
 		}
+		u.Id = uuid.NewV4()
 		hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -28,30 +29,30 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			})
 		}
 		u.Secret = string(hashedSecret)
-		createdUser, err := userRepo.Add(u)
+		err = userRepo.Add(&u)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
 				Error: &model.ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
 				Data: nil,
 			})
 		}
-		if err := rolesRepo.Add(createdUser.Id, "normal_user"); err != nil {
+		if err := rolesRepo.Add(u.Id, "normal_user"); err != nil {
 			return c.JSON(http.StatusInternalServerError, model.Response{
 				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
 				Data: nil,
 			})
 		}
-		createdUser.Secret = "" //don't return secret
+		u.Secret = "" //don't return secret
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: createdUser,
+			Data: u,
 		})
 	}
 }
 
 func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+		id, err := uuid.FromString(c.Param("id"))
 		if err != nil {
 			return c.JSON(http.StatusNotFound, model.NewErrorResponse("BAD_ID"))
 		}

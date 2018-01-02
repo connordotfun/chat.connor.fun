@@ -50,15 +50,15 @@ func (c *testWsClient) write(message string) error {
 	return w.Close()
 }
 
-func (c *testWsClient) read() (model.ChatMessage, error) {
+func (c *testWsClient) read() (model.Message, error) {
 	_, bMess, err := c.conn.ReadMessage()
 	if err != nil {
-		return model.ChatMessage{}, err
+		return model.Message{}, err
 	}
-	var messages []*model.ChatMessage
+	var messages []*model.Message
 	err = json.Unmarshal(bMess, &messages)
 	if err != nil {
-		return model.ChatMessage{}, err
+		return model.Message{}, err
 	}
 	return *messages[0], err
 }

@@ -77,10 +77,14 @@ func cleanUpTestDb(db *sqlx.DB) {
 	}
 }
 
-func initTables() (db.UserRepository, db.RolesRepository){
-	usersRepo, _ := users.New(testDb) //these must be inited in the right order
-	rolesRepo, _ := roles.New(testDb)
-	return usersRepo, rolesRepo
+func initTables() (db.UserRepository, db.RolesRepository, error){
+	usersRepo, err := users.New(testDb) //these must be inited in the right order
+	if err != nil {
+		return nil, nil, err
+	}
+	rolesRepo, err := roles.New(testDb)
+
+	return usersRepo, rolesRepo, err
 }
 
 func cleanUpTables(t *testing.T) {
@@ -102,8 +106,8 @@ const (
 )
 
 func TestCreateUser(t *testing.T) {
-	userRepo, rolesRepo := initTables()
-
+	userRepo, rolesRepo, err := initTables()
+	assert.NoError(t, err)
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -114,7 +118,12 @@ func TestCreateUser(t *testing.T) {
 	createUserFunc := CreateUser(userRepo, rolesRepo)
 	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
-	assert.Equal(t, testUserJsonResponse1, rec.Body.String())
+
+	var responseObj model.Response
+	err = json.Unmarshal(rec.Body.Bytes(), &responseObj)
+	assert.NoError(t, err)
+	assert.Nil(t, responseObj.Error)
+	assert.Equal(t, responseObj.Data.(map[string]interface{})["username"], "test")
 
 	//recreate
 
@@ -128,7 +137,7 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 
 	var response model.Response
-	err := json.Unmarshal([]byte(rec.Body.String()), &response)
+	err = json.Unmarshal([]byte(rec.Body.String()), &response)
 	assert.NoError(t, err)
 	assert.Equal(t, "USER_CREATE_FAILED", response.Error.Type)
 
@@ -137,7 +146,8 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	userRepo, rolesRepo := initTables()
+	userRepo, rolesRepo, err := initTables()
+	assert.NoError(t, err)
 	config.JWTSecretKey = "secret"
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -160,7 +170,7 @@ func TestLoginUser(t *testing.T) {
 	assert.NoError(t, loginUserFunc(c))
 
 	var response model.Response
-	err := json.Unmarshal([]byte(rec.Body.String()), &response)
+	err = json.Unmarshal([]byte(rec.Body.String()), &response)
 	assert.NoError(t, err)
 
 	resData := response.Data.(map[string]interface{})
