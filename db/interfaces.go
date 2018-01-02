@@ -18,7 +18,7 @@ type RolesRepository interface {
 	GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
 }
 
-type RoomRepository interface {
+type RoomsRepository interface {
 	Add(room *model.ChatRoom) error
 	GetByName(name string) (*model.ChatRoom, error)
 }

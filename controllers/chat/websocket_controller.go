@@ -37,38 +37,40 @@ func makeResponseHeader(ac context.AuthorizedContext) http.Header {
 	return nil
 }
 
-func HandleWebsocket(hubs *HubMap, c echo.Context) error {
-	if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
-		return c.NoContent(http.StatusForbidden)
-	}
-	ac := c.(context.AuthorizedContext)
-
-	roomName := c.Param("room")
-	hub, err := lookupHub(roomName, hubs)
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	if hub == nil { //no error, but not found
-		return c.NoContent(http.StatusNotFound)
-	}
-
-	conn, err := upgrader.Upgrade(c.Response(), c.Request(), makeResponseHeader(c.(context.AuthorizedContext)))
-	if err != nil {
-		log.Println(err)
-		if conn != nil {
-			conn.Close()
+func HandleWebsocket(hubs *HubMap) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
+			return c.NoContent(http.StatusForbidden)
 		}
-		return err //upgrade failed
+		ac := c.(context.AuthorizedContext)
+
+		roomName := c.Param("room")
+		hub, err := lookupHub(roomName, hubs)
+		if err != nil {
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		if hub == nil { //no error, but not found
+			return c.NoContent(http.StatusNotFound)
+		}
+
+		conn, err := upgrader.Upgrade(c.Response(), c.Request(), makeResponseHeader(c.(context.AuthorizedContext)))
+		if err != nil {
+			log.Println(err)
+			if conn != nil {
+				conn.Close()
+			}
+			return err //upgrade failed
+		}
+
+		client := &Client{hub: hub, user: ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
+			conn: conn, send: make(chan *model.Message)}
+		client.hub.register <- client
+
+		go client.writer()
+		go client.reader()
+
+		return nil
 	}
-
-	client := &Client{hub: hub, user: ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
-		conn: conn, send: make(chan *model.Message)}
-	client.hub.register <- client
-
-	go client.writer()
-	go client.reader()
-
-	return nil
 }
 
 func lookupHub(name string, hubs *HubMap) (*Hub, error) {

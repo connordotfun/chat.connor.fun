@@ -22,20 +22,19 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
-var (
-	userRepository db.UserRepository
-	rolesRepository db.RolesRepository
-	roomRepository db.RoomRepository
-)
 
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.UserRepository,
+	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository) {
 
-func createApiRoutes(e *echo.Echo) {
-	e.POST("/api/v1/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
-	e.GET("/api/v1/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
-	e.POST("/api/v1/login", controllers.LoginUser(userRepository)).Name = "login-user"
+	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
+	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
+
+	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
+
+	api.GET("/rooms/*/ws", chat.HandleWebsocket(hubMap))
 }
 
-func addMiddlewares(e *echo.Echo) {
+func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	if !config.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
@@ -61,26 +60,32 @@ func addMiddlewares(e *echo.Echo) {
 	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
-func initDatabaseRepositories() {
+func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.RoomsRepository, db.MessagesRepository){
 	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
 		panic(err)
 	}
-	userRepository, err = users.New(database)
+	userRepository, err := users.New(database)
 	if err != nil {
 		panic(err)
 	}
 
-	rolesRepository, err = roles.New(database)
+	rolesRepository, err := roles.New(database)
 	if err != nil {
 		panic(err)
 	}
+
+	return userRepository, rolesRepository, nil, nil
 }
 
 func main() {
 	e := echo.New()
-	e.Static("/web", "frontend")
 	e.Debug = config.Debug
+
+	e.Static("/web", "frontend")
+	e.GET("/", controllers.Index)
+	e.GET("/wstest", controllers.WSTestView)
+	v1ApiGroup := e.Group("/api/v1")
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
 	if err != nil {
@@ -91,24 +96,16 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-
-	initDatabaseRepositories()
-
-
-	addMiddlewares(e)
+	usersRepository, rolesRepository, _, _ := initDatabaseRepositories()
+	addMiddlewares(e, rolesRepository)
+	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, nil)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/public/*.html")),
 	}
 	e.Renderer = t
-	e.GET("/", controllers.Index)
-	e.GET("/wstest", controllers.WSTestView)
 
-	e.GET("/api/v1/rooms/:room/ws", func(c echo.Context) error {
-		return chat.HandleWebsocket(hubMap, c)
-	}).Name = "join-room"
 
-	createApiRoutes(e)
 	e.Logger.Fatal(e.Start(":4000"))
 }
 
