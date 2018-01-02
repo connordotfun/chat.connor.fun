@@ -51,7 +51,8 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 
 func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		id, err := uuid.FromString(c.Param("id"))
+		idStr := c.Param("id")
+		id, err := uuid.FromString(idStr)
 		if err != nil {
 			return c.JSON(http.StatusNotFound, model.NewErrorResponse("BAD_ID"))
 		}
