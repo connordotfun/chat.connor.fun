@@ -17,6 +17,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/slimsag/godocmd/testdata"
 )
 
 const (
@@ -150,7 +151,7 @@ func TestLoginUser(t *testing.T) {
 	assert.NoError(t, err)
 	config.JWTSecretKey = "secret"
 	e := echo.New()
-	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
+	req := httptest.NewRequest("POST", "/api/v1/users", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
@@ -180,4 +181,19 @@ func TestLoginUser(t *testing.T) {
 	assert.NoError(t, err)
 
 	cleanUpTables(t)
+}
+
+func TestGetUser(t *testing.T) {
+	userRepo, _, err := initTables()
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest("POST", "/api/v1/users", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	e := echo.New()
+	c := e.NewContext(req, rec)
+
+	getUserFunc := GetUser(userRepo)
+
 }
