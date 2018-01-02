@@ -7,7 +7,6 @@ import (
 	"github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
-	"github.com/slimsag/godocmd/testdata"
 )
 
 func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
@@ -40,7 +39,21 @@ func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
 }
 
 func GetMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
-	return nil
+	return func(c echo.Context) error {
+		messagesId, err := uuid.FromString(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_ID"))
+		}
+
+		message, err := messagesRepo.GetById(messagesId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("FAILED_RETRIEVE"))
+		}
+		if message == nil {
+			return c.JSON(http.StatusNotFound, model.NewErrorResponse("RESOURCE_NOT_FOUND"))
+		}
+		return c.JSON(http.StatusOK, model.NewDataResponse(message))
+	}
 }
 
 func UpdateMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
