@@ -4,7 +4,7 @@
     width: 100%;
     height: auto;
     min-height: 100%;
-    display: grid;
+    font-family: 'Millenium';
   }
   
   @media screen and (max-width:1023px) {
