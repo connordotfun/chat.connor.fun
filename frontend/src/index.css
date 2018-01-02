@@ -40,8 +40,27 @@ body {
   background-color: #bfbfbf;
 }
 
+.convex-small {
+  border: 1px solid;
+  border-bottom-color: #535353;
+  border-right-color: #535353;
+  border-left-color: #dbdbdb;
+  border-top-color: #dbdbdb;
+  background-color: #bfbfbf;
+}
+
 .concave {
   border: 2px solid;
+  border-bottom-color: #c7c7c7;
+  border-right-color: #c7c7c7;
+  border-left-color: #808080;
+  border-top-color: #808080;
+  background-color: #fff;
+  padding: 10px;
+}
+
+.concave-small {
+  border: 1px solid;
   border-bottom-color: #c7c7c7;
   border-right-color: #c7c7c7;
   border-left-color: #808080;
