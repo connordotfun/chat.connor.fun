@@ -4,17 +4,17 @@ package messages
 const (
 	createIfNotExistsQuery = `
 		CREATE TABLE IF NOT EXISTS messages (
-			id SERIAL NOT NULL PRIMARY KEY,
-			user_id Integer NOT NULL REFERENCES users (id),
-			room_id Integer NOT NULL REFERENCES rooms (id),
+			id UUID NOT NULL PRIMARY KEY,
+			user_id UUID NOT NULL REFERENCES users (id),
+			room_id UUID NOT NULL REFERENCES rooms (id),
 			text TEXT NOT NULL,
 			create_date Integer NOT NULL,
 		);
 	`
 
 	insertMessageQuery = `
-		INSERT INTO messages (user_id, room_id, text, create_date) VALUES
-			(:user_id, :room_id, :text, :create_date);
+		INSERT INTO messages (id, user_id, room_id, text, create_date) VALUES
+			(id :id, :user_id, :room_id, :text, :create_date);
 	`
 
 	selectByUserIdQuery = `
