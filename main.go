@@ -31,7 +31,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.Use
 
 	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
 
-	api.GET("/rooms/*/ws", chat.HandleWebsocket(hubMap))
+	api.GET("/rooms/*/ws", chat.HandleWebsocket(hubMap)).Name = "join-room"
 }
 
 func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
