@@ -4,7 +4,7 @@ import promiseFinally from 'promise.prototype.finally'
 import { useStrict } from 'mobx'
 import { Provider } from 'mobx-react'
 
-import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
 

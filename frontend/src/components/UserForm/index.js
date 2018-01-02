@@ -7,9 +7,6 @@ import { withRouter } from 'react-router-dom'
 @withRouter
 @inject('authStore') @observer
 class UserForm extends Component {
-    constructor(props) {
-        super(props)
-    }
     componentWillUnmount() {
         this.props.authStore.reset()
     }
@@ -17,7 +14,7 @@ class UserForm extends Component {
     handlePasswordChange = e => this.props.authStore.setPassword(e.target.value);
     handleSubmitForm = e => {e.preventDefault(); this.props.authStore.login() }
     render() {
-        const { values, inProgress } = this.props.authStore
+        const { values, inProgress, errors } = this.props.authStore
         return (
             <div className="UserForm">
                 <form onSubmit={this.handleSubmitForm}>
@@ -53,6 +50,7 @@ class UserForm extends Component {
 
                     </fieldset>
                 </form>
+                {errors ? <p>{errors}</p> : null}
             </div>
         )
     }
