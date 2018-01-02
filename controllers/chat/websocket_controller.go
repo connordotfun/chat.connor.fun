@@ -9,6 +9,8 @@ import (
 	_"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 
@@ -37,7 +39,7 @@ func makeResponseHeader(ac context.AuthorizedContext) http.Header {
 	return nil
 }
 
-func HandleWebsocket(hubs *HubMap) echo.HandlerFunc {
+func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 			return c.NoContent(http.StatusForbidden)
@@ -45,7 +47,7 @@ func HandleWebsocket(hubs *HubMap) echo.HandlerFunc {
 		ac := c.(context.AuthorizedContext)
 
 		roomName := c.Param("room")
-		hub, err := lookupHub(roomName, hubs)
+		hub, err := lookupHub(roomName, hubs, roomsRepo)
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}
@@ -73,18 +75,18 @@ func HandleWebsocket(hubs *HubMap) echo.HandlerFunc {
 	}
 }
 
-func lookupHub(name string, hubs *HubMap) (*Hub, error) {
+func lookupHub(name string, hubs *HubMap, roomsRepo db.RoomsRepository) (*Hub, error) {
 	hub, ok := hubs.Load(name)
 	if !ok { //hub not in memory, check the database
-		//room, err := rooms.Repo.GetByName(name)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//if room == nil { //room does not exist
-		//	return nil, nil
-		//}
-		hub = NewHub() //init a new hub to activate the room
-		go hub.runRoom(nil)
+		room, err := roomsRepo.GetByName(name)
+		if err != nil {
+			return nil, err
+		}
+		if room == nil {
+			room = &model.ChatRoom{Id: uuid.NewV4(), Name: name}
+		}
+		hub = NewHub(room) //init a new hub to activate the room
+		go hub.runRoom()
 		hubs.Store(name, hub)
 	}
 	return hub, nil

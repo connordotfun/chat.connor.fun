@@ -7,6 +7,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"encoding/json"
 	_"errors"
+	"github.com/satori/go.uuid"
 )
 
 
@@ -32,9 +33,10 @@ func (c *Client) signMessage(messageBytes []byte) (*model.Message, error) {
 	if err != nil {
 		return nil, err
 	}
+	message.Id = uuid.NewV4()
 	message.CreateDate = time.Now().Unix()
 	if c.user != nil {
-		message.Creator 	= &model.User{Id: c.user.Id, Username: c.user.Username}
+		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
 		//return nil, errors.New("message has no creator")
 	}

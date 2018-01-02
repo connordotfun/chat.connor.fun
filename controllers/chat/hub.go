@@ -3,6 +3,7 @@ package chat
 import (
 	"sync"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type Hub struct {
@@ -10,13 +11,13 @@ type Hub struct {
 
 	broadcast chan *model.Message
 
-	register chan *Client
+	register   chan *Client
 	unregister chan *Client
 
 	stop chan bool
-}
 
-type HubDeallocater func(hub *Hub)
+	Room *model.ChatRoom
+}
 
 type HubMap struct {
 	data sync.Map
@@ -42,41 +43,55 @@ func (rm *HubMap) Delete(roomName string) {
 	rm.data.Delete(roomName)
 }
 
-func NewHub() *Hub {
+func NewHub(room *model.ChatRoom) *Hub {
 	return &Hub{
-		clients: make(map[*Client]bool),
-		broadcast: make(chan *model.Message),
-		register: make(chan *Client),
+		clients:    make(map[*Client]bool),
+		broadcast:  make(chan *model.Message),
+		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		stop: make(chan bool),
+		stop:       make(chan bool),
+		Room:       room,
 	}
 }
 
-func (r *Hub) runRoom(deallocate HubDeallocater) {
+func (r *Hub) runRoom() {
 	for {
 		select {
-			case stop := <-r.stop:
-				if stop {
-					deallocate(r)
-					return
-				}
-			case client := <- r.register:
-				r.clients[client] = true
-			case client := <- r.unregister:
-				if _, ok := r.clients[client]; ok {
-					delete(r.clients, client)
-					close(client.send)
-				}
-			case message := <- r.broadcast:
-				for client := range r.clients {
-					select {
-						case client.send <- message:
-						default: //failed to send, close the client
-							close(client.send)
-							delete(r.clients, client)
-					}
+		case stop := <-r.stop:
+			if stop {
 
+				return
+			}
+		case client := <-r.register:
+			r.clients[client] = true
+		case client := <-r.unregister:
+			if _, ok := r.clients[client]; ok {
+				delete(r.clients, client)
+				close(client.send)
+				if len(r.clients) == 0 {
+					r.stop <- true //stop self
 				}
+			}
+		case message := <-r.broadcast:
+			for client := range r.clients {
+				select {
+				case client.send <- message:
+				default: //failed to send, close the client
+					close(client.send)
+					delete(r.clients, client)
+				}
+
+			}
 		}
 	}
+}
+
+func (r *Hub) finalizeRoom(roomsRepo db.RoomsRepository) error {
+	if room, err := roomsRepo.GetById(r.Room.Id); room == nil && err == nil {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return roomsRepo.Add(r.Room)
 }
