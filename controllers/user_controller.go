@@ -111,3 +111,7 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 		}
 	}
 }
+
+func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
+	return nil
+}

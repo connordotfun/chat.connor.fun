@@ -37,3 +37,12 @@ func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
 		return c.JSON(http.StatusOK, model.NewDataResponse(messages))
 	}
 }
+
+func GetMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
+	return nil
+}
+
+func UpdateMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
+	return nil
+}
+
