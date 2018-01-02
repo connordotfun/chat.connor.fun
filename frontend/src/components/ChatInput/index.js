@@ -17,7 +17,7 @@ class ChatInput extends Component {
     render() {
         return (
             <div className="ChatInput">
-                <input className="concave" type="text" onKeyPress={this.handleKeyPress} onChange={this.handleChange} />
+                <input disabled={!this.props.socketStore.connected} className="concave" type="text" onKeyPress={this.handleKeyPress} onChange={this.handleChange} />
             </div>
         )
     }

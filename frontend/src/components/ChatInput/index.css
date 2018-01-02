@@ -10,3 +10,7 @@
     font-family: "Millenium";
     font-size: 0.9em;
 }
+
+.ChatInput input:disabled {
+    background-color: #bfbfbf;
+}
