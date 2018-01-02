@@ -5,6 +5,9 @@ import './index.css'
 
 @observer
 class Messages extends Component {
+    componentDidUpdate(prevProps, prevState) {
+        this.updateScroll()
+    }
     render() {
         return (
             <div className="Messages">
@@ -15,6 +18,11 @@ class Messages extends Component {
                 }
             </div>
         )
+    }
+
+    updateScroll() {
+        let messageEls = document.getElementsByClassName('Message')
+        messageEls[messageEls.length - 1].scrollIntoView()
     }
 }
 
