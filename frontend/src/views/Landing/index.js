@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { observer, inject } from 'mobx-react'
 
 import UserForm from '../../components/UserForm'
+import RegisterForm from '../../components/RegisterForm'
+
 import './index.css'
 
 @inject('commonStore')
@@ -14,7 +16,7 @@ class Landing extends Component {
                 <h1>Welcome!</h1>
                 <p><em>chat.connor.fun</em> is a cool hangout place.</p>
                 <UserForm />
-                <p>If we gotta token, it's {this.props.commonStore.token}</p>
+                <RegisterForm />
             </div>
         )
     }

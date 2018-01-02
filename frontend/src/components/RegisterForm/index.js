@@ -6,19 +6,28 @@ import { withRouter } from 'react-router-dom'
 
 @withRouter
 @inject('authStore') @observer
-class UserForm extends Component {
+class RegisterForm extends Component {
     componentWillUnmount() {
         this.props.authStore.reset()
     }
     handleUserChange = e => this.props.authStore.setUsername(e.target.value);
     handlePasswordChange = e => this.props.authStore.setPassword(e.target.value);
-    handleSubmitForm = e => {e.preventDefault(); this.props.authStore.login() }
+    handleSubmitForm = e => {
+        e.preventDefault()
+        try {
+            this.props.authStore.register()
+        } catch (error) {
+            console.log(error)
+        } finally {
+            this.props.authStore.login()
+        }
+    }
     render() {
         const { values, inProgress, errors } = this.props.authStore
         return (
-            <div className="UserForm">
+            <div className="RegisterForm">
                 <form onSubmit={this.handleSubmitForm}>
-                    <h3>Log In</h3>
+                    <h3>Make an account</h3>
                     <fieldset className="form-group">
                         <input
                         className="form-control form-control-lg"
@@ -44,7 +53,7 @@ class UserForm extends Component {
                         type="submit"
                         disabled={inProgress}
                     >
-                        Sign in
+                        Make Account
                     </button>
                 </form>
                 {errors ? <p>{errors}</p> : null}
@@ -53,4 +62,4 @@ class UserForm extends Component {
     }
 }
 
-export default UserForm
+export default RegisterForm
