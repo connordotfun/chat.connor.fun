@@ -10,13 +10,10 @@ type messageRepoFilter func(message *model.Message) bool
 
 type MockMessagesRepository struct {
 	Messages map[uuid.UUID]model.Message
-
-	users *MockUserRepository
-	rooms *MockRoomsRepository
 }
 
-func NewMockMessagesRepository(users *MockUserRepository, rooms *MockRoomsRepository) *MockMessagesRepository {
-	return &MockMessagesRepository{Messages: map[uuid.UUID]model.Message{}, users: users, rooms: rooms}
+func NewMockMessagesRepository() *MockMessagesRepository {
+	return &MockMessagesRepository{Messages: map[uuid.UUID]model.Message{}}
 }
 
 func (r MockMessagesRepository) Add(message *model.Message) error {

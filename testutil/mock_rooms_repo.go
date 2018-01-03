@@ -3,7 +3,6 @@ package testutil
 import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/model"
-	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 )
 
 type MockRoomsRepository struct {

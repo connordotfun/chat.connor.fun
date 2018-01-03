@@ -12,7 +12,7 @@ func GetNearbyRooms(roomsRepo db.RoomsRepository) echo.HandlerFunc {
 	return nil
 }
 
-func GetRoomMembers(hubMap *chat.HubMap) echo.HandlerFunc {
+func GetRoomMembers(hubMap *chat.HubMap) echo.HandlerFunc { //there's no good way to test this rn
 	return func(c echo.Context) error {
 		roomName := c.Param("room")
 		hub, ok := hubMap.Load(roomName)

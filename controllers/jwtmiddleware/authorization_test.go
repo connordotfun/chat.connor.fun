@@ -168,8 +168,8 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.GetAccessCode().CanCreate())
-		assert.NotNil(t, ac.GetRequestor())
+		assert.True(t, ac.AccessCode().CanCreate())
+		assert.NotNil(t, ac.Requestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -202,8 +202,8 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.GetAccessCode().CanCreate())
-		assert.Nil(t, ac.GetRequestor())
+		assert.True(t, ac.AccessCode().CanCreate())
+		assert.Empty(t, ac.Requestor())
 		shouldBeTrue = true
 		return nil
 	}

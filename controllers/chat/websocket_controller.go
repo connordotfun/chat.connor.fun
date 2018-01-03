@@ -30,7 +30,7 @@ func isOriginValid(origin string, host string) bool {
 }
 
 func makeResponseHeader(ac context.AuthorizedContext) http.Header {
-	jwtStr := ac.GetJWTString()
+	jwtStr := ac.JWTString()
 	if jwtStr != "" {
 		return http.Header{
 			"Sec-WebSocket-Protocol": []string{jwtStr},
@@ -64,7 +64,9 @@ func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db
 			return err //upgrade failed
 		}
 
-		client := &Client{hub: hub, user: *ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
+
+		user := model.User{Id: ac.Requestor().Id, Username: ac.Requestor().Username}
+		client := &Client{hub: hub, user: user, canWrite: ac.AccessCode().CanCreate(),
 			conn: conn, send: make(chan *model.Message), messagesRepo: messagesRepo}
 		client.hub.register <- client
 
