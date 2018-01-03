@@ -28,8 +28,13 @@ const (
 	`
 
 	selectByRoomIdQuery = `
-		SELECT * FROM messages
-			WHERE room_id = :user_id;
+		SELECT m.id, m.text, m.create_date, u.id as user_id, u.username, r.id as room_id, r.name as room_name
+				FROM messages as m
+			JOIN users as u ON
+				u.id = m.user_id
+			JOIN rooms as r ON
+				m.room_id = r.id
+			WHERE m.room_id = :room_id;
 	`
 
 	selectByUserAndRoomQuery = `
@@ -40,9 +45,13 @@ const (
 	`
 
 	selectTopByRoomQuery = `
-		SELECT * FROM messages
-			WHERE room_id = :room_id;
-		ORDER BY create_date DESC
+		SELECT m.id, m.text, m.create_date, u.id as user_id, u.username, r.id as room_id, r.name as room_name
+				FROM messages as m
+			JOIN users as u ON
+				u.id = m.user_id
+			JOIN rooms as r ON
+				m.room_id = r.id
+			WHERE m.room_id = :room_id
 		LIMIT :count;
 	`
 

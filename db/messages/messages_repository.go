@@ -58,6 +58,38 @@ func (r repository) GetByUserId(userId uuid.UUID) ([]*model.Message, error) {
 	return messages, err
 }
 
+
+func constructMessageFromJoin(rows *sqlx.Rows) (*model.Message, error) {
+	data := &struct {
+		Id uuid.UUID
+		UserId uuid.UUID `db:"user_id"`
+		Username string
+		CreateDate int64 `db:"create_date"`
+		Text string
+		RoomId uuid.UUID `db:"room_id"`
+		RoomName string `db:"room_name"`
+	}{}
+
+	err := rows.StructScan(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	creator := &model.User{Id: data.UserId, Username: data.Username}
+	message := &model.Message{
+		Id: data.Id,
+		Creator: creator,
+		CreateDate: data.CreateDate,
+		Text: data.Text,
+		Room: &model.ChatRoom{
+			Id: data.RoomId,
+			Name: data.RoomName,
+		},
+	}
+
+	return message, nil
+}
+
 func (r repository) GetByRoomId(roomId uuid.UUID) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"room_id": roomId,
@@ -67,7 +99,14 @@ func (r repository) GetByRoomId(roomId uuid.UUID) ([]*model.Message, error) {
 		return nil, err
 	}
 	messages := make([]*model.Message, 0)
-	query.Select(&messages, params)
+	rows, err := query.Queryx(params)
+	for rows.Next() {
+		message, err := constructMessageFromJoin(rows)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
 
 	return messages, err
 }
@@ -97,7 +136,14 @@ func (r repository) GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message,
 		return nil, err
 	}
 	messages := make([]*model.Message, 0)
-	query.Select(&messages, params)
+	rows, err := query.Queryx(params)
+	for rows.Next() {
+		message, err := constructMessageFromJoin(rows)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
 
 	return messages, err
 }

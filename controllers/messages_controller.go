@@ -7,6 +7,7 @@ import (
 	"github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
+	"github.com/labstack/gommon/log"
 )
 
 func getMessagesRoom(c echo.Context, messagesRepo db.MessagesRepository, roomIdStr string, count int) error {
@@ -15,13 +16,14 @@ func getMessagesRoom(c echo.Context, messagesRepo db.MessagesRepository, roomIdS
 		return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_QUERY"))
 	}
 	var messages []*model.Message
-	if count <= 0 {
+	if count > 0 {
 		messages, err = messagesRepo.GetTopByRoom(roomId, count)
 	} else {
 		messages, err = messagesRepo.GetByRoomId(roomId)
 	}
 
 	if err != nil {
+		log.Printf("Failed to retrieve messages: %v", err)
 		return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
 	}
 	return c.JSON(http.StatusOK, model.NewDataResponse(messages))
