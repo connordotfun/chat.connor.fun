@@ -38,7 +38,7 @@ func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
 	message.Id = uuid.NewV4()
 	message.CreateDate = time.Now().Unix()
 	message.Room = c.hub.Room
-	if c.user != nil {
+	if c.user.Id != uuid.Nil {
 		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
 		//return nil, errors.New("message has no creator")

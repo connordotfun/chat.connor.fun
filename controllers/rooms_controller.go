@@ -4,7 +4,6 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/labstack/echo"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
-	"github.com/slimsag/godocmd/testdata"
 	"net/http"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 )
