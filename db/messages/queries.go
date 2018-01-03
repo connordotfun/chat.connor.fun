@@ -17,14 +17,37 @@ const (
 			(:id, :user_id, :room_id, :text, :create_date);
 	`
 
+	updateMessageTextQuery = `
+		UPDATE messages SET
+			text = :text
+		WHERE id = :id
+		RETURNING *;
+	`
+
 	selectOneByIdQuery = `
 		SELECT * FROM messages
 			WHERE id = :id
 	`
 
 	selectByUserIdQuery = `
-		SELECT * FROM messages
-			WHERE user_id = :user_id;
+		SELECT m.id, m.text, m.create_date, u.id as user_id, u.username, r.id as room_id, r.name as room_name
+				FROM messages as m
+			JOIN users as u ON
+				u.id = m.user_id
+			JOIN rooms as r ON
+				m.room_id = r.id
+			WHERE m.user_id = :user_id;
+	`
+
+	selectTopByUserIdQuery = `
+		SELECT m.id, m.text, m.create_date, u.id as user_id, u.username, r.id as room_id, r.name as room_name
+				FROM messages as m
+			JOIN users as u ON
+				u.id = m.user_id
+			JOIN rooms as r ON
+				m.room_id = r.id
+			WHERE m.user_id = :user_id
+		LIMIT :count;
 	`
 
 	selectByRoomIdQuery = `
@@ -35,13 +58,6 @@ const (
 			JOIN rooms as r ON
 				m.room_id = r.id
 			WHERE m.room_id = :room_id;
-	`
-
-	selectByUserAndRoomQuery = `
-		SELECT * FROM messages
-			WHERE user_id = :user_id;
-			AND
-			room_id = :room_id;
 	`
 
 	selectTopByRoomQuery = `
@@ -55,10 +71,26 @@ const (
 		LIMIT :count;
 	`
 
-	updateMessageTextQuery = `
-		UPDATE messages SET
-			text = :text
-		WHERE id = :id
-		RETURNING *;
+	selectByUserAndRoomQuery = `
+		SELECT m.id, m.text, m.create_date, u.id as user_id, u.username, r.id as room_id, r.name as room_name
+				FROM messages as m
+			JOIN users as u ON
+				u.id = m.user_id
+			JOIN rooms as r ON
+				m.room_id = r.id
+			WHERE m.room_id = :room_id
+				AND m.user_id = :user_id;
+	`
+
+	selectTopByUserAndRoomQuery = `
+		SELECT m.id, m.text, m.create_date, u.id as user_id, u.username, r.id as room_id, r.name as room_name
+				FROM messages as m
+			JOIN users as u ON
+				u.id = m.user_id
+			JOIN rooms as r ON
+				m.room_id = r.id
+			WHERE m.room_id = :room_id
+				AND m.user_id = :user_id
+		LIMIT :count;
 	`
 )

@@ -26,10 +26,15 @@ type RoomsRepository interface {
 
 type MessagesRepository interface {
 	Add(message *model.Message) error
-	GetById(id uuid.UUID) (*model.Message, error)
-	GetByUserId(userId uuid.UUID) ([]*model.Message, error)
-	GetByRoomId(roomId uuid.UUID) ([]*model.Message, error)
-	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
-	GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message, error)
 	Update(id uuid.UUID, newText string) (*model.Message, error)
+	GetById(id uuid.UUID) (*model.Message, error)
+
+	GetByUserId(userId uuid.UUID) ([]*model.Message, error)
+	GetTopByUserId(userId uuid.UUID, count int) ([]*model.Message, error)
+
+	GetByRoomId(roomId uuid.UUID) ([]*model.Message, error)
+	GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message, error)
+
+	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
+	GetTopByUserAndRoom(userId uuid.UUID, name uuid.UUID, count int) ([]*model.Message, error)
 }
