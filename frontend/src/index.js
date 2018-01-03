@@ -4,7 +4,7 @@ import promiseFinally from 'promise.prototype.finally'
 import { useStrict } from 'mobx'
 import { Provider } from 'mobx-react'
 
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, Route } from 'react-router-dom'
 import './index.css'
 import registerServiceWorker from './registerServiceWorker'
 
@@ -26,7 +26,7 @@ const stores = {
 ReactDOM.render(
     <Provider {...stores}>
         <BrowserRouter>
-            <App />
+            <Route component={App} />
         </BrowserRouter>
     </Provider>,
     document.getElementById('root'))

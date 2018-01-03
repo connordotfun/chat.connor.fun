@@ -7,9 +7,7 @@ import Input from '../../components/ChatInput'
 import './index.css'
 
 
-@inject('commonStore')
-@inject('socketStore')
-@inject('authStore')
+@inject('commonStore', 'socketStore', 'authStore')
 @observer
 class Chat extends Component {
     @observable _messages = []

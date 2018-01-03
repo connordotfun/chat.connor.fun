@@ -9,8 +9,11 @@ import './index.css'
 @inject('commonStore')
 @observer
 class Landing extends Component {
-    render() {
+    componentWillMount() {
         this.props.history.replace('/')
+    }
+    
+    render() {
         return (
             <div className="Landing convex">
                 <h1>Welcome!</h1>

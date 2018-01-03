@@ -1,15 +1,17 @@
 import React, { Component } from 'react'
 import { observer, inject } from 'mobx-react'
-import { Link, withRouter } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import './index.css'
 
 @inject('commonStore')
-@withRouter
 @observer
 class Home extends Component {
-    render() {
+    componentWillMount() {
         this.props.history.replace('/')
+    }
+    
+    render() {
         return (
             <div className="Home convex">
                 <h1>Welcome back, {this.props.commonStore.username}!</h1>

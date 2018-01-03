@@ -1,10 +1,7 @@
 import React, { Component } from 'react'
 import './index.css'
 import { inject, observer } from 'mobx-react'
-import { withRouter } from 'react-router-dom'
 
-
-@withRouter
 @inject('authStore') @observer
 class RegisterForm extends Component {
     componentWillUnmount() {
@@ -23,7 +20,6 @@ class RegisterForm extends Component {
         }
     }
     render() {
-        const { values, inProgress, errors } = this.props.authStore
         return (
             <div className="RegisterForm">
                 <form onSubmit={this.handleSubmitForm}>
@@ -33,7 +29,7 @@ class RegisterForm extends Component {
                         className="form-control form-control-lg"
                         type="text"
                         placeholder="Username"
-                        value={values.username}
+                        value={this.props.authStore.values.username}
                         onChange={this.handleUserChange}
                         />
                     </fieldset>
@@ -43,7 +39,7 @@ class RegisterForm extends Component {
                         className="form-control form-control-lg"
                         type="password"
                         placeholder="Password"
-                        value={values.password}
+                        value={this.props.authStore.values.password}
                         onChange={this.handlePasswordChange}
                         />
                     </fieldset>
@@ -51,12 +47,12 @@ class RegisterForm extends Component {
                     <button
                         className="convex"
                         type="submit"
-                        disabled={inProgress}
+                        disabled={this.props.authStore.inProgress}
                     >
                         Make Account
                     </button>
                 </form>
-                {errors ? <p>{errors}</p> : null}
+                {this.props.authStore.errors ? <p>{this.props.authStore.errors}</p> : null}
             </div>
         )
     }
