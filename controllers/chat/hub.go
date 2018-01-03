@@ -54,6 +54,7 @@ func NewHub(room *model.ChatRoom) *Hub {
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		stop:       make(chan bool),
+		GetUserList: make(chan chan []model.User),
 		Room:       room,
 	}
 }

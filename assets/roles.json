@@ -20,7 +20,8 @@
       {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
       {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"},
       {"path": "/api/v1/messages/*", "verbs": "r"},
-      {"path": "/api/v1/messages", "verbs": "r"}
+      {"path": "/api/v1/messages", "verbs": "r"},
+      {"path": "/api/v1/rooms/*/users", "verbs": "r"}
     ]
   },
 
