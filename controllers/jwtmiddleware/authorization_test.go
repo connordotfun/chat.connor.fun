@@ -16,6 +16,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/aaronaaeng/chat.connor.fun/db/users"
+	"github.com/satori/go.uuid"
 )
 const (
 	testDbHost = "localhost"
@@ -116,7 +117,8 @@ const (
 func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
 	usersRepo, rolesRepo := initTables()
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
- 	user, err := usersRepo.Add(model.User{Username: "test", Secret: "test"})
+	user := &model.User{Id: uuid.NewV4(), Username: "test", Secret: "test"}
+ 	err := usersRepo.Add(user)
  	assert.NoError(t, err)
 
  	assert.NoError(t, rolesRepo.Add(user.Id, "normal_user"))
@@ -148,7 +150,8 @@ func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
 func TestDoAuthorization_WithAuth(t *testing.T) {
 	usersRepo, rolesRepo := initTables()
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
-	user, err := usersRepo.Add(model.User{Username: "test", Secret: "test"})
+	user := &model.User{Id: uuid.NewV4(), Username: "test", Secret: "test"}
+	err := usersRepo.Add(user)
 	assert.NoError(t, err)
 
 	assert.NoError(t, rolesRepo.Add(user.Id, "normal_user"))
@@ -165,8 +168,8 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.GetAccessCode().CanCreate())
-		assert.NotNil(t, ac.GetRequestor())
+		assert.True(t, ac.AccessCode().CanCreate())
+		assert.NotNil(t, ac.Requestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -199,8 +202,8 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.GetAccessCode().CanCreate())
-		assert.Nil(t, ac.GetRequestor())
+		assert.True(t, ac.AccessCode().CanCreate())
+		assert.Empty(t, ac.Requestor())
 		shouldBeTrue = true
 		return nil
 	}

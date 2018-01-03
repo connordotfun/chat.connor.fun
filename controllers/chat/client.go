@@ -7,6 +7,8 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"encoding/json"
 	_"errors"
+	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 
@@ -20,23 +22,29 @@ const (
 
 type Client struct {
 	canWrite bool
-	user *model.User
+	user model.User
 	hub *Hub
 	conn *websocket.Conn
-	send chan *model.ChatMessage
+	send chan *model.Message
+	messagesRepo db.MessagesRepository
 }
 
-func (c *Client) signMessage(messageBytes []byte) (*model.ChatMessage, error) {
-	var message model.ChatMessage
+func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
+	var message model.Message
 	err := json.Unmarshal(messageBytes, &message)
 	if err != nil {
 		return nil, err
 	}
+	message.Id = uuid.NewV4()
 	message.CreateDate = time.Now().Unix()
-	if c.user != nil {
-		message.Creator = model.User{Id: c.user.Id, Username: c.user.Username}
+	message.Room = c.hub.Room
+	if c.user.Id != uuid.Nil {
+		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
 	} else {
 		//return nil, errors.New("message has no creator")
+	}
+	if err := c.messagesRepo.Add(&message); err != nil {
+		return nil, err
 	}
 	return &message, nil
 }
@@ -51,8 +59,10 @@ func (c *Client) writer() {
 	c.conn.SetPongHandler(func(string) error {
 		c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil
 	})
+	log.Printf("starting client writer")
 	for {
 		_, message, err := c.conn.ReadMessage()
+		log.Printf("received message from client (canWrite: %v)", c.canWrite)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)
@@ -60,7 +70,7 @@ func (c *Client) writer() {
 			return
 		}
 		if c.canWrite {
-			signedMessage, err := c.signMessage(message)
+			signedMessage, err := c.processMessage(message)
 			if err != nil {
 				log.Printf("error signing message: %v", err)
 				return //client sent invalid message, kick
@@ -73,9 +83,9 @@ func (c *Client) writer() {
 	}
 }
 
-func (c *Client) createMessageList(initialMessage *model.ChatMessage) ([]byte, error) {
+func (c *Client) createMessageList(initialMessage *model.Message) ([]byte, error) {
 	messageCount := len(c.send) + 1
-	messageList := make([]*model.ChatMessage, messageCount)
+	messageList := make([]*model.Message, messageCount)
 
 	messageList[0] = initialMessage
 	for i := 1; i < messageCount; i++ {

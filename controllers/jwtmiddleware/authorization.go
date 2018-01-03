@@ -19,7 +19,7 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context,
 			c.JSON(http.StatusUnauthorized, invalidTokenResponse)
 		}
 		if claims.User.Username != "" { //this is very hacky
-			ac.SetRequestor(&claims.User)
+			ac.SetRequestor(claims.User)
 			userRoles, err := rolesRepo.GetUserRoles(claims.User.Id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, model.Response{

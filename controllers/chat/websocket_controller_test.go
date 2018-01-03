@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"time"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/aaronaaeng/chat.connor.fun/testutil"
 )
 
 type testHandler struct {
@@ -29,6 +30,7 @@ func (t *testHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := &context.AuthorizedContextImpl{
 		Context: t.e.NewContext(r, w),
 	}
+
 	c.SetAccessCode(t.code)
 	t.err = t.handler(c)
 }
@@ -50,29 +52,32 @@ func (c *testWsClient) write(message string) error {
 	return w.Close()
 }
 
-func (c *testWsClient) read() (model.ChatMessage, error) {
+func (c *testWsClient) read() (model.Message, error) {
 	_, bMess, err := c.conn.ReadMessage()
 	if err != nil {
-		return model.ChatMessage{}, err
+		return model.Message{}, err
 	}
-	var messages []*model.ChatMessage
+	var messages []*model.Message
 	err = json.Unmarshal(bMess, &messages)
 	if err != nil {
-		return model.ChatMessage{}, err
+		return model.Message{}, err
 	}
 	return *messages[0], err
 }
 
 func TestHandleWebsocket_UpgradeWS(t *testing.T) {
+	messagesRepo := testutil.NewMockMessagesRepository()
+	roomsRepo := testutil.NewMockRoomsRepository()
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
 
 	shouldBeTrue := false
-
 	handlerFunc := func(c echo.Context) error {
 		shouldBeTrue = true
-		return HandleWebsocket(hubMap, c)
+		return handleWsFunc(c)
 	}
 	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
 
@@ -94,14 +99,18 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 
 
 func TestHandleWebsocket_MultipleClients(t *testing.T) {
+	messagesRepo := testutil.NewMockMessagesRepository()
+	roomsRepo := testutil.NewMockRoomsRepository()
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
 		shouldBeTrue = true
-		return HandleWebsocket(hubMap, c)
+		return handleWsFunc(c)
 	}
 	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
 
@@ -146,14 +155,18 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 }
 
 func TestHandleWebsocket_IllegalMessage(t *testing.T) {
+	messagesRepo := testutil.NewMockMessagesRepository()
+	roomsRepo := testutil.NewMockRoomsRepository()
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
 		shouldBeTrue = true
-		return HandleWebsocket(hubMap, c)
+		return handleWsFunc(c)
 	}
 	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
 
@@ -178,14 +191,18 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 }
 
 func TestHandleWebsocket_ReadOnly(t *testing.T) {
+	messagesRepo := testutil.NewMockMessagesRepository()
+	roomsRepo := testutil.NewMockRoomsRepository()
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
 		shouldBeTrue = true
-		return HandleWebsocket(hubMap, c)
+		return handleWsFunc(c)
 	}
 	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("r"))
 	s := httptest.NewServer(handler)

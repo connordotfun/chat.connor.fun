@@ -9,6 +9,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	_"github.com/lib/pq"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/satori/go.uuid"
 )
 
 const (
@@ -107,12 +108,13 @@ func TestInit(t *testing.T) {
 
 func TestRepository_AddRole(t *testing.T) {
 	userRepo, roleRepo := initTables()
-	err := roleRepo.Add(123, "foobarrole") //not valid uid
+	err := roleRepo.Add(uuid.NewV4(), "foobarrole") //not valid uid
 	assert.Error(t, err)
 
 	testRowCountEquals(t, 0)
 
-	user, err := userRepo.Add(model.User{Username: "test", Secret: "test"})
+	user := &model.User{Id: uuid.NewV4(), Username: "test", Secret: "test"}
+	userRepo.Add(user)
 
 	validId := user.Id
 
@@ -127,26 +129,26 @@ func TestRepository_AddRole(t *testing.T) {
 func TestRepository_GetUserRoles(t *testing.T) {
 	userRepo, roleRepo := initTables()
 
-	user1 := model.User{Username: "user1", Secret: "test"}
-	user2 := model.User{Username: "user2", Secret: "test"}
-	user3 := model.User{Username: "user3", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
+	user3 := &model.User{Id: uuid.NewV4(), Username: "user3", Secret: "test"}
 
-	validUser1, _ := userRepo.Add(user1)
-	validUser2, _ := userRepo.Add(user2)
-	validUser3, _ := userRepo.Add(user3)
+	userRepo.Add(user1)
+	userRepo.Add(user2)
+	userRepo.Add(user3)
 
-	roleRepo.Add(validUser1.Id, "role1")
-	roleRepo.Add(validUser1.Id, "role2")
-	roleRepo.Add(validUser1.Id, "role3")
+	roleRepo.Add(user1.Id, "role1")
+	roleRepo.Add(user1.Id, "role2")
+	roleRepo.Add(user1.Id, "role3")
 
-	roleRepo.Add(validUser2.Id, "role4")
-	roleRepo.Add(validUser2.Id, "role5")
+	roleRepo.Add(user2.Id, "role4")
+	roleRepo.Add(user2.Id, "role5")
 
-	user1Roles, err := roleRepo.GetUserRoles(validUser1.Id)
+	user1Roles, err := roleRepo.GetUserRoles(user1.Id)
 	assert.NoError(t, err)
-	user2Roles, err := roleRepo.GetUserRoles(validUser2.Id)
+	user2Roles, err := roleRepo.GetUserRoles(user2.Id)
 	assert.NoError(t, err)
-	user3Roles, err := roleRepo.GetUserRoles(validUser3.Id)
+	user3Roles, err := roleRepo.GetUserRoles(user3.Id)
 	assert.NoError(t, err)
 
 	assert.Len(t, user1Roles, 3)

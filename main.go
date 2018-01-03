@@ -20,22 +20,32 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
 	"github.com/aaronaaeng/chat.connor.fun/context"
 	"github.com/aaronaaeng/chat.connor.fun/db"
-)
-
-var (
-	userRepository db.UserRepository
-	rolesRepository db.RolesRepository
-	roomRepository db.RoomRepository
+	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
+	"github.com/aaronaaeng/chat.connor.fun/db/messages"
 )
 
 
-func createApiRoutes(e *echo.Echo) {
-	e.POST("/api/v1/users", controllers.CreateUser(userRepository, rolesRepository))
-	e.POST("/api/v1/login", controllers.LoginUser(userRepository))
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.UserRepository,
+	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository, messagesRepository db.MessagesRepository) {
 
+	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
+	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
+	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
+
+	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
+
+	api.GET("/messages", controllers.GetMessages(messagesRepository))
+	api.GET("/messages/:id", controllers.GetMessage(messagesRepository))
+	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository))
+
+	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository))
+	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap))
+
+
+	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }
 
-func addMiddlewares(e *echo.Echo) {
+func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	if !config.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
@@ -61,26 +71,42 @@ func addMiddlewares(e *echo.Echo) {
 	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
-func initDatabaseRepositories() {
+func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.RoomsRepository, db.MessagesRepository){
 	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
 		panic(err)
 	}
-	userRepository, err = users.New(database)
+	userRepository, err := users.New(database)
 	if err != nil {
 		panic(err)
 	}
 
-	rolesRepository, err = roles.New(database)
+	rolesRepository, err := roles.New(database)
 	if err != nil {
 		panic(err)
 	}
+
+	roomsRepository, err := rooms.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	messagesRepository, err := messages.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	return userRepository, rolesRepository, roomsRepository, messagesRepository
 }
 
 func main() {
 	e := echo.New()
-	e.Static("/web", "frontend")
 	e.Debug = config.Debug
+
+	e.Static("/web", "frontend")
+	e.GET("/", controllers.Index)
+	e.GET("/wstest", controllers.WSTestView)
+	v1ApiGroup := e.Group("/api/v1")
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
 	if err != nil {
@@ -91,24 +117,16 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-
-	initDatabaseRepositories()
-
-
-	addMiddlewares(e)
+	usersRepository, rolesRepository, roomsRepository, messagesRepository := initDatabaseRepositories()
+	addMiddlewares(e, rolesRepository)
+	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, roomsRepository, messagesRepository)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/public/*.html")),
 	}
 	e.Renderer = t
-	e.GET("/", controllers.Index)
-	e.GET("/wstest", controllers.WSTestView)
 
-	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
-		return chat.HandleWebsocket(hubMap, c)
-	})
-
-	createApiRoutes(e)
+	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":4000"))
 }
 

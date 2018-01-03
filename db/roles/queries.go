@@ -4,7 +4,7 @@ package roles
 const (
 	createIfNotExistsQuery = `
 		CREATE TABLE IF NOT EXISTS user_roles (
-			user_id INTEGER NOT NULL REFERENCES users (id),
+			user_id UUID NOT NULL REFERENCES users (id),
 			role VARCHAR(255) NOT NULL,
 			PRIMARY KEY (user_id, role)
 		);
