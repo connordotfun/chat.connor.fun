@@ -64,7 +64,7 @@ func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db
 			return err //upgrade failed
 		}
 
-		client := &Client{hub: hub, user: ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
+		client := &Client{hub: hub, user: *ac.GetRequestor(), canWrite: ac.GetAccessCode().CanCreate(),
 			conn: conn, send: make(chan *model.Message), messagesRepo: messagesRepo}
 		client.hub.register <- client
 

@@ -22,7 +22,7 @@ const (
 
 type Client struct {
 	canWrite bool
-	user *model.User
+	user model.User
 	hub *Hub
 	conn *websocket.Conn
 	send chan *model.Message

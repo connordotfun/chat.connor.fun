@@ -4,6 +4,7 @@ import (
 	"sync"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/labstack/gommon/log"
 )
 
 type Hub struct {
@@ -15,6 +16,8 @@ type Hub struct {
 	unregister chan *Client
 
 	stop chan bool
+
+	GetUserList chan (chan []model.User)
 
 	Room *model.ChatRoom
 	roomsRepo db.RoomsRepository
@@ -82,6 +85,17 @@ func (r *Hub) runRoom() {
 					delete(r.clients, client)
 				}
 
+			}
+		case userListChan := <-r.GetUserList:
+			users := make([]model.User, len(r.clients))
+			index := 0
+			for client := range r.clients {
+				users[index] = client.user
+			}
+			select {
+			case userListChan <- users:
+			default:
+				log.Printf("couldn't send user's list over request")
 			}
 		}
 	}
