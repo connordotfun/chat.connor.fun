@@ -27,7 +27,7 @@ class Chat extends Component {
     render() {
         return (
             <div className="Chat convex">
-                <Header room={this.props.match.params.room} handleLeave={this.props.authStore.logout}/>
+                <Header room={this.props.match.params.room} handleLeave={this.onLeave.bind(this)} handleExit={this.props.authStore.logout} />
                 <Messages messages={this._messages} />
                 <Input />
             </div>
@@ -39,6 +39,12 @@ class Chat extends Component {
         let message = JSON.parse(ev.data)[0]
         console.log(message.sender.username)
         this._messages.push(message)
+    }
+
+    @action
+    onLeave() {
+        this.props.socketStore.leaveRoom()
+        this.props.history.push('/')
     }
 }
 
