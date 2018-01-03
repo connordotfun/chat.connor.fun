@@ -49,7 +49,26 @@ func getMessagesUser(c echo.Context, messagesRepo db.MessagesRepository, userIdS
 }
 
 func getMessagesUsersAndRoom(c echo.Context, messagesRepo db.MessagesRepository, roomIdStr string, userIdStr string, count int) error {
-	return nil
+	userId, err := uuid.FromString(userIdStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_QUERY"))
+	}
+	roomId, err := uuid.FromString(roomIdStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_QUERY"))
+	}
+	var messages []*model.Message
+	if count > 0 {
+		messages, err = messagesRepo.GetTopByUserAndRoom(userId, roomId, count)
+	} else {
+		messages, err = messagesRepo.GetByUserAndRoom(userId, roomId)
+	}
+
+	if err != nil {
+		log.Printf("Failed to retrieve messages: %v", err)
+		return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
+	}
+	return c.JSON(http.StatusOK, model.NewDataResponse(messages))
 }
 
 func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
@@ -62,12 +81,12 @@ func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
 			count = -1
 		}
 
-		if roomIdStr != "" {
+		if roomIdStr != "" && userIdStr != "" {
+			return getMessagesUsersAndRoom(c, messagesRepo, roomIdStr, userIdStr, count)
+		} else if roomIdStr != "" {
 			return getMessagesRoom(c, messagesRepo, roomIdStr, count)
 		} else if userIdStr != "" {
 			return getMessagesUser(c, messagesRepo, userIdStr, count)
-		} else if roomIdStr != "" && userIdStr != "" {
-			return getMessagesUsersAndRoom(c, messagesRepo, roomIdStr, userIdStr, count)
 		}
 		return c.JSON(http.StatusBadRequest, model.NewErrorResponse("NO_QUERY"))
 	}
