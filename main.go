@@ -135,7 +135,7 @@ func main() {
 	e.GET("/wstest", controllers.WSTestView)
 
 	//log.SetOutput(os.Stdout)
-	e.Logger.Fatal(e.Start(":4000"))
+	e.Logger.Fatal(e.Start(":" + config.Port))
 }
 
 type Template struct {
