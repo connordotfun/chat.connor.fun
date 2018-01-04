@@ -1,0 +1,16 @@
+.ChatInput {
+    grid-area: input;
+    border-radius: 0;
+}
+
+.ChatInput input {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    font-family: "Hieroglyphics", "Millenium";
+    font-size: 0.9em;
+}
+
+.ChatInput input:disabled {
+    background-color: #bfbfbf;
+}

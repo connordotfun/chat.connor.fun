@@ -62,8 +62,10 @@ func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
 		return strings.HasPrefix(c.Path(), "/web") ||
-				strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
-				strings.HasSuffix(c.Path(), "ws")
+			strings.HasPrefix(c.Path(), "/at") || // VERY TEMPORARY
+			strings.HasPrefix(c.Path(), "/static") ||
+			strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
+			strings.HasSuffix(c.Path(), "ws") //||
 	}, jwtmiddleware.JWTBearerTokenExtractor, rolesRepository))
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
@@ -103,7 +105,10 @@ func main() {
 	e := echo.New()
 	e.Debug = config.Debug
 
-	e.Static("/web", "frontend")
+	e.Static("/web", "frontend/build")
+	e.Static("/static", "frontend/build/static")
+	e.Static("/service-worker.js", "frontend/build/service-worker.js")
+
 	e.GET("/", controllers.Index)
 	e.GET("/wstest", controllers.WSTestView)
 	v1ApiGroup := e.Group("/api/v1")
@@ -122,9 +127,12 @@ func main() {
 	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, roomsRepository, messagesRepository)
 
 	t := &Template{
-		templates: template.Must(template.ParseGlob("frontend/public/*.html")),
+		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
 	}
 	e.Renderer = t
+	e.GET("/", controllers.Index)
+	e.GET("/at/*", controllers.Index)
+	e.GET("/wstest", controllers.WSTestView)
 
 	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":4000"))

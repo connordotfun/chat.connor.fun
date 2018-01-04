@@ -1,0 +1,31 @@
+.RegisterForm {
+    grid-area: input;
+    border-radius: 0;
+}
+
+.RegisterForm h3 {
+    margin-bottom: 0;
+}
+
+.RegisterForm fieldset {
+    border: none;
+    padding: 10px 0;
+}
+
+.RegisterForm input {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+    font-family: "Hieroglyphics", "Millenium";
+    font-size: 0.9em;
+}
+
+.RegisterForm button {
+    color: black;
+    font-style: italic;
+    padding: 5px;
+}
+
+.RegisterForm button:hover {
+    background-color: #808080;
+}

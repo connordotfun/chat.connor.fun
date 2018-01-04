@@ -1,9 +1,78 @@
 @font-face {
-  font-family: 'windows95';
-  src: url("./assets/px_sans_nouveaux.ttf") format("truetype"); }
+  font-family: 'Millenium';
+  src: url('fonts/Millennium-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Millenium';
+  src: url('fonts/Millennium-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {  
+  font-family: 'Millenium';
+  src: url('fonts/Millennium-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Hieroglyphics';
+  src: url('fonts/Hieroglyphics.ttf') format('truetype');
+  unicode-range: U+13000-U+1342F
+}
+
+/* h/t to the NewGardiner font for existing */
+
+html, body, #root {
+  height: 100%;
+  margin:  0px auto;
+  padding: 0px auto;
+  background-color: #008080;
+}
 
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'windows95';
-  background-color: #008080; }
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.convex {
+  border: 2px solid;
+  border-bottom-color: #535353;
+  border-right-color: #535353;
+  border-left-color: #dbdbdb;
+  border-top-color: #dbdbdb;
+  background-color: #bfbfbf;
+}
+
+.convex-small {
+  border: 1px solid;
+  border-bottom-color: #535353;
+  border-right-color: #535353;
+  border-left-color: #dbdbdb;
+  border-top-color: #dbdbdb;
+  background-color: #bfbfbf;
+}
+
+.concave {
+  border: 2px solid;
+  border-bottom-color: #c7c7c7;
+  border-right-color: #c7c7c7;
+  border-left-color: #808080;
+  border-top-color: #808080;
+  background-color: #fff;
+  padding: 10px;
+}
+
+.concave-small {
+  border: 1px solid;
+  border-bottom-color: #c7c7c7;
+  border-right-color: #c7c7c7;
+  border-left-color: #808080;
+  border-top-color: #808080;
+  background-color: #fff;
+  padding: 10px;
+}

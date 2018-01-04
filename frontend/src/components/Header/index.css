@@ -1,0 +1,57 @@
+.Header {
+    grid-area: header;
+    display: grid;
+    background-color: #02007F;
+}
+
+.Header span,button {
+    text-align: center;
+    font-size: 1.1em;
+    margin: auto 0;
+    font-family: "Hieroglyphics", "Millenium";
+    color: white;
+}
+
+.Header span:hover {
+    color: red;
+}
+
+.Header span.room {
+    font-size: 1.5em;
+    font-style: italic;
+}
+
+.Header button {
+    margin: 10px;
+    font-weight: 700;
+    color: black;
+    border-radius: 0;
+}
+
+.Header button:hover {
+    background-color: #808080;
+}
+
+@media screen and (max-width:1023px) {
+    .Header {
+        grid-template-columns: 55px 1fr 55px;
+    }
+}
+
+@media screen and (min-width:1024px) {
+    .Header {
+        grid-template-columns: 40px 1fr 40px;
+    }
+
+    .Header span.room {
+        font-size: 1.2em;
+    }
+
+    .Header .back {
+        margin: 5px auto;
+    }
+
+    .Header .logout {
+        margin: 5px auto;
+    }
+}
