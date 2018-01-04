@@ -48,7 +48,8 @@ func addMiddlewares(e *echo.Echo) {
 			strings.HasPrefix(c.Path(), "/at") || // VERY TEMPORARY
 			strings.HasPrefix(c.Path(), "/static") ||
 			strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
-			strings.HasSuffix(c.Path(), "ws")
+			strings.HasSuffix(c.Path(), "ws") //||
+			//strings.HasSuffix(c.Path(), "/service-worker.js")
 	}, jwtmiddleware.JWTBearerTokenExtractor))
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
@@ -76,6 +77,8 @@ func main() {
 	e := echo.New()
 	e.Static("/web", "frontend/build")
 	e.Static("/static", "frontend/build/static")
+	e.Static("/service-worker.js", "frontend/build/service-worker.js")
+
 	e.Debug = config.Debug
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
