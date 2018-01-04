@@ -28,11 +28,6 @@
     border-radius: 0;
 }
 
-.profile {
-    background-image: url('https://avatars2.githubusercontent.com/u/3019167?s=460&v=4');
-    background-size: 30px 30px;
-}
-
 .Header button:hover {
     background-color: #808080;
 }
@@ -45,7 +40,7 @@
 
 @media screen and (min-width:1024px) {
     .Header {
-        grid-template-columns: 40px 1fr;
+        grid-template-columns: 40px 1fr 40px;
     }
 
     .Header span.room {
@@ -56,7 +51,7 @@
         margin: 5px auto;
     }
 
-    .Header .profile {
-        display: none;
+    .Header .logout {
+        margin: 5px auto;
     }
 }
