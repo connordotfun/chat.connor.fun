@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WS Test</title>
+</head>
+<body>
+
+<div id ="fuckingaround">
+    <script>
+        function sendMessage() {
+            console.log("sending message");
+            var message = {
+                text: document.getElementById("textbox").value
+            };
+            document.getElementById("textbox").value = "";
+            exampleSocket.send(JSON.stringify(message))
+        }
+        
+        function addMessageToList(ev) {
+            console.log("message sent");
+            var node = document.createElement("LI");
+            var textnode = document.createTextNode(ev.data);
+            node.appendChild(textnode);
+            document.getElementById("fuckingaround").appendChild(node);
+        }
+
+
+        var exampleSocket;
+        function connectToRoom() {
+            room = document.getElementById("roombox").value;
+            token = null;
+            if (document.getElementById("tokenbox").value != "") {
+                token = document.getElementById("tokenbox").value;
+            }
+            if (token == null) {
+                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/ws");
+            } else {
+                exampleSocket = new WebSocket("ws://localhost:4000/api/v1/rooms/" + room +  "/ws", token);
+            }
+            exampleSocket.onmessage = addMessageToList
+        }
+
+
+    </script>
+    <input id="textbox" type="text"/>
+    <a href="javascript:void(0)" onclick="sendMessage()">Submit</a>
+    <input id="roombox" type="text"/>
+    <a href="javascript:void(0)" onclick="connectToRoom()">Connect</a>
+    <input id="tokenbox" type="text"/>
+
+</div>
+</body>
+</html>
