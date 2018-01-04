@@ -4,7 +4,7 @@ package users
 const (
 	createIfNotExistsQuery = `
 		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL UNIQUE NOT NULL PRIMARY KEY,
+			id UUID UNIQUE NOT NULL PRIMARY KEY,
 			username VARCHAR(255) UNIQUE NOT NULL,
 			secret VARCHAR(255) NOT NULL
 		);
@@ -23,7 +23,7 @@ const (
 	`
 
 	insertUserQuery = `
-		INSERT INTO users (username, secret) VALUES (:username, :secret);
+		INSERT INTO users (id, username, secret) VALUES (:id, :username, :secret);
 	`
 
 	getLastInsertedQuery = `

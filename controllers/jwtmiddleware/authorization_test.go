@@ -3,8 +3,6 @@ package jwtmiddleware
 import (
 	"testing"
 	"fmt"
-	"github.com/aaronaaeng/chat.connor.fun/db/users"
-	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/stretchr/testify/assert"
 	"github.com/jmoiron/sqlx"
 	_"github.com/lib/pq"
@@ -15,6 +13,10 @@ import (
 	"strings"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/aaronaaeng/chat.connor.fun/db/roles"
+	"github.com/aaronaaeng/chat.connor.fun/db/users"
+	"github.com/satori/go.uuid"
 )
 const (
 	testDbHost = "localhost"
@@ -25,7 +27,7 @@ const (
 var testDb *sqlx.DB
 
 func TestMain(m *testing.M) {
-	//Init the connorfuntest db and reconnect to the new db
+	//New the connorfuntest db and reconnect to the new db
 	db, err := sqlx.Open("postgres", "postgresql://localhost:5432?sslmode=disable")
 	if err != nil {
 		panic("failed to establish db connection")
@@ -74,9 +76,10 @@ func cleanUpTestDb(db *sqlx.DB) {
 	}
 }
 
-func initTables() {
-	_, _ = users.Init(testDb) //these must be inited in the right order
-	_, _ = roles.Init(testDb)
+func initTables() (db.UserRepository, db.RolesRepository){
+	usersRepo, _ := users.New(testDb) //these must be inited in the right order
+	rolesRepo, _ := roles.New(testDb)
+	return usersRepo, rolesRepo
 }
 
 func cleanUpTables(t *testing.T) {
@@ -112,12 +115,13 @@ const (
 
 
 func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
-	initTables()
+	usersRepo, rolesRepo := initTables()
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
- 	user, err := users.Repo.Create(model.User{Username: "test", Secret: "test"})
+	user := &model.User{Id: uuid.NewV4(), Username: "test", Secret: "test"}
+ 	err := usersRepo.Add(user)
  	assert.NoError(t, err)
 
- 	assert.NoError(t, roles.Repo.AddRole(user.Id, "normal_user"))
+ 	assert.NoError(t, rolesRepo.Add(user.Id, "normal_user"))
 
  	e := echo.New()
 	req := httptest.NewRequest("POST", "/bar", strings.NewReader(""))
@@ -138,18 +142,19 @@ func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
 		Permissions: []model.Permission{},
 	}
 
-	doAuthorization(failHandler, &claims, c)
+	doAuthorization(failHandler, &claims, c, rolesRepo)
 
 	cleanUpTables(t)
 }
 
 func TestDoAuthorization_WithAuth(t *testing.T) {
-	initTables()
+	usersRepo, rolesRepo := initTables()
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
-	user, err := users.Repo.Create(model.User{Username: "test", Secret: "test"})
+	user := &model.User{Id: uuid.NewV4(), Username: "test", Secret: "test"}
+	err := usersRepo.Add(user)
 	assert.NoError(t, err)
 
-	assert.NoError(t, roles.Repo.AddRole(user.Id, "normal_user"))
+	assert.NoError(t, rolesRepo.Add(user.Id, "normal_user"))
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/foo/foo", strings.NewReader(""))
@@ -163,8 +168,8 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.GetAccessCode().CanCreate())
-		assert.NotNil(t, ac.GetRequestor())
+		assert.True(t, ac.AccessCode().CanCreate())
+		assert.NotNil(t, ac.Requestor())
 		shouldBeTrue = true
 		return nil
 	}
@@ -174,7 +179,7 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 		Permissions: []model.Permission{},
 	}
 
-	doAuthorization(failHandler, &claims, c)
+	doAuthorization(failHandler, &claims, c, rolesRepo)
 
 	assert.True(t, shouldBeTrue, "handler was not called")
 
@@ -182,7 +187,7 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 }
 
 func TestDoAuthorization_NoAuth(t *testing.T) {
-	initTables()
+	_, rolesRepo := initTables()
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
 
 	e := echo.New()
@@ -197,13 +202,13 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 	shouldBeTrue := false
 	failHandler := func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
-		assert.True(t, ac.GetAccessCode().CanCreate())
-		assert.Nil(t, ac.GetRequestor())
+		assert.True(t, ac.AccessCode().CanCreate())
+		assert.Empty(t, ac.Requestor())
 		shouldBeTrue = true
 		return nil
 	}
 
-	doAuthorization(failHandler, nil, c)
+	doAuthorization(failHandler, nil, c, rolesRepo)
 
 	assert.True(t, shouldBeTrue, "handler was not called")
 
@@ -211,7 +216,7 @@ func TestDoAuthorization_NoAuth(t *testing.T) {
 }
 
 func TestDoAuthorization_NoAuth_Fail(t *testing.T) {
-	initTables()
+	_, rolesRepo := initTables()
 	assert.NoError(t, model.InitRoleMap([]byte(testJsonRoleData)))
 
 	e := echo.New()
@@ -228,7 +233,7 @@ func TestDoAuthorization_NoAuth_Fail(t *testing.T) {
 		return nil
 	}
 
-	doAuthorization(failHandler, nil, c)
+	doAuthorization(failHandler, nil, c, rolesRepo)
 
 	cleanUpTables(t)
 }

@@ -3,47 +3,48 @@ package rooms
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/satori/go.uuid"
 )
 
-type Repository struct {
+type pgRoomsRepository struct {
 	db *sqlx.DB
 }
 
-var Repo Repository
-
-func Init(db *sqlx.DB) (Repository, error) {
+func New(db *sqlx.DB) (*pgRoomsRepository, error) {
 	_, err := db.Exec(createIfNotExistsRoomsQuery)
 	if err != nil {
-		return Repository{db: nil}, err
+		return nil, err
 	}
-	Repo = Repository{db: db}
-	return Repo, nil
+	return &pgRoomsRepository{db: db}, nil
 }
 
 
-func (r Repository) Create(room *model.ChatRoom) (*model.ChatRoom, error){
-	_, err := r.db.Exec(insertRoomQuery, &room)
+func (r pgRoomsRepository) Add(room *model.ChatRoom) error {
+	_, err := r.db.NamedExec(insertRoomQuery, &room)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	rows, err := r.db.NamedQuery(selectRoomByNameQuery, &room)
-	if err != nil {
-		return nil, err
-	}
-
-	var insertedRoom model.ChatRoom
-	if rows.Next() {
-		rows.StructScan(&insertedRoom)
-	} else {
-		return nil, err //room not found
-	}
-
-	return &insertedRoom, nil
+	return err
 }
 
-func (r Repository) GetByName(name string) (*model.ChatRoom, error) {
-	rows, err := r.db.NamedQuery(selectRoomByNameQuery, model.ChatRoom{Name: name})
+func (r pgRoomsRepository) GetById(id uuid.UUID) (*model.ChatRoom, error) {
+	params := map[string]interface{} {
+		"id": id,
+	}
+	query, err := r.db.PrepareNamed(selectRoomByIdQuery)
+	if err != nil {
+		return nil, err
+	}
+	chatRoom := new(model.ChatRoom)
+	query.Select(chatRoom, params)
+	return chatRoom, nil
+}
+
+func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
+	params := map[string]interface{} {
+		"name": name,
+	}
+	rows, err := r.db.NamedQuery(selectRoomByNameQuery, params)
 	if err != nil {
 		return nil, err
 	}

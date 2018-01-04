@@ -4,12 +4,12 @@ import (
 	"github.com/labstack/echo"
 	"net/http"
 	"github.com/aaronaaeng/chat.connor.fun/model"
-	"github.com/aaronaaeng/chat.connor.fun/db/roles"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
-func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context) error {
+func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context, rolesRepo db.RolesRepository) error {
 	ac := c.(context.AuthorizedContext)
 	permissions := model.NewPermissionSet()
 	var principleRole *model.Role
@@ -19,8 +19,8 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context)
 			c.JSON(http.StatusUnauthorized, invalidTokenResponse)
 		}
 		if claims.User.Username != "" { //this is very hacky
-			ac.SetRequestor(&claims.User)
-			userRoles, err := roles.Repo.GetUserRoles(claims.User.Id)
+			ac.SetRequestor(claims.User)
+			userRoles, err := rolesRepo.GetUserRoles(claims.User.Id)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, model.Response{
 					Error: &model.ResponseError{Type: "ROLES_ACCESS_FAILED", Message: err.Error()},

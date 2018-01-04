@@ -18,7 +18,7 @@ there are no special requirements for username or passwords.
 
 * **URL**
 
-  */api/v1/users*
+  `/api/v1/users`
   
 * **Method**
 
@@ -52,7 +52,41 @@ there are no special requirements for username or passwords.
   ```
 
 * **Error Response**  
-  TODO
+  
+  * **Code**: `400 Bad Request`  <br />
+    **Content**:
+    ```json
+    {
+      "error": {"Type": "BAD_BINDING"},
+      "data": null
+    }
+    ```
+    **Notes**: 
+    This error indicates that the POST payload was bad.
+    
+  OR
+  
+  * **Code**: `400 Bad Request` <br />
+    **Content**:
+    ```json
+    {
+      "error": {"Type": "USER_NOT_FOUND"},
+      "data": null
+    }
+    ```  
+  
+  OR
+  
+  * **Code**: `400 Bad Request` <br />
+    **Content**:
+    ```json
+    {
+      "error": {"Type": "BAD_PASSWORD"},
+      "data": null
+    }
+    ```
+    **Notes**: <br />
+    This indicates the password was not suitable for hashing
   
   
 ## Login
@@ -95,7 +129,36 @@ there are no special requirements for username or passwords.
  
 * **Error Response:**
 
-  TODO
+    * **Code:** `400 Bad Request`  <br />
+      **Content:**
+      ```json
+      {
+        "error": {"Type": "BAD_BINDING"},
+        "data": null
+      }
+      ```
+      **Notes:** 
+      This error indicates that the POST payload was bad.
+      
+    * **Code:** `400 Bad Request`  <br />
+      **Content:**
+      ```json
+      {
+        "error": {"Type": "USER_NOT_FOUND"},
+        "data": null
+      }
+      ```
+      **Notes:**  <br/>
+      This error will be removed in the future to protect user info
+      
+    * **Code:** `401 Unauthorized`  <br />
+      **Content:**
+      ```json
+      {
+        "error": {"Type": "PASSWORD_MATCH_FAILED"},
+        "data": null
+      }
+      ```
   
 ## Join Chat Room
 

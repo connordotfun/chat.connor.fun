@@ -21,4 +21,4 @@
 
 *.db
 
-vendor/
+vendor/*

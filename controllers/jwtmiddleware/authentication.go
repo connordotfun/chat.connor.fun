@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type Skipper func(context echo.Context) bool
@@ -22,7 +23,7 @@ var (
 	defaultExtractor = JWTBearerTokenExtractor
 )
 
-func JwtAuth(skipper Skipper, extractor jwtExtractor) echo.MiddlewareFunc {
+func JwtAuth(skipper Skipper, extractor jwtExtractor, rolesRepo db.RolesRepository) echo.MiddlewareFunc {
 
 	if extractor == nil {
 		extractor = defaultExtractor
@@ -36,7 +37,7 @@ func JwtAuth(skipper Skipper, extractor jwtExtractor) echo.MiddlewareFunc {
 			tokenStr, err := extractor(c)
 			ac := c.(context.AuthorizedContext)
 			if err != nil {
-				return doAuthorization(next, nil, ac)
+				return doAuthorization(next, nil, ac, rolesRepo)
 			}
 
 			ac.SetJWTString(tokenStr)
@@ -46,7 +47,7 @@ func JwtAuth(skipper Skipper, extractor jwtExtractor) echo.MiddlewareFunc {
 				return c.JSON(http.StatusBadRequest, invalidTokenResponse)
 			}
 
-			return doAuthorization(next, claims, ac)
+			return doAuthorization(next, claims, ac, rolesRepo)
 		}
 	}
 }

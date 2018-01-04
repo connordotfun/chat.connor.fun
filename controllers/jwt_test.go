@@ -5,11 +5,12 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
+	"github.com/satori/go.uuid"
 )
 
 
 var (
-	testJwtUser1 = model.User{Id: 1, Username: "test", Secret: "secret"}
+	testJwtUser1 = model.User{Id: uuid.NewV4(), Username: "test", Secret: "secret"}
 )
 
 func TestGenerateJWT(t *testing.T) {

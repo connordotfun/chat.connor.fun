@@ -19,16 +19,33 @@ import (
 	"strings"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/chat"
 	"github.com/aaronaaeng/chat.connor.fun/context"
+	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
+	"github.com/aaronaaeng/chat.connor.fun/db/messages"
 )
 
 
-func createApiRoutes(e *echo.Echo) {
-	e.POST("/api/v1/users", controllers.CreateUser)
-	e.POST("/api/v1/login", controllers.LoginUser)
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.UserRepository,
+	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository, messagesRepository db.MessagesRepository) {
 
+	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
+	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
+	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
+
+	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
+
+	api.GET("/messages", controllers.GetMessages(messagesRepository))
+	api.GET("/messages/:id", controllers.GetMessage(messagesRepository))
+	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository))
+
+	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository))
+	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap))
+
+
+	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }
 
-func addMiddlewares(e *echo.Echo) {
+func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	if !config.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
@@ -49,37 +66,52 @@ func addMiddlewares(e *echo.Echo) {
 			strings.HasPrefix(c.Path(), "/static") ||
 			strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
 			strings.HasSuffix(c.Path(), "ws") //||
-			//strings.HasSuffix(c.Path(), "/service-worker.js")
-	}, jwtmiddleware.JWTBearerTokenExtractor))
+	}, jwtmiddleware.JWTBearerTokenExtractor, rolesRepository))
 
 	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
 		return !strings.HasSuffix(c.Path(), "ws")
-	}, jwtmiddleware.JWTProtocolHeaderExtractor))
+	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
-func initDatabaseRepositories() {
+func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.RoomsRepository, db.MessagesRepository){
 	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
 		panic(err)
 	}
-	_, err = users.Init(database)
+	userRepository, err := users.New(database)
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = roles.Init(database)
+	rolesRepository, err := roles.New(database)
 	if err != nil {
 		panic(err)
 	}
+
+	roomsRepository, err := rooms.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	messagesRepository, err := messages.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	return userRepository, rolesRepository, roomsRepository, messagesRepository
 }
 
 func main() {
 	e := echo.New()
+	e.Debug = config.Debug
+
 	e.Static("/web", "frontend/build")
 	e.Static("/static", "frontend/build/static")
 	e.Static("/service-worker.js", "frontend/build/service-worker.js")
 
-	e.Debug = config.Debug
+	e.GET("/", controllers.Index)
+	e.GET("/wstest", controllers.WSTestView)
+	v1ApiGroup := e.Group("/api/v1")
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
 	if err != nil {
@@ -90,11 +122,9 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-
-	initDatabaseRepositories()
-
-
-	addMiddlewares(e)
+	usersRepository, rolesRepository, roomsRepository, messagesRepository := initDatabaseRepositories()
+	addMiddlewares(e, rolesRepository)
+	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, roomsRepository, messagesRepository)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
@@ -104,11 +134,7 @@ func main() {
 	e.GET("/at/*", controllers.Index)
 	e.GET("/wstest", controllers.WSTestView)
 
-	e.GET("/api/v1/rooms/:room/messages/ws", func(c echo.Context) error {
-		return chat.HandleWebsocket(hubMap, c)
-	})
-
-	createApiRoutes(e)
+	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":4000"))
 }
 
