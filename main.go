@@ -47,7 +47,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.Use
 
 func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	if !config.Debug {
-		e.Pre(middleware.HTTPSNonWWWRedirect())
+		//e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
 	//this must be added first
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
