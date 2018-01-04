@@ -8,7 +8,7 @@
     grid-template-areas: "avatar username"
                          "avatar message";
     margin: 7.5px auto;
-    font-family: "Millenium";
+    font-family: "Hieroglyphics", "Millenium";
 }
 
 .Message .avatar {

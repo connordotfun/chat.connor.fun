@@ -19,6 +19,14 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'Hieroglyphics';
+  src: url('fonts/Hieroglyphics.ttf') format('truetype');
+  unicode-range: U+13000-U+1342F
+}
+
+/* h/t to the NewGardiner font for existing */
+
 html, body, #root {
   height: 100%;
   margin:  0px auto;
