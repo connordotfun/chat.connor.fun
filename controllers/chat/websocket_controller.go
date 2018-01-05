@@ -91,7 +91,7 @@ func lookupHub(name string, hubs *HubMap, roomsRepo db.RoomsRepository) (*Hub, e
 			}
 		}
 
-		hub = NewHub(room) //init a new hub to activate the room
+		hub = NewHub(room, hubs) //init a new hub to activate the room
 		go hub.runRoom()
 		hubs.Store(name, hub)
 	}
