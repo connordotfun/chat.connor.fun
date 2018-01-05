@@ -107,6 +107,7 @@ func main() {
 	e.Debug = config.Debug
 
 	e.Static("/web", "frontend/build")
+	e.Static("/web/manifest.json", "frontend/build/manifest.json")
 	e.Static("/static", "frontend/build/static")
 	e.Static("/service-worker.js", "frontend/build/service-worker.js")
 
