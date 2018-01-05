@@ -22,6 +22,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/db/messages"
+	"github.com/aaronaaeng/chat.connor.fun/prehandlers"
 )
 
 
@@ -47,7 +48,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.Use
 
 func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	if !config.Debug {
-		//e.Pre(middleware.HTTPSNonWWWRedirect())
+		e.Pre(prehandlers.HerokuHTTPSRedirect)
 	}
 	//this must be added first
 	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
