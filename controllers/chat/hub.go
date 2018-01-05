@@ -21,6 +21,7 @@ type Hub struct {
 
 	Room *model.ChatRoom
 	roomsRepo db.RoomsRepository
+	hubMap *HubMap
 }
 
 type HubMap struct {
@@ -47,7 +48,7 @@ func (rm *HubMap) Delete(roomName string) {
 	rm.data.Delete(roomName)
 }
 
-func NewHub(room *model.ChatRoom) *Hub {
+func NewHub(room *model.ChatRoom, hubMap *HubMap) *Hub {
 	return &Hub{
 		clients:    make(map[*Client]bool),
 		broadcast:  make(chan *model.Message),
@@ -56,10 +57,21 @@ func NewHub(room *model.ChatRoom) *Hub {
 		stop:       make(chan bool),
 		GetUserList: make(chan chan []model.User),
 		Room:       room,
+		hubMap: hubMap,
 	}
 }
 
+func (r *Hub) stopRoom() {
+	log.Printf("stopping hub: %s", r.Room.Name)
+	for client := range r.clients {
+		close(client.send)
+		delete(r.clients, client)
+	}
+	r.hubMap.Delete(r.Room.Name)
+}
+
 func (r *Hub) runRoom() {
+	defer r.stopRoom()
 	//there's a possible race condition where the room enters the stop state and a client gets added at the same time
 	for {
 		select {
@@ -74,7 +86,7 @@ func (r *Hub) runRoom() {
 				delete(r.clients, client)
 				close(client.send)
 				if len(r.clients) == 0 {
-					r.stop <- true //stop self
+					return
 				}
 			}
 		case message := <-r.broadcast:
