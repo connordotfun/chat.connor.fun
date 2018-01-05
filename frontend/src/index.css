@@ -37,6 +37,11 @@ html, body, #root {
 body {
   padding: 10px;
   box-sizing: border-box;
+  font-family: "Millenium", "Hieroglyphics", serif;
+}
+
+button, input {
+  font-family: "Millenium", "Hieroglyphics", serif;
 }
 
 .convex {
