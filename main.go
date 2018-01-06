@@ -13,7 +13,6 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"fmt"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
-	_"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"io/ioutil"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"strings"
@@ -22,11 +21,19 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/db/messages"
+	"github.com/aaronaaeng/chat.connor.fun/db/verifications"
 )
 
 
-func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.UserRepository,
-	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository, messagesRepository db.MessagesRepository) {
+var (
+	userRepository db.UserRepository
+	rolesRepository db.RolesRepository
+	roomsRepository db.RoomsRepository
+	messagesRepository db.MessagesRepository
+	verificationsRepository db.VerificationCodeRepository
+)
+
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 
 	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
 	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
@@ -74,7 +81,8 @@ func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
-func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.RoomsRepository, db.MessagesRepository){
+func initDatabaseRepositories() (db.UserRepository, db.RolesRepository,
+		db.RoomsRepository, db.MessagesRepository, db.VerificationCodeRepository){
 	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
 		panic(err)
@@ -99,7 +107,12 @@ func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.Rooms
 		panic(err)
 	}
 
-	return userRepository, rolesRepository, roomsRepository, messagesRepository
+	verificationsRepo, err := verifications.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	return userRepository, rolesRepository, roomsRepository, messagesRepository, verificationsRepo
 }
 
 func main() {
@@ -123,9 +136,9 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-	usersRepository, rolesRepository, roomsRepository, messagesRepository := initDatabaseRepositories()
+	userRepository, rolesRepository, roomsRepository, messagesRepository, verificationsRepository = initDatabaseRepositories()
 	addMiddlewares(e, rolesRepository)
-	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, roomsRepository, messagesRepository)
+	createApiRoutes(v1ApiGroup, hubMap)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
