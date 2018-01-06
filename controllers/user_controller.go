@@ -8,6 +8,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/email"
 )
 
 
@@ -42,9 +43,12 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 				Data: nil,
 			})
 		}
+
+		go email.SendAccountVerificationEmail(u.Email, u.Username, "connor.fun")
+
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: model.User{Id: u.Id, Username: u.Username},
+			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username},
 		})
 	}
 }
