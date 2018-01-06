@@ -136,7 +136,11 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-	userRepository, rolesRepository, roomsRepository, messagesRepository, verificationsRepository = initDatabaseRepositories()
+
+	userRepository, rolesRepository, roomsRepository,
+		messagesRepository, verificationsRepository = initDatabaseRepositories()
+
+
 	addMiddlewares(e, rolesRepository)
 	createApiRoutes(v1ApiGroup, hubMap)
 
