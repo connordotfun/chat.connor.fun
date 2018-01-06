@@ -38,3 +38,9 @@ type MessagesRepository interface {
 	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
 	GetTopByUserAndRoom(userId uuid.UUID, name uuid.UUID, count int) ([]*model.Message, error)
 }
+
+type VerificationCodeRepository interface {
+	Add(code *model.VerificationCode) error
+	Invalidate(code *model.VerificationCode) error
+	GetByCode(code string) (*model.VerificationCode, error)
+}
