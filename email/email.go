@@ -58,7 +58,7 @@ func SendAccountVerificationEmail(toEmail string, username string, veriLink stri
 	mail := &mailjet.InfoSendMail{
 		FromEmail: sender,
 		Recipients: []mailjet.Recipient{
-			mailjet.Recipient{
+			{
 				Email: toEmail,
 			},
 		},
