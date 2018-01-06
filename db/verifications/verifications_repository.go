@@ -22,3 +22,24 @@ func (r *pqVerificationCodeRepository) Add(code *model.VerificationCode) error {
 	_, err := r.db.NamedExec(insertCodeQuery, code)
 	return err
 }
+
+func (r *pqVerificationCodeRepository) Invalidate(code string) error {
+	params := map[string]interface{} {
+		"code": code,
+	}
+	_, err := r.db.NamedExec(invalidateCodeQuery, params)
+	return err
+}
+
+func (r *pqVerificationCodeRepository) GetByCode(code string) (*model.VerificationCode, error) {
+	params := map[string]interface{} {
+		"code": code,
+	}
+	query, err := r.db.PrepareNamed(selectByCodeQuery)
+	if err != nil {
+		return nil, err
+	}
+	verificationCode := new(model.VerificationCode)
+	err = query.Select(verificationCode, params)
+	return verificationCode, err
+}

@@ -41,6 +41,6 @@ type MessagesRepository interface {
 
 type VerificationCodeRepository interface {
 	Add(code *model.VerificationCode) error
-	Invalidate(code *model.VerificationCode) error
+	Invalidate(code string) error
 	GetByCode(code string) (*model.VerificationCode, error)
 }
