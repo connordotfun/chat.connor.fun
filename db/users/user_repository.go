@@ -70,3 +70,12 @@ func (r pgUsersRepository) GetByUsername(username string) (*model.User, error) {
 	}
 	return nil, nil
 }
+
+func (r pgUsersRepository) MakeValid(userId uuid.UUID) error {
+	params := map[string]interface{} {
+		"id": userId,
+	}
+
+	_, err := r.db.NamedExec(makeValidQuery, params)
+	return err
+}

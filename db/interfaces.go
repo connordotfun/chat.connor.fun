@@ -37,6 +37,8 @@ type MessagesRepository interface {
 
 	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
 	GetTopByUserAndRoom(userId uuid.UUID, name uuid.UUID, count int) ([]*model.Message, error)
+
+	MakeValid(userId uuid.UUID) error
 }
 
 type VerificationCodeRepository interface {
