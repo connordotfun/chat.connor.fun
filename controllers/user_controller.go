@@ -51,7 +51,13 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			})
 		}
 
-		go email.SendAccountVerificationEmail(u.Email, u.Username, "connor.fun")
+		err = email.SendAccountVerificationEmail(u.Email, u.Username, "connor.fun")
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.Response{
+				Error: &model.ResponseError{Type: "VERIFICATION_EMAIL_FAILED", Message: err.Error()},
+				Data: nil,
+			})
+		}
 
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
@@ -100,7 +106,7 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 				Data: nil,
 			})
 		} else {
-			userToReturn := model.User{Id: matchedUser.Id, Username: matchedUser.Username, Secret: ""}
+			userToReturn := model.User{Id: matchedUser.Id, Email: matchedUser.Email, Username: matchedUser.Username}
 			jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
 
 			if err != nil {

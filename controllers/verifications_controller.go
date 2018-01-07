@@ -44,7 +44,10 @@ func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRep
 			return c.NoContent(http.StatusBadRequest)
 		}
 
-		verificationsRepo.Invalidate(code)
+		err = verificationsRepo.Invalidate(code)
+		if err != nil {
+			return c.NoContent(http.StatusInternalServerError)
+		}
 
 		return c.NoContent(http.StatusOK)
 	}
