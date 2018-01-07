@@ -3,7 +3,7 @@ package verifications
 
 const (
 	createIfNotExistsQuery = `
-		CREATE IF NOT EXISTS verification_codes (
+		CREATE TABLE IF NOT EXISTS verification_codes (
 			code VARCHAR(50) PRIMARY KEY,
 			purpose VARCHAR(50) NOT NULL,
 			user_id UUID NOT NULL REFERENCES users (id),

@@ -11,6 +11,8 @@ type UserRepository interface {
 	GetAll() ([]*model.User, error)
 	GetById(id uuid.UUID) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
+
+	MakeValid(userId uuid.UUID) error
 }
 
 type RolesRepository interface {
@@ -37,8 +39,6 @@ type MessagesRepository interface {
 
 	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
 	GetTopByUserAndRoom(userId uuid.UUID, name uuid.UUID, count int) ([]*model.Message, error)
-
-	MakeValid(userId uuid.UUID) error
 }
 
 type VerificationCodeRepository interface {

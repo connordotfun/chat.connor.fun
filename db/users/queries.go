@@ -24,7 +24,7 @@ const (
 	`
 
 	insertUserQuery = `
-		INSERT INTO users (id, username, secret) VALUES (:id, :username, :secret);
+		INSERT INTO users (id, username, secret, valid) VALUES (:id, :username, :secret, :valid);
 	`
 
 	makeValidQuery = `
