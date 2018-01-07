@@ -12,7 +12,6 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
 )
 
-
 func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository, verificationsRepo db.VerificationCodeRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var u model.User
@@ -67,7 +66,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository, verifi
 				Data: nil,
 			})
 		}
-		err = email.SendAccountVerificationEmail(u.Email, u.Username, "connor.fun")
+		err = email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(c, verification.Code))
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, model.Response{
 				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
@@ -152,4 +151,8 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 
 func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
 	return nil
+}
+
+func makeAccountVerificationLink(c echo.Context, code string) string {
+	return c.Request().Host + c.Request().URL.String() + "/" + code
 }

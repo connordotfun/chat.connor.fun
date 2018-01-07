@@ -14,7 +14,7 @@ const (
 
 	insertCodeQuery = `
 		INSERT INTO verification_codes (code, purpose, user_id, valid, exp_date) VALUES (
-			code = :code, purpose = :purpose, user_id = :user_id, valid = :valid, exp_date = :exp_date
+			:code, :purpose, :user_id, :valid, :exp_date
 		);
 	`
 

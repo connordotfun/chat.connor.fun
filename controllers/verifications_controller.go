@@ -45,7 +45,7 @@ func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRep
 			return c.NoContent(http.StatusBadRequest)
 		}
 
-		err = verificationsRepo.Invalidate(code)
+		err = verificationsRepo.Invalidate(code) //this things should really all be done in a transaction
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}
