@@ -9,7 +9,7 @@
     "mergePriority": 0
   },
 
-  "anon_user": {
+  "anonUser": {
     "override": "NONE",
     "permissions": [
       {"path": "/", "verbs": "r"},
@@ -25,14 +25,14 @@
     ]
   },
 
-  "unverified_user": {
+  "unverifiedUser": {
     "override": "NONE",
     "permissions": [
       {"path": "/api/v1/verifications/newaccount/*", "verbs": "u"}
     ]
   },
 
-  "normal_user": {
+  "normalUser": {
     "override": "NONE",
     "permissions": [
       {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"}

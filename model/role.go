@@ -4,6 +4,14 @@ import (
 	"encoding/json"
 )
 
+const (
+	RoleAnon = "anonUser"
+	RoleNormal = "normalUser"
+	RoleUnverified = "unverifiedUser"
+	RoleAdmin = "admin"
+	RoleBanned = "banned"
+)
+
 type Role struct {
 	Name 		string 		  `json:"name"`
 	Override	string		  `json:"override"`

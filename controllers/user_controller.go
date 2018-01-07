@@ -37,7 +37,14 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 				Data: nil,
 			})
 		}
-		if err := rolesRepo.Add(u.Id, "normal_user"); err != nil {
+
+		if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+			return c.JSON(http.StatusInternalServerError, model.Response{
+				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
+				Data: nil,
+			})
+		}
+		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
 			return c.JSON(http.StatusInternalServerError, model.Response{
 				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
 				Data: nil,

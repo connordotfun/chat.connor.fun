@@ -33,6 +33,10 @@ func (ac AccessCode) CanDelete() bool {
 	return ac.canDoAction(actionDelete)
 }
 
+func NewFullAccessCode() AccessCode {
+	return actionCreate | actionRead | actionUpdate | actionDelete
+}
+
 type Permission struct {
 	Path string
 	Code AccessCode
