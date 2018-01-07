@@ -30,6 +30,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			})
 		}
 		u.Secret = string(hashedSecret)
+		u.Valid = false
 		err = userRepo.Add(&u)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -61,7 +62,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username},
+			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Valid: u.Valid},
 		})
 	}
 }
@@ -106,7 +107,12 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 				Data: nil,
 			})
 		} else {
-			userToReturn := model.User{Id: matchedUser.Id, Email: matchedUser.Email, Username: matchedUser.Username}
+			userToReturn := model.User{
+				Id: matchedUser.Id,
+				Email: matchedUser.Email,
+				Username: matchedUser.Username,
+				Valid: matchedUser.Valid,
+			}
 			jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
 
 			if err != nil {
