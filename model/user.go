@@ -9,4 +9,5 @@ type User struct {
 	Username string `json:"username,omitempty"`
 	Email 	 string `json:"email,omitempty"`
 	Secret   string `json:"secret,omitempty"`
+	Valid 	 bool `json:"valid,omitempty"`
 }

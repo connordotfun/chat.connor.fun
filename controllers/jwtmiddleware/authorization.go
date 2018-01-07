@@ -32,20 +32,20 @@ func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context,
 				if role.Name == "admin" {
 					principleRole = role //TODO: make this system better
 				}
-				permissions.Add(role.Permissions...)
+				permissions.AddAll(role.Permissions...)
 			}
 		} else {
 			anon := model.Roles.GetRole("anon_user")
-			permissions.Add(anon.Permissions...)
+			permissions.AddAll(anon.Permissions...)
 			principleRole = &anon
 		}
 
 		if claims.Permissions != nil { //cached or extra permissions
-			permissions.Add(claims.Permissions...)
+			permissions.AddAll(claims.Permissions...)
 		}
 	} else {
 		anon := model.Roles.GetRole("anon_user")
-		permissions.Add(anon.Permissions...)
+		permissions.AddAll(anon.Permissions...)
 		principleRole = &anon
 	}
 

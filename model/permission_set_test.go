@@ -27,7 +27,7 @@ func TestPermissionSet_Add(t *testing.T) {
 
 	assert.Equal(t, 2, ps.Length())
 
-	ps.Add(p3, p4)
+	ps.AddAll(p3, p4)
 
 	assert.Equal(t, 4, ps.Length())
 
@@ -57,7 +57,7 @@ func TestPermissionSet_Permissions(t *testing.T) {
 	p3 := Permission{Path: "/foo/bar/2", Code: 0x0FF0}
 	p4 := Permission{Path: "/foo/bar/3", Code: 0xF0F0}
 
-	ps.Add(p1, p2, p3, p4)
+	ps.AddAll(p1, p2, p3, p4)
 
 	permissions := ps.Permissions()
 

@@ -10,7 +10,6 @@ type Role struct {
 	Permissions []Permission `json:"permissions"`
 }
 
-
 type RoleMap struct {
 	data map[string]Role
 }

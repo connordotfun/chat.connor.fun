@@ -1,23 +1,22 @@
 {
   "admin": {
-    "parent": "NONE",
-    "override": "ALLOW_ALL"
+    "override": "ALLOW_ALL",
+    "mergePriority": 0
   },
 
   "banned": {
-    "parent": "NONE",
-    "override": "ALLOW_NONE"
+    "override": "ALLOW_NONE",
+    "mergePriority": 0
   },
 
   "anon_user": {
-    "parent": "NONE",
     "override": "NONE",
     "permissions": [
       {"path": "/", "verbs": "r"},
       {"path": "/wstest", "verbs": "r"},
       {"path": "/api/v1/users",  "verbs": "c"},
       {"path": "/api/v1/login", "verbs": "c"},
-      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
+      {"path": "/api/v1/rooms/*/ws",   "verbs": "r"},
       {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"},
       {"path": "/api/v1/messages/*", "verbs": "r"},
       {"path": "/api/v1/messages", "verbs": "r"},
@@ -26,20 +25,17 @@
     ]
   },
 
-  "normal_user": {
-    "parent": "anon_user",
+  "unverified_user": {
     "override": "NONE",
     "permissions": [
-      {"path": "/", "verbs": "r"},
-      {"path": "/wstest", "verbs": "r"},
-      {"path": "/api/v1/users",  "verbs": "c"},
-      {"path": "/api/v1/login", "verbs": "c"},
-      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
-      {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"},
-      {"path": "/api/v1/messages/*", "verbs": "r"},
-      {"path": "/api/v1/messages", "verbs": "r"},
-      {"path": "/api/v1/rooms/*/users", "verbs": "r"},
-      {"path": "/api/v1/rooms/*", "verbs": "r"}
+      {"path": "/api/v1/verifications/newaccount/*", "verbs": "u"}
+    ]
+  },
+
+  "normal_user": {
+    "override": "NONE",
+    "permissions": [
+      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"}
     ]
   }
 }
