@@ -54,7 +54,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }
 
-func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
+func addMiddlewares(e *echo.Echo, api *echo.Group, rolesRepository db.RolesRepository) {
 	if !config.Debug {
 		e.Pre(middleware.HTTPSNonWWWRedirect())
 	}
@@ -69,15 +69,11 @@ func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
-		return strings.HasPrefix(c.Path(), "/web") ||
-			strings.HasPrefix(c.Path(), "/at") || // VERY TEMPORARY
-			strings.HasPrefix(c.Path(), "/static") ||
-			strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
-			strings.HasSuffix(c.Path(), "ws") //||
+	api.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
+		return strings.HasSuffix(c.Path(), "ws") //||
 	}, jwtmiddleware.JWTBearerTokenExtractor, rolesRepository))
 
-	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
+	api.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
 		return !strings.HasSuffix(c.Path(), "ws")
 	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
@@ -142,7 +138,7 @@ func main() {
 		messagesRepository, verificationsRepository = initDatabaseRepositories()
 
 
-	addMiddlewares(e, rolesRepository)
+	addMiddlewares(e, v1ApiGroup, rolesRepository)
 	createApiRoutes(v1ApiGroup, hubMap)
 
 	t := &Template{
