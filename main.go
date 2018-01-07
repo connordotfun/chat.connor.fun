@@ -148,6 +148,7 @@ func main() {
 	e.GET("/", controllers.Index)
 	e.GET("/at/*", controllers.Index)
 	e.GET("/wstest", controllers.WSTestView)
+	e.GET("/*", controllers.Index)
 
 	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":4000"))
