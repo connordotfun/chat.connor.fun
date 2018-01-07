@@ -28,7 +28,7 @@
   "unverifiedUser": {
     "override": "NONE",
     "permissions": [
-      {"path": "/api/v1/verifications/newaccount/*", "verbs": "u"}
+      {"path": "/api/v1/verifications/accountverification", "verbs": "u"}
     ]
   },
 

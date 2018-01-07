@@ -40,7 +40,7 @@ func GenerateVerificationCodeWithConfig(userId uuid.UUID, purpose vericode.Verif
 		Code: code,
 		Purpose: purpose,
 		UserId: userId,
-		Valid: false,
+		Valid: true,
 		ExpDate: expDate,
 	}, nil
 }

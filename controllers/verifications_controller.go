@@ -12,10 +12,10 @@ import (
 
 func getVerificationCode(c echo.Context) string {
 	postData := struct {
-		code string
+		Code string
 	}{}
 	c.Bind(&postData)
-	return postData.code
+	return postData.Code
 }
 
 func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
@@ -54,6 +54,10 @@ func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRep
 			return c.NoContent(http.StatusInternalServerError)
 		}
 		err = rolesRepo.RemoveUserRole(verification.UserId, model.RoleUnverified)
+		if err != nil {
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		err = rolesRepo.Add(verification.UserId, model.RoleNormal)
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}

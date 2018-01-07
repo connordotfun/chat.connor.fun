@@ -40,6 +40,12 @@ func (r *pqVerificationCodeRepository) GetByCode(code string) (*model.Verificati
 		return nil, err
 	}
 	verificationCode := new(model.VerificationCode)
-	err = query.Select(verificationCode, params)
+	rows, err := query.Queryx(params)
+	if err != nil {
+		return nil, err
+	}
+	if rows.Next() {
+		rows.StructScan(verificationCode)
+	}
 	return verificationCode, err
 }
