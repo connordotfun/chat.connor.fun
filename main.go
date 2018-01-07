@@ -146,7 +146,6 @@ func main() {
 	}
 	e.Renderer = t
 	e.GET("/", controllers.Index)
-	e.GET("/at/*", controllers.Index)
 	e.GET("/wstest", controllers.WSTestView)
 	e.GET("/*", controllers.Index)
 
