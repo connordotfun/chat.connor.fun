@@ -35,20 +35,21 @@ var (
 
 func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 
-	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
+	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository, verificationsRepository)).Name = "create-user"
 	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
 	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
 
 	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
 
-	api.GET("/messages", controllers.GetMessages(messagesRepository))
-	api.GET("/messages/:id", controllers.GetMessage(messagesRepository))
-	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository))
+	api.GET("/messages", controllers.GetMessages(messagesRepository)).Name = "get-messages"
+	api.GET("/messages/:id", controllers.GetMessage(messagesRepository)).Name = "get-message"
+	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository)).Name = "update-message"
 
-	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository))
-	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap))
-	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap))
+	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository)).Name = "get-nearby-rooms"
+	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap)).Name = "get-room-members"
+	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap)).Name = "get-room"
 
+	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(verificationsRepository, userRepository, rolesRepository))
 
 	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }

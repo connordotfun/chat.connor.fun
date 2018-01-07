@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
+	"github.com/aaronaaeng/chat.connor.fun/model"
 )
 
 func getVerificationCode(c echo.Context) string {
@@ -17,7 +18,7 @@ func getVerificationCode(c echo.Context) string {
 	return postData.code
 }
 
-func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRepo db.UserRepository) echo.HandlerFunc {
+func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ac := c.(context.AuthorizedContext)
 
@@ -45,6 +46,14 @@ func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRep
 		}
 
 		err = verificationsRepo.Invalidate(code)
+		if err != nil {
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		err = usersRepo.MakeValid(verification.UserId)
+		if err != nil {
+			return c.NoContent(http.StatusInternalServerError)
+		}
+		err = rolesRepo.RemoveUserRole(verification.UserId, model.RoleUnverified)
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}

@@ -9,10 +9,11 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/email"
+	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
 )
 
 
-func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository, verificationsRepo db.VerificationCodeRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var u model.User
 		if err := c.Bind(&u); err != nil {
@@ -52,10 +53,24 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			})
 		}
 
+		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
+		err = verificationsRepo.Add(verification)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.Response{
+				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
+				Data: nil,
+			})
+		}
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.Response{
+				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
+				Data: nil,
+			})
+		}
 		err = email.SendAccountVerificationEmail(u.Email, u.Username, "connor.fun")
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "VERIFICATION_EMAIL_FAILED", Message: err.Error()},
+				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
 				Data: nil,
 			})
 		}
