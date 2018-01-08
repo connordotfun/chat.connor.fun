@@ -30,6 +30,7 @@ const (
 func TestCreateUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
 	rolesRepo := testutil.NewMockRolesRepository()
+	verisRepo := testutil.NewMockVerificationsRepo()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -38,7 +39,7 @@ func TestCreateUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo)
+	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo)
 	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
@@ -68,6 +69,7 @@ func TestCreateUser(t *testing.T) {
 func TestLoginUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
 	rolesRepo := testutil.NewMockRolesRepository()
+	verisRepo := testutil.NewMockVerificationsRepo()
 
 	config.JWTSecretKey = "secret"
 	e := echo.New()
@@ -77,7 +79,7 @@ func TestLoginUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo)
+	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo)
 	assert.NoError(t, createUserFunc(c))
 
 

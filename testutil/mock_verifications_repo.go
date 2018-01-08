@@ -7,28 +7,32 @@ import (
 )
 
 type MockVerificationsRepo struct {
-	data map[string]model.VerificationCode
+	Data map[string]model.VerificationCode
+}
+
+func NewMockVerificationsRepo() *MockVerificationsRepo {
+	return &MockVerificationsRepo{Data: map[string]model.VerificationCode{}}
 }
 
 func (r *MockVerificationsRepo) Add(code *model.VerificationCode) error {
-	if _, ok := r.data[code.Code]; ok {
+	if _, ok := r.Data[code.Code]; ok {
 		return errors.New("duplicate entry")
 	}
-	r.data[code.Code] = *code
+	r.Data[code.Code] = *code
 	return nil
 }
 
 func (r *MockVerificationsRepo) Invalidate(code string) error {
-	if val, ok := r.data[code]; ok {
+	if val, ok := r.Data[code]; ok {
 		val.Valid = false
 		val.UpdateDate = time.Now().Unix()
-		r.data[code] = val
+		r.Data[code] = val
 	}
 	return nil
 }
 
 func (r *MockVerificationsRepo) GetByCode(code string) (*model.VerificationCode, error) {
-	if val, ok := r.data[code]; ok {
+	if val, ok := r.Data[code]; ok {
 		return &val, nil
 	}
 	return nil, nil
