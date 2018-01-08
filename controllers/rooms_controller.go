@@ -65,7 +65,7 @@ func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.Handl
 
 		roomMembers, err := getRoomMembersList(hub)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("HUB_SHUTDOWN"))
+			roomMembers = nil
 		}
 
 		roomToReturn := *room
