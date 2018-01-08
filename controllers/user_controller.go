@@ -10,13 +10,24 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/email"
 	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
+	"strings"
+	"errors"
 )
 
 func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verificationsRepo db.VerificationCodeRepository,
 	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
+	if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
+		return err
+	}
 
+	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+		return err
+	}
 	if useEmailVerification {
 		u.Valid = false
+		if !strings.Contains(u.Email,"@") {
+			return errors.New("email not valid")
+		}
 		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
 		if err != nil {
 			return err
@@ -29,22 +40,11 @@ func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verifications
 		if err != nil {
 			return err
 		}
-
-	} else {
-		u.Valid = true
-	}
-
-	if err := usersRepo.Add(u); err != nil {
-		return err
-	}
-	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
-		return err
-	}
-	if useEmailVerification { //this avoids inconsistent db states
 		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
 			return err
 		}
 	} else {
+		u.Valid = true
 		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
 			return err
 		}
