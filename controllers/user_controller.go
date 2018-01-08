@@ -16,7 +16,8 @@ import (
 
 func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verificationsRepo db.VerificationCodeRepository,
 	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
-	if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
+
+	if err := usersRepo.Add(u); err != nil {
 		return err
 	}
 
