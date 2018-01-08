@@ -8,10 +8,54 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/email"
+	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
+	"strings"
+	"errors"
 )
 
+func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verificationsRepo db.VerificationCodeRepository,
+	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
 
-func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+	if err := usersRepo.Add(u); err != nil {
+		return err
+	}
+
+	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+		return err
+	}
+	if useEmailVerification {
+		u.Valid = false
+		if !strings.Contains(u.Email,"@") {
+			return errors.New("email not valid")
+		}
+		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
+		if err != nil {
+			return err
+		}
+		err = verificationsRepo.Add(verification)
+		if err != nil {
+			return err
+		}
+		err = email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(host, verification.Code))
+		if err != nil {
+			return err
+		}
+		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
+			return err
+		}
+	} else {
+		u.Valid = true
+		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
+		verificationsRepo db.VerificationCodeRepository, useEmailVerification bool) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var u model.User
 		if err := c.Bind(&u); err != nil {
@@ -29,22 +73,15 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			})
 		}
 		u.Secret = string(hashedSecret)
-		err = userRepo.Add(&u)
+
+		err = handleNewUserInit(&u, userRepo, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, model.Response{
-				Error: &model.ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
-				Data: nil,
-			})
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("USER_INIT_FAILED"))
 		}
-		if err := rolesRepo.Add(u.Id, "normal_user"); err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
+
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: model.User{Id: u.Id, Username: u.Username},
+			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Valid: u.Valid},
 		})
 	}
 }
@@ -89,7 +126,12 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 				Data: nil,
 			})
 		} else {
-			userToReturn := model.User{Id: matchedUser.Id, Username: matchedUser.Username, Secret: ""}
+			userToReturn := model.User{
+				Id: matchedUser.Id,
+				Email: matchedUser.Email,
+				Username: matchedUser.Username,
+				Valid: matchedUser.Valid,
+			}
 			jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
 
 			if err != nil {
@@ -114,4 +156,8 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 
 func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
 	return nil
+}
+
+func makeAccountVerificationLink(host string, code string) string {
+	return host + "/verify/account/" + code
 }

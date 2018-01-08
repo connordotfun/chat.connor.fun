@@ -11,11 +11,14 @@ type UserRepository interface {
 	GetAll() ([]*model.User, error)
 	GetById(id uuid.UUID) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
+
+	MakeValid(userId uuid.UUID) error
 }
 
 type RolesRepository interface {
 	Add(userId uuid.UUID, roleName string) error
 	GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
+	RemoveUserRole(userId uuid.UUID, roleName string) error
 }
 
 type RoomsRepository interface {
@@ -37,4 +40,10 @@ type MessagesRepository interface {
 
 	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
 	GetTopByUserAndRoom(userId uuid.UUID, name uuid.UUID, count int) ([]*model.Message, error)
+}
+
+type VerificationCodeRepository interface {
+	Add(code *model.VerificationCode) error
+	Invalidate(code string) error
+	GetByCode(code string) (*model.VerificationCode, error)
 }

@@ -18,4 +18,10 @@ const (
 		SELECT role FROM user_roles
 			WHERE user_id = :user_id;
 	`
+
+	deleteRoleQuery = `
+		DELETE FROM user_roles
+			WHERE user_id = :user_id
+				AND role = :role;
+	`
 )

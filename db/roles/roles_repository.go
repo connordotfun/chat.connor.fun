@@ -48,3 +48,13 @@ func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
 
 	return userRoles, nil
 }
+
+func (r pgRolesRepository) RemoveUserRole(userId uuid.UUID, roleName string) error {
+	params := map[string]interface{} {
+		"user_id": userId,
+		"role": roleName,
+	}
+
+	_, err := r.db.NamedExec(deleteRoleQuery, params)
+	return err
+}

@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"strings"
+	"errors"
 )
 
 const actionCreate = 0x000F
@@ -30,6 +31,10 @@ func (ac AccessCode) CanUpdate() bool {
 
 func (ac AccessCode) CanDelete() bool {
 	return ac.canDoAction(actionDelete)
+}
+
+func NewFullAccessCode() AccessCode {
+	return actionCreate | actionRead | actionUpdate | actionDelete
 }
 
 type Permission struct {
@@ -185,4 +190,18 @@ func (p Permission) IsPermitted(method string, path string) bool {
 
 func (p Permission) String() string {
 	return "Permission: [" + p.Path + ", " + string(p.Code) + "]"
+}
+
+func (p Permission) Merge(other Permission) (Permission, error) {
+	if p.Path != other.Path {
+		return Permission{}, errors.New("paths do not match")
+	}
+	return Permission{
+		Path: p.Path,
+		Code: p.Code | other.Code,
+	}, nil
+}
+
+func (p Permission) IsSpecific() bool {
+	return !strings.Contains(p.Path, "*")
 }
