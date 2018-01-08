@@ -71,7 +71,7 @@ func SendAccountVerificationEmail(toEmail string, username string, veriLink stri
 				Email: toEmail,
 			},
 		},
-		Subject:  "Verify you chat.connor.fun account",
+		Subject:  "Verify your chat.connor.fun account",
 		HTMLPart: accountVerificationEmailTemplate,
 		MjTemplateLanguage: "true",
 		Vars: verificationEmailVars{
