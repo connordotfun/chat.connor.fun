@@ -50,12 +50,3 @@ func (r *MockUserRepository) GetByUsername(username string) (*model.User, error)
 	}
 	return nil, nil
 }
-
-func (r *MockUserRepository) MakeValid(userId uuid.UUID) error {
-	if user, ok := r.Users[userId]; ok {
-		user.Valid = true
-		r.Users[userId] = user
-	}
-	return nil
-}
-

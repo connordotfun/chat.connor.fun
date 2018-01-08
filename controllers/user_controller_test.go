@@ -89,7 +89,7 @@ func TestLoginUser(t *testing.T) {
 
 	c = e.NewContext(req, rec)
 
-	loginUserFunc := LoginUser(userRepo)
+	loginUserFunc := LoginUser(userRepo, rolesRepo)
 	assert.NoError(t, loginUserFunc(c))
 
 	var response model.Response
@@ -105,6 +105,7 @@ func TestLoginUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
+	rolesRepo := testutil.NewMockRolesRepository()
 
 	userToGet := model.User{Id: uuid.NewV4(), Username: "test", Secret: "Test"}
 	userRepo.Add(&userToGet)
@@ -118,7 +119,7 @@ func TestGetUser(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(userToGet.Id.String())
 
-	getUserFunc := GetUser(userRepo)
+	getUserFunc := GetUser(userRepo, rolesRepo)
 
 	assert.NoError(t, getUserFunc(c))
 

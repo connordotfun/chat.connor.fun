@@ -8,8 +8,10 @@ import (
 )
 
 func generateJWT(user model.User, jwtSecretKey []byte) (string, error){
+	claimedUser := user
+	claimedUser.Roles = make([]model.Role, 0)
 	claims := auth.Claims{
-		User: user,
+		User: claimedUser,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 			Issuer: "connor.fun-login-service",
