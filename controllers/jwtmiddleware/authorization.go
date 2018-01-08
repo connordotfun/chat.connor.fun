@@ -23,10 +23,10 @@ func unpackClaims(claims *auth.Claims) (model.User, []model.Permission, error) {
 	return model.User{}, make([]model.Permission, 0), nil
 }
 
-func getRoles(user *model.User, repo db.RolesRepository) ([]*model.Role, error) {
+func getRoles(user *model.User, repo db.RolesRepository) ([]model.Role, error) {
 	if user.Id == uuid.Nil {
 		anon := model.Roles.GetRole(model.RoleAnon)
-		return []*model.Role{&anon}, nil
+		return []model.Role{anon}, nil
 	} else {
 		return repo.GetUserRoles(user.Id)
 	}

@@ -10,4 +10,5 @@ type User struct {
 	Email 	 string `json:"email,omitempty"`
 	Secret   string `json:"secret,omitempty"`
 	Valid 	 bool `json:"valid,omitempty"`
+	Roles 	[]Role `json:"roles,omitempty"`
 }

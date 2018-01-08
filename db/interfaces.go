@@ -17,7 +17,7 @@ type UserRepository interface {
 
 type RolesRepository interface {
 	Add(userId uuid.UUID, roleName string) error
-	GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
+	GetUserRoles(userId uuid.UUID) ([]model.Role, error)
 	RemoveUserRole(userId uuid.UUID, roleName string) error
 }
 

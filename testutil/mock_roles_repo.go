@@ -26,16 +26,16 @@ func (r *MockRolesRepository) Add(userId uuid.UUID, role string) error {
 	return nil
 }
 
-func (r *MockRolesRepository) GetUserRoles(userId uuid.UUID) ([]*model.Role, error) {
+func (r *MockRolesRepository) GetUserRoles(userId uuid.UUID) ([]model.Role, error) {
 	if vals, ok := r.Roles[userId]; ok {
-		roles := make([]*model.Role, 0)
+		roles := make([]model.Role, 0)
 		for r := range vals {
 			roleObj := model.Roles.GetRole(r)
-			roles = append(roles, &roleObj)
+			roles = append(roles, roleObj)
 		}
 		return roles, nil
 	} else {
-		return make([]*model.Role, 0), nil
+		return make([]model.Role, 0), nil
 	}
 }
 

@@ -39,7 +39,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
 	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
 
-	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
+	api.POST("/login", controllers.LoginUser(userRepository, rolesRepository)).Name = "login-user"
 
 	api.GET("/messages", controllers.GetMessages(messagesRepository)).Name = "get-messages"
 	api.GET("/messages/:id", controllers.GetMessage(messagesRepository)).Name = "get-message"
