@@ -75,7 +75,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 
 		err = handleNewUserInit(&u, userRepo, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("USER_INIT_FAILED"))
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("USER_INIT_FAILED"))
 		}
 
 		return c.JSON(http.StatusCreated, model.Response{

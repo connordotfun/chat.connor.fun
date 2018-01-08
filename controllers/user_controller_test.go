@@ -63,7 +63,7 @@ func TestCreateUser(t *testing.T) {
 	var response model.Response
 	err = json.Unmarshal([]byte(rec.Body.String()), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, "USER_CREATE_FAILED", response.Error.Type)
+	assert.Equal(t, "USER_INIT_FAILED", response.Error.Type)
 }
 
 func TestLoginUser(t *testing.T) {
