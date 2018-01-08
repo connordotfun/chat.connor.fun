@@ -39,7 +39,7 @@ func TestCreateUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo)
+	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
 	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
@@ -79,7 +79,7 @@ func TestLoginUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo)
+	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
 	assert.NoError(t, createUserFunc(c))
 
 

@@ -12,7 +12,40 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
 )
 
-func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository, verificationsRepo db.VerificationCodeRepository) echo.HandlerFunc {
+func handleNewUserInit(u *model.User, verificationsRepo db.VerificationCodeRepository,
+	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
+
+	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+		return err
+	}
+
+	if useEmailVerification {
+		u.Valid = false
+		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
+		if err != nil {
+			return err
+		}
+		err = verificationsRepo.Add(verification)
+		if err != nil {
+			return err
+		}
+		err = email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(host, verification.Code))
+		if err != nil {
+			return err
+		}
+		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
+			return err
+		}
+	} else {
+		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
+		verificationsRepo db.VerificationCodeRepository, useEmailVerification bool) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var u model.User
 		if err := c.Bind(&u); err != nil {
@@ -30,7 +63,8 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository, verifi
 			})
 		}
 		u.Secret = string(hashedSecret)
-		u.Valid = false
+
+
 		err = userRepo.Add(&u)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -39,39 +73,9 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository, verifi
 			})
 		}
 
-		if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
-		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
-
-		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
-		err = verificationsRepo.Add(verification)
+		err = handleNewUserInit(&u, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
-		err = email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(c, verification.Code))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "VERIFICATION_FAILED", Message: err.Error()},
-				Data: nil,
-			})
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("USER_INIT_FAILED"))
 		}
 
 		return c.JSON(http.StatusCreated, model.Response{
@@ -153,6 +157,6 @@ func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
 	return nil
 }
 
-func makeAccountVerificationLink(c echo.Context, code string) string {
-	return c.Request().Host + "/verify/account/" + code
+func makeAccountVerificationLink(host string, code string) string {
+	return host + "/verify/account/" + code
 }
