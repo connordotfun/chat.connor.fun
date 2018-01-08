@@ -119,9 +119,9 @@ func main() {
 	e.Static("/web", "frontend/build")
 	e.Static("/static", "frontend/build/static")
 	e.Static("/service-worker.js", "frontend/build/service-worker.js")
-
 	e.GET("/", controllers.Index)
-	e.GET("/wstest", controllers.WSTestView)
+	e.GET("/*", controllers.Index)
+
 	v1ApiGroup := e.Group("/api/v1")
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
@@ -145,9 +145,6 @@ func main() {
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
 	}
 	e.Renderer = t
-	e.GET("/", controllers.Index)
-	e.GET("/wstest", controllers.WSTestView)
-	e.GET("/*", controllers.Index)
 
 	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":4000"))

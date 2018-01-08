@@ -154,5 +154,5 @@ func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
 }
 
 func makeAccountVerificationLink(c echo.Context, code string) string {
-	return c.Request().Host + "verify/account/" + code
+	return c.Request().Host + "/verify/account/" + code
 }
