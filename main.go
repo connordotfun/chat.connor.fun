@@ -36,7 +36,7 @@ var (
 func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 
 	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository, verificationsRepository, !config.Debug)).Name = "create-user"
-	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
+	api.GET("/users/:id", controllers.GetUser(userRepository, rolesRepository)).Name = "get-user"
 	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
 
 	api.POST("/login", controllers.LoginUser(userRepository, rolesRepository)).Name = "login-user"

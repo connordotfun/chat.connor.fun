@@ -11,8 +11,6 @@ type UserRepository interface {
 	GetAll() ([]*model.User, error)
 	GetById(id uuid.UUID) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
-
-	MakeValid(userId uuid.UUID) error
 }
 
 type RolesRepository interface {

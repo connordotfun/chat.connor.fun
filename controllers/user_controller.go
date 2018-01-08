@@ -25,7 +25,6 @@ func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verifications
 		return err
 	}
 	if useEmailVerification {
-		u.Valid = false
 		if !strings.Contains(u.Email,"@") {
 			return errors.New("email not valid")
 		}
@@ -46,7 +45,6 @@ func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verifications
 		}
 		u.Roles = []model.Role{model.Roles.GetRole(model.RoleUnverified), model.Roles.GetRole(model.RoleAnon)}
 	} else {
-		u.Valid = true
 		u.Roles = []model.Role{model.Roles.GetRole(model.RoleNormal), model.Roles.GetRole(model.RoleAnon)}
 		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
 			return err
@@ -83,12 +81,12 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Valid: u.Valid, Roles: u.Roles},
+			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Roles: u.Roles},
 		})
 	}
 }
 
-func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
+func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		idStr := c.Param("id")
 		id, err := uuid.FromString(idStr)
@@ -101,7 +99,12 @@ func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
 			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
 		}
 
-		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username}))
+		roles, err := rolesRepo.GetUserRoles(id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
+		}
+
+		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username, Roles: roles}))
 	}
 }
 
@@ -136,7 +139,6 @@ func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Ha
 			Id: matchedUser.Id,
 			Email: matchedUser.Email,
 			Username: matchedUser.Username,
-			Valid: matchedUser.Valid,
 			Roles: roles,
 		}
 		jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))

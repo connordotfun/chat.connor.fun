@@ -35,7 +35,8 @@
   "normalUser": {
     "override": "NONE",
     "permissions": [
-      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"}
+      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
+      {"path": "/api/v1/users/*", "verbs": "r"}
     ]
   }
 }
