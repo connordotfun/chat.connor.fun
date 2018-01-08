@@ -12,12 +12,8 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
 )
 
-func handleNewUserInit(u *model.User, verificationsRepo db.VerificationCodeRepository,
+func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verificationsRepo db.VerificationCodeRepository,
 	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
-
-	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
-		return err
-	}
 
 	if useEmailVerification {
 		u.Valid = false
@@ -33,6 +29,18 @@ func handleNewUserInit(u *model.User, verificationsRepo db.VerificationCodeRepos
 		if err != nil {
 			return err
 		}
+
+	} else {
+		u.Valid = true
+	}
+
+	if err := usersRepo.Add(u); err != nil {
+		return err
+	}
+	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+		return err
+	}
+	if useEmailVerification { //this avoids inconsistent db states
 		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
 			return err
 		}
@@ -41,6 +49,7 @@ func handleNewUserInit(u *model.User, verificationsRepo db.VerificationCodeRepos
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -64,16 +73,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 		}
 		u.Secret = string(hashedSecret)
 
-
-		err = userRepo.Add(&u)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, model.Response{
-				Error: &model.ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
-
-		err = handleNewUserInit(&u, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
+		err = handleNewUserInit(&u, userRepo, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("USER_INIT_FAILED"))
 		}
