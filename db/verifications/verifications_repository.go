@@ -3,6 +3,7 @@ package verifications
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"time"
 )
 
 type pqVerificationCodeRepository struct {
@@ -26,6 +27,7 @@ func (r *pqVerificationCodeRepository) Add(code *model.VerificationCode) error {
 func (r *pqVerificationCodeRepository) Invalidate(code string) error {
 	params := map[string]interface{} {
 		"code": code,
+		"update_date": time.Now().Unix(),
 	}
 	_, err := r.db.NamedExec(invalidateCodeQuery, params)
 	return err

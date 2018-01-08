@@ -8,19 +8,20 @@ const (
 			purpose VARCHAR(50) NOT NULL,
 			user_id UUID NOT NULL REFERENCES users (id),
 			valid Boolean NOT NULL,
-			exp_date Integer
+			exp_date Integer,
+			update_date Integer
 		);
 	`
 
 	insertCodeQuery = `
-		INSERT INTO verification_codes (code, purpose, user_id, valid, exp_date) VALUES (
-			:code, :purpose, :user_id, :valid, :exp_date
+		INSERT INTO verification_codes (code, purpose, user_id, valid, exp_date, update_date) VALUES (
+			:code, :purpose, :user_id, :valid, :exp_date, :update_date
 		);
 	`
 
 	invalidateCodeQuery = `
 		UPDATE verification_codes
-			SET valid = false
+			SET valid = false, update_date = :update_date
 		WHERE code = :code;
 
 	`

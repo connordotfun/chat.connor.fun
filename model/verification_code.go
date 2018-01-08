@@ -21,6 +21,7 @@ type VerificationCode struct {
 	UserId uuid.UUID `db:"user_id"`
 	Valid bool `db:"valid"`
 	ExpDate int64 `db:"exp_date"`
+	UpdateDate int64 `db:"update_date"`
 }
 
 func GenerateVerificationCode(userId uuid.UUID, purpose vericode.VerificationCodeType) (*VerificationCode, error) {
@@ -42,6 +43,7 @@ func GenerateVerificationCodeWithConfig(userId uuid.UUID, purpose vericode.Verif
 		UserId: userId,
 		Valid: true,
 		ExpDate: expDate,
+		UpdateDate: -1,
 	}, nil
 }
 
