@@ -15,6 +15,14 @@ func New(db *sqlx.DB) (*pgRoomsRepository, error) {
 	if err != nil {
 		return nil, err
 	}
+	_, err = db.Exec(createCubeQuery)
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.Exec(createEarthDistQuery)
+	if err != nil {
+		return nil, err
+	}
 	return &pgRoomsRepository{db: db}, nil
 }
 
@@ -54,4 +62,15 @@ func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
 		return &room, nil
 	}
 	return nil, nil //not found
+}
+
+func (r pgRoomsRepository) GetWithinArea(area *model.GeoArea) ([]*model.ChatRoom, error) {
+	query, err := r.db.PrepareNamed(selectWithinRadiusQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	rooms := make([]*model.ChatRoom, 0)
+	err = query.Select(&rooms, err)
+	return rooms, err
 }
