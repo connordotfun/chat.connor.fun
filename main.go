@@ -48,6 +48,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository)).Name = "get-nearby-rooms"
 	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap)).Name = "get-room-members"
 	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap)).Name = "get-room"
+	api.POST("/rooms", controllers.CreateRoom(roomsRepository))
 
 	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(verificationsRepository, userRepository, rolesRepository))
 
