@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {observable, action} from 'mobx'
+import {action} from 'mobx'
 import { observer, inject } from 'mobx-react'
 import Header from '../../components/Header'
 import Messages from '../../components/Messages'
@@ -7,15 +7,12 @@ import Input from '../../components/ChatInput'
 import './index.css'
 
 
-@inject('commonStore', 'socketStore', 'authStore')
+@inject('commonStore', 'socketStore', 'authStore', 'roomStore')
 @observer
 class Chat extends Component {
-    @observable _messages = []
-
     @action
     componentWillMount() {
         this.props.socketStore.joinRoom(this.props.match.params.room)
-        this.props.socketStore.addListener(this.onMessage.bind(this))
     }
 
     @action
@@ -28,17 +25,10 @@ class Chat extends Component {
         return (
             <div className="Chat convex">
                 <Header room={this.props.match.params.room} handleLeave={this.onLeave.bind(this)} handleExit={this.props.authStore.logout} />
-                <Messages messages={this._messages} />
+                <Messages messages={this.props.roomStore.messages} />
                 <Input />
             </div>
         )
-    }
-
-    @action
-    onMessage(ev) {
-        let message = JSON.parse(ev.data)[0]
-        console.log(message.sender.username)
-        this._messages.push(message)
     }
 
     @action
