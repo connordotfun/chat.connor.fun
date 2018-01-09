@@ -51,8 +51,10 @@ func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.Handl
 	return func(c echo.Context) error {
 		roomName := c.Param("room")
 		hub, ok := hubMap.Load(roomName)
-		room := hub.Room
-		if !ok {
+		var room *model.ChatRoom
+		if ok {
+			room = hub.Room
+		} else {
 			roomFromDb, err := roomsRepository.GetByName(roomName)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
