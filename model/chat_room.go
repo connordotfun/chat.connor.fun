@@ -6,5 +6,5 @@ type ChatRoom struct {
 	Id uuid.UUID `json:"id"`
 	Name string `json:"name"`
 	Members []User `json:"members"`
-	//maybe geolocation data
+	GeoArea	`json:"GeoArea"`
 }

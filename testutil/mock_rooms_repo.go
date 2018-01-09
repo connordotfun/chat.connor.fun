@@ -36,3 +36,7 @@ func (r MockRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
 	}
 	return nil, nil
 }
+
+func (r MockRoomsRepository) GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error) {
+	return nil, nil //this will be very annoying to mock properly
+}

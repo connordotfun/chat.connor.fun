@@ -23,6 +23,7 @@ type RoomsRepository interface {
 	Add(room *model.ChatRoom) error
 	GetById(id uuid.UUID) (*model.ChatRoom, error)
 	GetByName(name string) (*model.ChatRoom, error)
+	GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error)
 }
 
 type MessagesRepository interface {
