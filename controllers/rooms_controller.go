@@ -7,10 +7,24 @@ import (
 	"net/http"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
+	"github.com/satori/go.uuid"
 )
 
 func GetNearbyRooms(roomsRepo db.RoomsRepository) echo.HandlerFunc {
-	return nil
+	return func(c echo.Context) error {
+		var searchArea model.GeoArea
+
+		if err := c.Bind(&searchArea); err != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BIND_FAILED"))
+		}
+
+		nearbyRooms, err := roomsRepo.GetWithinArea(&searchArea)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
+		}
+
+		return c.JSON(http.StatusOK, nearbyRooms)
+	}
 }
 
 func getRoomMembersList(hub *chat.Hub) ([]model.User, error) {
@@ -72,5 +86,23 @@ func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.Handl
 		roomToReturn.Members = roomMembers
 
 		return c.JSON(http.StatusOK, model.NewDataResponse(roomToReturn))
+	}
+}
+
+func CreateRoom(rooms db.RoomsRepository) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var chatRoom model.ChatRoom
+
+		if err := c.Bind(&chatRoom); err != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BIND_FAILED"))
+		}
+
+		chatRoom.Id = uuid.NewV4()
+
+		if err := rooms.Add(&chatRoom); err != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("ROOM_EXISTS"))
+		}
+
+		return c.JSON(http.StatusCreated, model.NewDataResponse(chatRoom))
 	}
 }
