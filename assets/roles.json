@@ -20,9 +20,7 @@
       {"path": "/api/v1/rooms/*/messages/*", "verbs": "r"},
       {"path": "/api/v1/messages/*", "verbs": "r"},
       {"path": "/api/v1/messages", "verbs": "r"},
-      {"path": "/api/v1/rooms/*/users", "verbs": "r"},
       {"path": "/api/v1/rooms/*", "verbs": "r"},
-      {"path": "/api/v1/rooms", "verbs": "c"},
       {"path": "/api/v1/rooms/nearby", "verbs": "r"}
     ]
   },
@@ -37,8 +35,9 @@
   "normalUser": {
     "override": "NONE",
     "permissions": [
-      {"path": "/api/v1/rooms/*/ws",   "verbs": "cr"},
-      {"path": "/api/v1/users/*", "verbs": "r"}
+      {"path": "/api/v1/rooms/*/ws", "verbs": "cr"},
+      {"path": "/api/v1/users/*", "verbs": "r"},
+      {"path": "/api/v1/rooms/*/users", "verbs": "r"}
     ]
   }
 }
