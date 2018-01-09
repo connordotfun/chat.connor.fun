@@ -64,13 +64,45 @@ func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
 	return nil, nil //not found
 }
 
-func (r pgRoomsRepository) GetWithinArea(area *model.GeoArea) ([]*model.ChatRoom, error) {
-	query, err := r.db.PrepareNamed(selectWithinRadiusQuery)
+func constructRelativeRoom(rows *sqlx.Rows) (*model.RelativeRoom, error) {
+	rowData := struct {
+		model.ChatRoom
+		Distance float64
+	}{}
+
+	err := rows.StructScan(rowData)
 	if err != nil {
 		return nil, err
 	}
 
-	rooms := make([]*model.ChatRoom, 0)
-	err = query.Select(&rooms, err)
-	return rooms, err
+	return &model.RelativeRoom{
+		Room: model.ChatRoom{
+			Id: rowData.Id,
+			Name: rowData.Name,
+			GeoArea: model.GeoArea {
+				Longitude: rowData.Longitude,
+				Latitude: rowData.Latitude,
+				Radius: rowData.Radius,
+			},
+		},
+		Distance: rowData.Distance,
+	}, nil
+}
+
+func (r pgRoomsRepository) GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error) {
+	rows, err := r.db.NamedQuery(selectWithinRadiusQuery, area)
+	if err != nil {
+		return nil, err
+	}
+
+	rooms := make([]*model.RelativeRoom, 0)
+	for rows.Next() {
+		resultRoom, err := constructRelativeRoom(rows)
+		if err != nil {
+			return nil, err
+		}
+		rooms = append(rooms, resultRoom)
+	}
+
+	return rooms, nil
 }
