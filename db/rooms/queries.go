@@ -21,7 +21,7 @@ const (
 
 
 	insertRoomQuery = `
-		INSERT INTO rooms (id, name) VALUES (:id, :name);
+		INSERT INTO rooms (id, name, lat, lon, radius) VALUES (:id, :name, :lat, :lon, :radius);
 	`
 
 	selectRoomByNameQuery = `
@@ -35,8 +35,8 @@ const (
 	`
 
 	selectWithinRadiusQuery = `
-		SELECT rooms.*, earth_distance(ll_to_earth(:lat, :lng), ll_to_earth(lat, lon)) as distance FROM rooms
-			WHERE earth_box(ll_to_earth(:lat, :lng), :radius + radius) @> ll_to_earth(rooms.lat, rooms.lon)
+		SELECT rooms.*, earth_distance(ll_to_earth(:lat, :lon), ll_to_earth(lat, lon)) as distance FROM rooms
+			WHERE earth_box(ll_to_earth(:lat, :lon), :radius + radius) @> ll_to_earth(rooms.lat, rooms.lon)
 			ORDER BY distance ASC;
 	`
 )

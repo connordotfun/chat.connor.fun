@@ -8,14 +8,32 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
 	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 func GetNearbyRooms(roomsRepo db.RoomsRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var searchArea model.GeoArea
+		latStr := c.QueryParam("lat")
+		lonStr := c.QueryParam("lon")
+		radiusStr := c.QueryParam("radius")
 
-		if err := c.Bind(&searchArea); err != nil {
-			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BIND_FAILED"))
+		lat, err := strconv.ParseFloat(latStr, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
+		}
+		lon, err := strconv.ParseFloat(lonStr, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
+		}
+		radius, err := strconv.ParseFloat(radiusStr, 64)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
+		}
+
+		searchArea := model.GeoArea{
+			Latitude: lat,
+			Longitude: lon,
+			Radius: radius,
 		}
 
 		nearbyRooms, err := roomsRepo.GetWithinArea(&searchArea)
@@ -92,7 +110,6 @@ func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.Handl
 func CreateRoom(rooms db.RoomsRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var chatRoom model.ChatRoom
-
 		if err := c.Bind(&chatRoom); err != nil {
 			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BIND_FAILED"))
 		}

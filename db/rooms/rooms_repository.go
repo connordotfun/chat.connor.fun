@@ -70,7 +70,7 @@ func constructRelativeRoom(rows *sqlx.Rows) (*model.RelativeRoom, error) {
 		Distance float64
 	}{}
 
-	err := rows.StructScan(rowData)
+	err := rows.StructScan(&rowData)
 	if err != nil {
 		return nil, err
 	}

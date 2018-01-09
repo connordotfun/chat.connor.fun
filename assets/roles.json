@@ -21,7 +21,9 @@
       {"path": "/api/v1/messages/*", "verbs": "r"},
       {"path": "/api/v1/messages", "verbs": "r"},
       {"path": "/api/v1/rooms/*/users", "verbs": "r"},
-      {"path": "/api/v1/rooms/*", "verbs": "r"}
+      {"path": "/api/v1/rooms/*", "verbs": "r"},
+      {"path": "/api/v1/rooms", "verbs": "c"},
+      {"path": "/api/v1/rooms/nearby", "verbs": "r"}
     ]
   },
 
