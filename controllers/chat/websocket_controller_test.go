@@ -13,6 +13,7 @@ import (
 	"time"
 	"github.com/aaronaaeng/chat.connor.fun/context"
 	"github.com/aaronaaeng/chat.connor.fun/testutil"
+	"github.com/aaronaaeng/chat.connor.fun/filter"
 )
 
 type testHandler struct {
@@ -72,7 +73,7 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree())
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -105,7 +106,7 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree())
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -161,7 +162,7 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree())
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -197,7 +198,7 @@ func TestHandleWebsocket_ReadOnly(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree())
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {

@@ -9,6 +9,7 @@ import (
 	_"errors"
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/aaronaaeng/chat.connor.fun/filter"
 )
 
 
@@ -27,6 +28,7 @@ type Client struct {
 	conn *websocket.Conn
 	send chan *model.Message
 	messagesRepo db.MessagesRepository
+	filter *filter.Filter
 }
 
 func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
@@ -35,11 +37,12 @@ func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	message.Id = uuid.NewV4()
+	message.Id, _ = uuid.NewV4()
 	message.CreateDate = time.Now().Unix()
 	message.Room = c.hub.Room
 	if c.user.Id != uuid.Nil {
 		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
+		message.Text = c.filter.CleanSentence(message.Text)
 	} else {
 		//return nil, errors.New("message has no creator")
 	}

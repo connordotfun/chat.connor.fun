@@ -22,7 +22,7 @@ func newWordSet() *wordSet{
 		},
 	}
 
-	file, _ := os.Open("whitelist.txt")
+	file, _ := os.Open("assets/whitelist.txt")
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {

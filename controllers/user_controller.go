@@ -64,7 +64,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 				Data: nil,
 			})
 		}
-		u.Id = uuid.NewV4()
+		u.Id, _ = uuid.NewV4()
 		hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{

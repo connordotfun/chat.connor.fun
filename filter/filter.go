@@ -1,11 +1,13 @@
 package filter
 
-import "unicode"
+import (
+	"unicode"
+)
 
-const BASE_CONFIDENCE = .75
+const baseConfidence = .75
 
 type Filter struct {
-	tree *metricTree
+	tree *MetricTree
 	userPCS float64
 	toleranceModifier float64
 }
@@ -16,11 +18,10 @@ type Filter struct {
  *  iterate over this list, and this line is ridiculously long, it improves execution time
  *  by a factor of 2 in some instances.
  */
-func NewFilter(bannedTree *metricTree) *Filter {
+func NewFilter(bannedTree *MetricTree) *Filter {
 	return &Filter{
 		tree: bannedTree,
 		userPCS: 0,
-		toleranceModifier: 0,
 	}
 }
 
@@ -89,7 +90,7 @@ func (filter *Filter) testGeneral(testSlice []rune) bool {
 	pass := true
 	if !filter.tree.wordSet.isKnown(testSlice) {
 		score := filter.tree.getScore(string(testSlice), 0)
-		if score > (BASE_CONFIDENCE + filter.toleranceModifier)-(filter.userPCS/100) {
+		if score > (baseConfidence + filter.toleranceModifier)-(filter.userPCS/100) {
 			pass = false
 		}
 	}
@@ -108,7 +109,7 @@ func (filter *Filter) testPeriod(input []rune) bool {
 	testSlice := []rune{}
 	for _, c := range input {
 		if unicode.IsPunct(c) {
-			modifier += .5
+			modifier += .7
 		} else {
 			testSlice = append(testSlice, c)
 		}
@@ -117,14 +118,14 @@ func (filter *Filter) testPeriod(input []rune) bool {
 		if len(testSlice) > 4 {
 			for i := 0; i < len(testSlice)-4; i++ {
 				score = maxFloat(score, filter.tree.getScore(string(testSlice[:i+4]), modifier))
-				if score > (BASE_CONFIDENCE + filter.toleranceModifier)-(filter.userPCS/100) {
+				if score > (baseConfidence + filter.toleranceModifier)-(filter.userPCS/100) {
 					break
 				}
 			}
 		} else {
 			score = filter.tree.getScore(string(testSlice), modifier)
 		}
-		if score > (BASE_CONFIDENCE + filter.toleranceModifier)-(filter.userPCS/100) {
+		if score > (baseConfidence + filter.toleranceModifier)-(filter.userPCS/100) {
 			pass = false
 		}
 	}
@@ -137,20 +138,4 @@ func replaceSlice(in []rune, char rune, start int, end int) []rune {
 		in[i] = char
 	}
 	return in
-}
-
-func (filter *Filter) GetPCS() float64 {
-	return filter.userPCS
-}
-
-func (filter *Filter) SetPCS(newPCS float64) {
-	filter.userPCS = newPCS
-}
-
-func (filter *Filter) GetModifier() float64 {
-	return filter.toleranceModifier
-}
-
-func (filter *Filter) SetModifier(newMod float64) {
-	filter.toleranceModifier = newMod
 }
