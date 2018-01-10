@@ -21,7 +21,6 @@ class Messages extends Component {
     }
 
     updateScroll() {
-        console.log('updating scroll!')
         if (this.props.messages.length > 0) {
             let messageEls = document.getElementsByClassName('Message')
             messageEls[messageEls.length - 1].scrollIntoView()

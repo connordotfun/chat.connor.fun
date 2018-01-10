@@ -27,12 +27,12 @@ class AuthStore {
   @action login() {
     this.inProgress = true
     this.errors = undefined
-    commonStore.setUsername(this.values.username)
     axios.post('/api/v1/login', {
       username: this.values.username,
       secret: this.values.password
     })
     .then((res) => {
+      commonStore.setUser(res.data.data.user)
       commonStore.setToken(res.data.data.token)
     })
     .catch(action((err) => {
@@ -64,6 +64,7 @@ class AuthStore {
 
   @action logout() {
     commonStore.setToken(undefined)
+    commonStore.setUser(undefined)
     return new Promise(res => res())
   }
 }
