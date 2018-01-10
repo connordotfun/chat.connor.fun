@@ -6,13 +6,16 @@
 
 .Header span,button {
     text-align: center;
-    font-size: 1.1em;
     margin: auto 0;
     color: white;
 }
 
-.Header span:hover {
-    color: red;
+.Header span {
+    font-size: 1.1em;
+}
+
+.Header button {
+    font-size: 0.9em;
 }
 
 .Header span.room {
@@ -35,6 +38,10 @@
     .Header {
         grid-template-columns: 55px 1fr 55px;
     }
+
+    .Header button {
+        font-size: 1.1em;
+    }
 }
 
 @media screen and (min-width:1024px) {
@@ -46,11 +53,9 @@
         font-size: 1.2em;
     }
 
-    .Header .back {
-        margin: 5px auto;
-    }
-
-    .Header .logout {
-        margin: 5px auto;
+    .Header button {
+        margin: auto;
+        width: 25px;
+        height: 25px;
     }
 }

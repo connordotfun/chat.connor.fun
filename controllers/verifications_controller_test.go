@@ -24,7 +24,6 @@ func TestVerifyUserAccount_SuccessfulVerify(t *testing.T) {
 
 	newUser := model.User{
 		Id: uuid.NewV4(),
-		Valid: false,
 	}
 
 	usersRepo.Add(&newUser)
@@ -69,12 +68,10 @@ func TestVerifyUserAccount_WrongUser(t *testing.T) {
 
 	newUser := model.User{
 		Id: uuid.NewV4(),
-		Valid: false,
 	}
 
 	secondUser := model.User{
 		Id: uuid.NewV4(),
-		Valid: false,
 	}
 
 	usersRepo.Add(&newUser)
