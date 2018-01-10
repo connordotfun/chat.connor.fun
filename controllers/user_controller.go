@@ -95,7 +95,7 @@ func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Hand
 		}
 
 		user, err := userRepo.GetById(id)
-		if err != nil {
+		if err != nil || user == nil {
 			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
 		}
 
