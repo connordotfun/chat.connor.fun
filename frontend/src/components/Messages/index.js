@@ -13,7 +13,7 @@ class Messages extends Component {
             <div className="Messages">
                 {
                     this.props.messages.map((obj) => (
-                        <Message key={obj.createTime} message={obj.text} sender={obj.sender.username}/>
+                        <Message key={obj.id} message={obj.text} sender={obj.sender.username}/>
                     ))
                 }
             </div>
@@ -21,8 +21,11 @@ class Messages extends Component {
     }
 
     updateScroll() {
-        let messageEls = document.getElementsByClassName('Message')
-        messageEls[messageEls.length - 1].scrollIntoView()
+        console.log('updating scroll!')
+        if (this.props.messages.length > 0) {
+            let messageEls = document.getElementsByClassName('Message')
+            messageEls[messageEls.length - 1].scrollIntoView()
+        }
     }
 }
 

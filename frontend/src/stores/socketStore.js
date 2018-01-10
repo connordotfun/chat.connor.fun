@@ -1,5 +1,6 @@
 import { observable, action } from 'mobx'
 import commonStore from './commonStore'
+import roomStore from './roomStore'
 
 class SocketStore {
   @observable socket = undefined
@@ -14,15 +15,18 @@ class SocketStore {
       this.leaveRoom()
     }
 
+    roomStore.joinRoom(room)
     this.socket = new WebSocket((window.location.protocol === "https:"? "wss://" : "ws://") + window.location.host + "/api/v1/rooms/" + room +  "/ws", commonStore.token)
     this.socket.onopen = action((e) => { this.connected = true })
     this.socket.onerror = this.setError
     this.socket.onclose = action((e) => {
       this.connected = false
     })
-    this.socket.onmessage = (e) => {
-      this.listeners.map((fxn) => fxn(e))
-    }
+    this.socket.onmessage = roomStore.onMessage.bind(roomStore)
+    // maybe add this back in if needed
+    // (e) => {
+    //   this.listeners.map((fxn) => fxn(e))
+    // }
   }
 
   @action addListener(fxn) {
@@ -40,6 +44,7 @@ class SocketStore {
     }
 
     this.connected = false
+    roomStore.leaveRoom()
   }
 
   @action setMessage(message) {

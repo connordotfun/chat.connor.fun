@@ -25,7 +25,6 @@ func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verifications
 		return err
 	}
 	if useEmailVerification {
-		u.Valid = false
 		if !strings.Contains(u.Email,"@") {
 			return errors.New("email not valid")
 		}
@@ -44,8 +43,9 @@ func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verifications
 		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
 			return err
 		}
+		u.Roles = []model.Role{model.Roles.GetRole(model.RoleUnverified), model.Roles.GetRole(model.RoleAnon)}
 	} else {
-		u.Valid = true
+		u.Roles = []model.Role{model.Roles.GetRole(model.RoleNormal), model.Roles.GetRole(model.RoleAnon)}
 		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 				Data: nil,
 			})
 		}
-		u.Id, _ = uuid.NewV4()
+		u.Id = uuid.NewV4()
 		hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -81,12 +81,12 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Valid: u.Valid},
+			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Roles: u.Roles},
 		})
 	}
 }
 
-func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
+func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		idStr := c.Param("id")
 		id, err := uuid.FromString(idStr)
@@ -95,15 +95,20 @@ func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
 		}
 
 		user, err := userRepo.GetById(id)
-		if err != nil {
+		if err != nil || user == nil {
 			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
 		}
 
-		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username}))
+		roles, err := rolesRepo.GetUserRoles(id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
+		}
+
+		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username, Roles: roles}))
 	}
 }
 
-func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
+func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {  //TODO: generate JWTs
 		var toLoginUser model.User
 		if err := c.Bind(&toLoginUser); err != nil {
@@ -120,37 +125,45 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 			})
 		}
 
+		if matchedUser == nil {
+			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
+		}
+
 		if bcrypt.CompareHashAndPassword([]byte(matchedUser.Secret), []byte(toLoginUser.Secret)) != nil {
 			return c.JSON(http.StatusUnauthorized, model.Response{
 				Error: &model.ResponseError{Type: "PASSWORD_MATCH_FAILED", Message: "Passwords don't match!"},
 				Data: nil,
 			})
-		} else {
-			userToReturn := model.User{
-				Id: matchedUser.Id,
-				Email: matchedUser.Email,
-				Username: matchedUser.Username,
-				Valid: matchedUser.Valid,
-			}
-			jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
+		}
+		roles, err := rolesRepo.GetUserRoles(matchedUser.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("ROLE_RETRIEVE_FAILED"))
+		}
+		userToReturn := model.User{
+			Id: matchedUser.Id,
+			Email: matchedUser.Email,
+			Username: matchedUser.Username,
+			Roles: roles,
+		}
+		jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
 
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, model.Response{
-					Error: &model.ResponseError{Type: "JWT_FAILED", Message: "Server failed to sign JWT"},
-					Data: nil,
-				})
-			}
-
-			returnData := map[string]interface{} {
-				"token": jwtStr,
-				"user": userToReturn,
-			}
-
-			return c.JSON(http.StatusOK, model.Response{
-				Error: nil,
-				Data: returnData,
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.Response{
+				Error: &model.ResponseError{Type: "JWT_FAILED", Message: "Server failed to sign JWT"},
+				Data: nil,
 			})
 		}
+
+		returnData := map[string]interface{} {
+			"token": jwtStr,
+			"user": userToReturn,
+		}
+
+		return c.JSON(http.StatusOK, model.Response{
+			Error: nil,
+			Data: returnData,
+		})
+
 	}
 }
 

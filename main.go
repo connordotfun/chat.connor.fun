@@ -37,10 +37,10 @@ var (
 func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, banTree *filter.MetricTree) {
 
 	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository, verificationsRepository, !config.Debug)).Name = "create-user"
-	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
+	api.GET("/users/:id", controllers.GetUser(userRepository, rolesRepository)).Name = "get-user"
 	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
 
-	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
+	api.POST("/login", controllers.LoginUser(userRepository, rolesRepository)).Name = "login-user"
 
 	api.GET("/messages", controllers.GetMessages(messagesRepository)).Name = "get-messages"
 	api.GET("/messages/:id", controllers.GetMessage(messagesRepository)).Name = "get-message"
@@ -49,6 +49,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, banTree *filter.Metri
 	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository)).Name = "get-nearby-rooms"
 	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap)).Name = "get-room-members"
 	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap)).Name = "get-room"
+	api.POST("/rooms", controllers.CreateRoom(roomsRepository))
 
 	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(verificationsRepository, userRepository, rolesRepository))
 

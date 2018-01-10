@@ -87,8 +87,7 @@ func lookupHub(name string, hubs *HubMap, roomsRepo db.RoomsRepository) (*Hub, e
 			return nil, err
 		}
 		if room == nil { //create a new room
-			tuuid, _ := uuid.NewV4()
-			room = &model.ChatRoom{Id: tuuid, Name: name}
+			room = &model.ChatRoom{Id: uuid.NewV4(), Name: name}
 			if err := roomsRepo.Add(room); err != nil {
 				return nil, err
 			}

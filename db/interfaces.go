@@ -11,13 +11,11 @@ type UserRepository interface {
 	GetAll() ([]*model.User, error)
 	GetById(id uuid.UUID) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
-
-	MakeValid(userId uuid.UUID) error
 }
 
 type RolesRepository interface {
 	Add(userId uuid.UUID, roleName string) error
-	GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
+	GetUserRoles(userId uuid.UUID) ([]model.Role, error)
 	RemoveUserRole(userId uuid.UUID, roleName string) error
 }
 
@@ -25,6 +23,7 @@ type RoomsRepository interface {
 	Add(room *model.ChatRoom) error
 	GetById(id uuid.UUID) (*model.ChatRoom, error)
 	GetByName(name string) (*model.ChatRoom, error)
+	GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error)
 }
 
 type MessagesRepository interface {

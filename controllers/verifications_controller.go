@@ -49,10 +49,6 @@ func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRep
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}
-		err = usersRepo.MakeValid(verification.UserId)
-		if err != nil {
-			return c.NoContent(http.StatusInternalServerError)
-		}
 		err = rolesRepo.RemoveUserRole(verification.UserId, model.RoleUnverified)
 		if err != nil {
 			return c.NoContent(http.StatusInternalServerError)

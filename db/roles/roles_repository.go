@@ -28,14 +28,14 @@ func (r pgRolesRepository) Add(userId uuid.UUID, role string) error {
 	return err
 }
 
-func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]*model.Role, error) {
+func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]model.Role, error) {
 	rows, err := r.db.NamedQuery(getRolesByUserQuery, map[string]interface{}{"user_id": userId})
 
 	if err != nil {
 		return nil, err
 	}
 
-	userRoles := make([]*model.Role, 0)
+	userRoles := make([]model.Role, 0)
 	for rows.Next() {
 		var roleName string
 		err := rows.Scan(&roleName)
@@ -43,7 +43,7 @@ func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
 			return nil, err
 		}
 		role := model.Roles.GetRole(roleName)
-		userRoles = append(userRoles, &role)
+		userRoles = append(userRoles, role)
 	}
 
 	return userRoles, nil
