@@ -15,13 +15,15 @@ type UserRepository interface {
 
 type RolesRepository interface {
 	Add(userId uuid.UUID, roleName string) error
-	GetUserRoles(userId uuid.UUID) ([]*model.Role, error)
+	GetUserRoles(userId uuid.UUID) ([]model.Role, error)
+	RemoveUserRole(userId uuid.UUID, roleName string) error
 }
 
 type RoomsRepository interface {
 	Add(room *model.ChatRoom) error
 	GetById(id uuid.UUID) (*model.ChatRoom, error)
 	GetByName(name string) (*model.ChatRoom, error)
+	GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error)
 }
 
 type MessagesRepository interface {
@@ -37,4 +39,10 @@ type MessagesRepository interface {
 
 	GetByUserAndRoom(userId uuid.UUID, name uuid.UUID) ([]*model.Message, error)
 	GetTopByUserAndRoom(userId uuid.UUID, name uuid.UUID, count int) ([]*model.Message, error)
+}
+
+type VerificationCodeRepository interface {
+	Add(code *model.VerificationCode) error
+	Invalidate(code string) error
+	GetByCode(code string) (*model.VerificationCode, error)
 }

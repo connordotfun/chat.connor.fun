@@ -13,6 +13,7 @@ import App from './views/App'
 import authStore from './stores/authStore'
 import commonStore from './stores/commonStore'
 import socketStore from './stores/socketStore'
+import roomStore from './stores/roomStore'
 
 promiseFinally.shim()
 useStrict(true)
@@ -20,7 +21,8 @@ useStrict(true)
 const stores = {
     authStore,
     commonStore,
-    socketStore
+    socketStore,
+    roomStore
 }
 
 ReactDOM.render(

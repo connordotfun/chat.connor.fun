@@ -7,36 +7,43 @@ import (
 )
 
 type MockRolesRepository struct {
-	Roles map[uuid.UUID][]string
+	Roles map[uuid.UUID]map[string]bool
 }
 
 func NewMockRolesRepository() *MockRolesRepository {
-	return &MockRolesRepository{map[uuid.UUID][]string{}}
+	return &MockRolesRepository{map[uuid.UUID]map[string]bool{}}
 }
 
 func (r *MockRolesRepository) Add(userId uuid.UUID, role string) error {
 	if vals, ok := r.Roles[userId]; ok {
-		for _, r := range vals {
-			if r == role {
-				return errors.New("duplicate value")
-			}
+		if vals[role] {
+			return errors.New("duplicate role")
 		}
-		r.Roles[userId] = append(vals, role)
+		vals[role] = true
 	} else {
-		r.Roles[userId] = []string{role}
+		r.Roles[userId] = map[string]bool{role: true}
 	}
 	return nil
 }
 
-func (r *MockRolesRepository) GetUserRoles(userId uuid.UUID) ([]*model.Role, error) {
+func (r *MockRolesRepository) GetUserRoles(userId uuid.UUID) ([]model.Role, error) {
 	if vals, ok := r.Roles[userId]; ok {
-		roles := make([]*model.Role, len(vals))
-		for i, r := range vals {
+		roles := make([]model.Role, 0)
+		for r := range vals {
 			roleObj := model.Roles.GetRole(r)
-			roles[i] = &roleObj
+			roles = append(roles, roleObj)
 		}
 		return roles, nil
 	} else {
-		return make([]*model.Role, 0), nil
+		return make([]model.Role, 0), nil
 	}
+}
+
+func (r *MockRolesRepository) RemoveUserRole(userId uuid.UUID, roleName string) error {
+	if vals, ok := r.Roles[userId]; ok {
+		if roleVal, ok := vals[roleName]; ok && roleVal {
+			delete(vals, roleName)
+		}
+	}
+	return nil
 }

@@ -92,7 +92,7 @@ func cleanUpTables(t *testing.T) {
 const (
 	testJsonRoleData = `
 		{
-		  "anon_user": {
+		  "anonUser": {
 			"parent": "NONE",
 			"override": "NONE",
 			"permissions": [
@@ -100,7 +100,7 @@ const (
 			]
 		  },
 
-		  "normal_user": {
+		  "normalUser": {
 			"parent": "anon_user",
 			"override": "NONE",
 			"permissions": [
@@ -121,7 +121,7 @@ func TestDoAuthorization_WithAuth_Fail(t *testing.T) {
  	err := usersRepo.Add(user)
  	assert.NoError(t, err)
 
- 	assert.NoError(t, rolesRepo.Add(user.Id, "normal_user"))
+ 	assert.NoError(t, rolesRepo.Add(user.Id, model.RoleNormal))
 
  	e := echo.New()
 	req := httptest.NewRequest("POST", "/bar", strings.NewReader(""))
@@ -154,7 +154,7 @@ func TestDoAuthorization_WithAuth(t *testing.T) {
 	err := usersRepo.Add(user)
 	assert.NoError(t, err)
 
-	assert.NoError(t, rolesRepo.Add(user.Id, "normal_user"))
+	assert.NoError(t, rolesRepo.Add(user.Id, model.RoleNormal))
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/foo/foo", strings.NewReader(""))

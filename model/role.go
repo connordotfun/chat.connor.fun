@@ -4,12 +4,19 @@ import (
 	"encoding/json"
 )
 
+const (
+	RoleAnon = "anonUser"
+	RoleNormal = "normalUser"
+	RoleUnverified = "unverifiedUser"
+	RoleAdmin = "admin"
+	RoleBanned = "banned"
+)
+
 type Role struct {
 	Name 		string 		  `json:"name"`
 	Override	string		  `json:"override"`
 	Permissions []Permission `json:"permissions"`
 }
-
 
 type RoleMap struct {
 	data map[string]Role
@@ -19,6 +26,11 @@ var Roles RoleMap
 
 func InitRoleMap(rolesJsonData []byte) error {
 	err := json.Unmarshal(rolesJsonData, &Roles.data)
+	for role := range Roles.data {
+		r := Roles.data[role]
+		r.Name = role
+		Roles.data[role] = r
+	}
 	if err != nil {
 		return err
 	}

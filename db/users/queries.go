@@ -25,8 +25,4 @@ const (
 	insertUserQuery = `
 		INSERT INTO users (id, username, secret) VALUES (:id, :username, :secret);
 	`
-
-	getLastInsertedQuery = `
-		SELECT currval(pg_get_serial_sequence('users','id'));
-	`
 )

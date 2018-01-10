@@ -30,6 +30,7 @@ const (
 func TestCreateUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
 	rolesRepo := testutil.NewMockRolesRepository()
+	verisRepo := testutil.NewMockVerificationsRepo()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -38,7 +39,7 @@ func TestCreateUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo)
+	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
 	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
@@ -62,12 +63,13 @@ func TestCreateUser(t *testing.T) {
 	var response model.Response
 	err = json.Unmarshal([]byte(rec.Body.String()), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, "USER_CREATE_FAILED", response.Error.Type)
+	assert.Equal(t, "USER_INIT_FAILED", response.Error.Type)
 }
 
 func TestLoginUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
 	rolesRepo := testutil.NewMockRolesRepository()
+	verisRepo := testutil.NewMockVerificationsRepo()
 
 	config.JWTSecretKey = "secret"
 	e := echo.New()
@@ -77,7 +79,7 @@ func TestLoginUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo)
+	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
 	assert.NoError(t, createUserFunc(c))
 
 
@@ -87,7 +89,7 @@ func TestLoginUser(t *testing.T) {
 
 	c = e.NewContext(req, rec)
 
-	loginUserFunc := LoginUser(userRepo)
+	loginUserFunc := LoginUser(userRepo, rolesRepo)
 	assert.NoError(t, loginUserFunc(c))
 
 	var response model.Response
@@ -103,6 +105,7 @@ func TestLoginUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
+	rolesRepo := testutil.NewMockRolesRepository()
 
 	userToGet := model.User{Id: uuid.NewV4(), Username: "test", Secret: "Test"}
 	userRepo.Add(&userToGet)
@@ -116,7 +119,7 @@ func TestGetUser(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(userToGet.Id.String())
 
-	getUserFunc := GetUser(userRepo)
+	getUserFunc := GetUser(userRepo, rolesRepo)
 
 	assert.NoError(t, getUserFunc(c))
 
@@ -131,4 +134,21 @@ func TestGetUser(t *testing.T) {
 
 	assert.Equal(t, userToGet.Id, userId)
 	assert.Equal(t, userToGet.Username, userResponse["username"])
+}
+
+func TestLoginUser_UserDNE(t *testing.T) {
+	usersRepo := testutil.NewMockUserRepository()
+	rolesRepo := testutil.NewMockRolesRepository()
+
+	e := echo.New()
+	req := httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+
+	loginUserFunc := LoginUser(usersRepo, rolesRepo)
+	assert.NoError(t, loginUserFunc(c))
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }

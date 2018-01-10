@@ -13,7 +13,6 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"fmt"
 	"github.com/aaronaaeng/chat.connor.fun/db/roles"
-	_"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"io/ioutil"
 	"github.com/aaronaaeng/chat.connor.fun/controllers/jwtmiddleware"
 	"strings"
@@ -23,31 +22,41 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/db/messages"
 	"github.com/aaronaaeng/chat.connor.fun/prehandlers"
+	"github.com/aaronaaeng/chat.connor.fun/db/verifications"
 )
 
 
-func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, userRepository db.UserRepository,
-	rolesRepository db.RolesRepository, roomsRepository db.RoomsRepository, messagesRepository db.MessagesRepository) {
+var (
+	userRepository db.UserRepository
+	rolesRepository db.RolesRepository
+	roomsRepository db.RoomsRepository
+	messagesRepository db.MessagesRepository
+	verificationsRepository db.VerificationCodeRepository
+)
 
-	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository)).Name = "create-user"
-	api.GET("/users/:id", controllers.GetUser(userRepository)).Name = "get-user"
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
+
+	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository, verificationsRepository, !config.Debug)).Name = "create-user"
+	api.GET("/users/:id", controllers.GetUser(userRepository, rolesRepository)).Name = "get-user"
 	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
 
-	api.POST("/login", controllers.LoginUser(userRepository)).Name = "login-user"
+	api.POST("/login", controllers.LoginUser(userRepository, rolesRepository)).Name = "login-user"
 
-	api.GET("/messages", controllers.GetMessages(messagesRepository))
-	api.GET("/messages/:id", controllers.GetMessage(messagesRepository))
-	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository))
+	api.GET("/messages", controllers.GetMessages(messagesRepository)).Name = "get-messages"
+	api.GET("/messages/:id", controllers.GetMessage(messagesRepository)).Name = "get-message"
+	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository)).Name = "update-message"
 
-	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository))
-	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap))
-	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap))
+	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository)).Name = "get-nearby-rooms"
+	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap)).Name = "get-room-members"
+	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap)).Name = "get-room"
+	api.POST("/rooms", controllers.CreateRoom(roomsRepository))
 
+	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(verificationsRepository, userRepository, rolesRepository))
 
 	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
 }
 
-func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
+func addMiddlewares(e *echo.Echo, api *echo.Group, rolesRepository db.RolesRepository) {
 	if !config.Debug {
 		e.Pre(prehandlers.HerokuHTTPSRedirect)
 	}
@@ -62,20 +71,17 @@ func addMiddlewares(e *echo.Echo, rolesRepository db.RolesRepository) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
-		return strings.HasPrefix(c.Path(), "/web") ||
-			strings.HasPrefix(c.Path(), "/at") || // VERY TEMPORARY
-			strings.HasPrefix(c.Path(), "/static") ||
-			strings.HasPrefix(c.Path(), "/favicon.ico") || //skip static assets
-			strings.HasSuffix(c.Path(), "ws") //||
+	api.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool {
+		return strings.HasSuffix(c.Path(), "ws") //||
 	}, jwtmiddleware.JWTBearerTokenExtractor, rolesRepository))
 
-	e.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
+	api.Use(jwtmiddleware.JwtAuth(func(c echo.Context) bool { //websocket auth
 		return !strings.HasSuffix(c.Path(), "ws")
 	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
-func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.RoomsRepository, db.MessagesRepository){
+func initDatabaseRepositories() (db.UserRepository, db.RolesRepository,
+		db.RoomsRepository, db.MessagesRepository, db.VerificationCodeRepository){
 	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
 		panic(err)
@@ -100,7 +106,12 @@ func initDatabaseRepositories() (db.UserRepository, db.RolesRepository, db.Rooms
 		panic(err)
 	}
 
-	return userRepository, rolesRepository, roomsRepository, messagesRepository
+	verificationsRepo, err := verifications.New(database)
+	if err != nil {
+		panic(err)
+	}
+
+	return userRepository, rolesRepository, roomsRepository, messagesRepository, verificationsRepo
 }
 
 func main() {
@@ -110,9 +121,9 @@ func main() {
 	e.Static("/web", "frontend/build")
 	e.Static("/static", "frontend/build/static")
 	e.Static("/service-worker.js", "frontend/build/service-worker.js")
-
 	e.GET("/", controllers.Index)
-	e.GET("/wstest", controllers.WSTestView)
+	e.GET("/*", controllers.Index)
+
 	v1ApiGroup := e.Group("/api/v1")
 
 	roleJsonData, err := ioutil.ReadFile("assets/roles.json")
@@ -124,17 +135,18 @@ func main() {
 	}
 
 	hubMap := chat.NewHubMap()
-	usersRepository, rolesRepository, roomsRepository, messagesRepository := initDatabaseRepositories()
-	addMiddlewares(e, rolesRepository)
-	createApiRoutes(v1ApiGroup, hubMap, usersRepository, rolesRepository, roomsRepository, messagesRepository)
+
+	userRepository, rolesRepository, roomsRepository,
+		messagesRepository, verificationsRepository = initDatabaseRepositories()
+
+
+	addMiddlewares(e, v1ApiGroup, rolesRepository)
+	createApiRoutes(v1ApiGroup, hubMap)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
 	}
 	e.Renderer = t
-	e.GET("/", controllers.Index)
-	e.GET("/at/*", controllers.Index)
-	e.GET("/wstest", controllers.WSTestView)
 
 	//log.SetOutput(os.Stdout)
 	e.Logger.Fatal(e.Start(":" + config.Port))

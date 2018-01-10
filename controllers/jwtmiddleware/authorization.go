@@ -7,70 +7,63 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/controllers/auth"
 	"github.com/aaronaaeng/chat.connor.fun/context"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/satori/go.uuid"
 )
 
-func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context, rolesRepo db.RolesRepository) error {
-	ac := c.(context.AuthorizedContext)
-	permissions := model.NewPermissionSet()
-	var principleRole *model.Role
-	if claims != nil { //there are authenticated claims
+func unpackClaims(claims *auth.Claims) (model.User, []model.Permission, error) {
+	if claims != nil {
 		err := claims.Valid()
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, invalidTokenResponse)
+			return model.User{}, nil, err
 		}
-		if claims.User.Username != "" { //this is very hacky
-			ac.SetRequestor(claims.User)
-			userRoles, err := rolesRepo.GetUserRoles(claims.User.Id)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, model.Response{
-					Error: &model.ResponseError{Type: "ROLES_ACCESS_FAILED", Message: err.Error()},
-					Data: nil,
-				})
-			}
+		user := claims.User
+		permissions := claims.Permissions
+		return user, permissions, nil
+	}
+	return model.User{}, make([]model.Permission, 0), nil
+}
 
-			for _, role := range userRoles {
-				if role.Name == "admin" {
-					principleRole = role //TODO: make this system better
-				}
-				permissions.Add(role.Permissions...)
-			}
-		} else {
-			anon := model.Roles.GetRole("anon_user")
-			permissions.Add(anon.Permissions...)
-			principleRole = &anon
-		}
-
-		if claims.Permissions != nil { //cached or extra permissions
-			permissions.Add(claims.Permissions...)
-		}
+func getRoles(user *model.User, repo db.RolesRepository) ([]model.Role, error) {
+	if user.Id == uuid.Nil {
+		anon := model.Roles.GetRole(model.RoleAnon)
+		return []model.Role{anon}, nil
 	} else {
-		anon := model.Roles.GetRole("anon_user")
-		permissions.Add(anon.Permissions...)
-		principleRole = &anon
+		return repo.GetUserRoles(user.Id)
+	}
+}
+
+func doAuthorization(next echo.HandlerFunc, claims *auth.Claims, c echo.Context, repo db.RolesRepository) error {
+	ac := c.(context.AuthorizedContext)
+	permissions := model.NewPermissionSet()
+
+	user, extraPermissions, err := unpackClaims(claims)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, model.NewErrorResponse("INVALID_CLAIMS"))
+	}
+	ac.SetRequestor(user)
+	permissions.AddAll(extraPermissions...)
+
+	roles, err := getRoles(&user, repo)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("AUTH_FAILED"))
 	}
 
-	if principleRole != nil {
-		if principleRole.Name == "admin" {
+	for _, r := range roles {
+		if r.Override == "ALLOW_ALL" {
+			ac.SetAccessCode(model.NewFullAccessCode())
 			return next(c)
+		} else if r.Override == "BANNED" {
+			return c.JSON(http.StatusForbidden, model.NewErrorResponse("BANNED"))
 		}
-		if principleRole.Name == "banned" {
-			return c.JSON(http.StatusForbidden, model.Response{
-				Error: &model.ResponseError{Type: "BANNED", Message: "User banned"},
-				Data: nil,
-			})
-		}
+		permissions.AddAll(r.Permissions...)
 	}
 
-	authorized, accessCode := isAuthorized(permissions, c.Request())
-	ac.SetAccessCode(accessCode)
+	authorized, code := isAuthorized(permissions, c.Request())
 	if authorized {
+		ac.SetAccessCode(code)
 		return next(ac)
-	} else {
-		return c.JSON(http.StatusForbidden, model.Response{
-			Error: &model.ResponseError{Type: "UNAUTHORIZED", Message: "Cannot access resource"},
-			Data: nil,
-		})
 	}
+	return c.JSON(http.StatusForbidden, model.NewErrorResponse("NOT_AUTHORIZED"))
 }
 
 func isAuthorized(permissionSet *model.PermissionSet, r *http.Request) (bool, model.AccessCode) { //TODO: this will be rrreally slow

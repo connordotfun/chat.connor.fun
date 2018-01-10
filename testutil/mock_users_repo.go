@@ -50,4 +50,3 @@ func (r *MockUserRepository) GetByUsername(username string) (*model.User, error)
 	}
 	return nil, nil
 }
-

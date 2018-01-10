@@ -8,10 +8,54 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/config"
 	"github.com/aaronaaeng/chat.connor.fun/db"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/email"
+	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
+	"strings"
+	"errors"
 )
 
+func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verificationsRepo db.VerificationCodeRepository,
+	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
 
-func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+	if err := usersRepo.Add(u); err != nil {
+		return err
+	}
+
+	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+		return err
+	}
+	if useEmailVerification {
+		if !strings.Contains(u.Email,"@") {
+			return errors.New("email not valid")
+		}
+		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
+		if err != nil {
+			return err
+		}
+		err = verificationsRepo.Add(verification)
+		if err != nil {
+			return err
+		}
+		err = email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(host, verification.Code))
+		if err != nil {
+			return err
+		}
+		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
+			return err
+		}
+		u.Roles = []model.Role{model.Roles.GetRole(model.RoleUnverified), model.Roles.GetRole(model.RoleAnon)}
+	} else {
+		u.Roles = []model.Role{model.Roles.GetRole(model.RoleNormal), model.Roles.GetRole(model.RoleAnon)}
+		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
+		verificationsRepo db.VerificationCodeRepository, useEmailVerification bool) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var u model.User
 		if err := c.Bind(&u); err != nil {
@@ -29,27 +73,20 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.H
 			})
 		}
 		u.Secret = string(hashedSecret)
-		err = userRepo.Add(&u)
+
+		err = handleNewUserInit(&u, userRepo, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, model.Response{
-				Error: &model.ResponseError{Type: "USER_CREATE_FAILED", Message: err.Error()},
-				Data: nil,
-			})
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("USER_INIT_FAILED"))
 		}
-		if err := rolesRepo.Add(u.Id, "normal_user"); err != nil {
-			return c.JSON(http.StatusInternalServerError, model.Response{
-				Error: &model.ResponseError{Type: "ROLE_ASSIGN_FAILED", Message: err.Error()},
-				Data: nil,
-			})
-		}
+
 		return c.JSON(http.StatusCreated, model.Response{
 			Error: nil,
-			Data: model.User{Id: u.Id, Username: u.Username},
+			Data: model.User{Id: u.Id, Email: u.Email, Username: u.Username, Roles: u.Roles},
 		})
 	}
 }
 
-func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
+func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		idStr := c.Param("id")
 		id, err := uuid.FromString(idStr)
@@ -58,15 +95,20 @@ func GetUser(userRepo db.UserRepository) echo.HandlerFunc {
 		}
 
 		user, err := userRepo.GetById(id)
-		if err != nil {
+		if err != nil || user == nil {
 			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
 		}
 
-		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username}))
+		roles, err := rolesRepo.GetUserRoles(id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("RETRIEVE_FAILED"))
+		}
+
+		return c.JSON(http.StatusOK, model.NewDataResponse(model.User{Id: user.Id, Username: user.Username, Roles: roles}))
 	}
 }
 
-func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
+func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {  //TODO: generate JWTs
 		var toLoginUser model.User
 		if err := c.Bind(&toLoginUser); err != nil {
@@ -83,35 +125,52 @@ func LoginUser(userRepo db.UserRepository) echo.HandlerFunc {
 			})
 		}
 
+		if matchedUser == nil {
+			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
+		}
+
 		if bcrypt.CompareHashAndPassword([]byte(matchedUser.Secret), []byte(toLoginUser.Secret)) != nil {
 			return c.JSON(http.StatusUnauthorized, model.Response{
 				Error: &model.ResponseError{Type: "PASSWORD_MATCH_FAILED", Message: "Passwords don't match!"},
 				Data: nil,
 			})
-		} else {
-			userToReturn := model.User{Id: matchedUser.Id, Username: matchedUser.Username, Secret: ""}
-			jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
+		}
+		roles, err := rolesRepo.GetUserRoles(matchedUser.Id)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.NewErrorResponse("ROLE_RETRIEVE_FAILED"))
+		}
+		userToReturn := model.User{
+			Id: matchedUser.Id,
+			Email: matchedUser.Email,
+			Username: matchedUser.Username,
+			Roles: roles,
+		}
+		jwtStr, err := generateJWT(userToReturn, []byte(config.JWTSecretKey))
 
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, model.Response{
-					Error: &model.ResponseError{Type: "JWT_FAILED", Message: "Server failed to sign JWT"},
-					Data: nil,
-				})
-			}
-
-			returnData := map[string]interface{} {
-				"token": jwtStr,
-				"user": userToReturn,
-			}
-
-			return c.JSON(http.StatusOK, model.Response{
-				Error: nil,
-				Data: returnData,
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, model.Response{
+				Error: &model.ResponseError{Type: "JWT_FAILED", Message: "Server failed to sign JWT"},
+				Data: nil,
 			})
 		}
+
+		returnData := map[string]interface{} {
+			"token": jwtStr,
+			"user": userToReturn,
+		}
+
+		return c.JSON(http.StatusOK, model.Response{
+			Error: nil,
+			Data: returnData,
+		})
+
 	}
 }
 
 func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
 	return nil
+}
+
+func makeAccountVerificationLink(host string, code string) string {
+	return host + "/verify/account/" + code
 }
