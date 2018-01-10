@@ -37,7 +37,7 @@ func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	message.Id, _ = uuid.NewV4()
+	message.Id = uuid.NewV4()
 	message.CreateDate = time.Now().Unix()
 	message.Room = c.hub.Room
 	if c.user.Id != uuid.Nil {
