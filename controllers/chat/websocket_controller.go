@@ -11,6 +11,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/context"
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/db"
+	"github.com/aaronaaeng/chat.connor.fun/filter"
 )
 
 
@@ -39,7 +40,7 @@ func makeResponseHeader(ac context.AuthorizedContext) http.Header {
 	return nil
 }
 
-func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db.MessagesRepository) echo.HandlerFunc {
+func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db.MessagesRepository, banTree *filter.MetricTree) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 			return c.NoContent(http.StatusForbidden)
@@ -67,7 +68,8 @@ func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db
 
 		user := model.User{Id: ac.Requestor().Id, Username: ac.Requestor().Username}
 		client := &Client{hub: hub, user: user, canWrite: ac.AccessCode().CanCreate(),
-			conn: conn, send: make(chan *model.Message), messagesRepo: messagesRepo}
+			conn: conn, send: make(chan *model.Message), messagesRepo: messagesRepo,
+			filter: filter.NewFilter(banTree)}
 		client.hub.register <- client
 
 		go client.writer()

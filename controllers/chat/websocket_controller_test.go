@@ -13,6 +13,7 @@ import (
 	"time"
 	"github.com/aaronaaeng/chat.connor.fun/context"
 	"github.com/aaronaaeng/chat.connor.fun/testutil"
+	"github.com/aaronaaeng/chat.connor.fun/filter"
 )
 
 type testHandler struct {
@@ -72,7 +73,7 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree("../../assets/bannedList.txt"))
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -105,7 +106,7 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree("../../assets/bannedList.txt"))
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -161,7 +162,7 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree("../../assets/bannedList.txt"))
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -197,7 +198,7 @@ func TestHandleWebsocket_ReadOnly(t *testing.T) {
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree("../../assets/bannedList.txt"))
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -220,4 +221,50 @@ func TestHandleWebsocket_ReadOnly(t *testing.T) {
 
 	_, err = client.read()
 	assert.Error(t, err)
+}
+
+func TestHandleWebsocket_MessageCleaning(t *testing.T) {
+	messagesRepo := testutil.NewMockMessagesRepository()
+	roomsRepo := testutil.NewMockRoomsRepository()
+
+	e := echo.New()
+
+	hubMap := NewHubMap()
+	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo, filter.NewTree("../../assets/bannedList.txt"))
+
+	shouldBeTrue := false
+	handlerFunc := func(c echo.Context) error {
+		shouldBeTrue = true
+		return handleWsFunc(c)
+	}
+	handler := newTestHandler(e, handlerFunc, model.GenerateVerbCode("cr"))
+
+	s := httptest.NewServer(handler)
+
+	dClient := wstest.NewDialer(handler, nil)
+
+	clientConn, resp, err := dClient.Dial("ws://" + s.Listener.Addr().String() + "/ws", nil)
+	assert.NoError(t, err)
+
+	assert.NoError(t, handler.err)
+	assert.True(t, shouldBeTrue)
+
+	assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode, "upgrade failed")
+
+	client := testWsClient{conn: clientConn}
+
+	assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode, "upgrade failed")
+
+
+	defer func() {
+		client.conn.Close()
+	}()
+	err = client.write("apple")
+	assert.NoError(t, err)
+
+	client.conn.SetReadDeadline(time.Now().Add(time.Duration(5 * time.Second)))
+	message, err := client.read()
+	client.conn.SetReadDeadline(time.Now().Add(time.Duration(5 * time.Second)))
+	assert.NoError(t, err)
+	assert.Equal(t, "*****", message.Text)
 }

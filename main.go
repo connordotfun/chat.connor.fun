@@ -22,6 +22,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/db/rooms"
 	"github.com/aaronaaeng/chat.connor.fun/db/messages"
 	"github.com/aaronaaeng/chat.connor.fun/db/verifications"
+	"github.com/aaronaaeng/chat.connor.fun/filter"
 )
 
 
@@ -33,7 +34,7 @@ var (
 	verificationsRepository db.VerificationCodeRepository
 )
 
-func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, banTree *filter.MetricTree) {
 
 	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository, verificationsRepository, !config.Debug)).Name = "create-user"
 	api.GET("/users/:id", controllers.GetUser(userRepository, rolesRepository)).Name = "get-user"
@@ -52,7 +53,7 @@ func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
 
 	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(verificationsRepository, userRepository, rolesRepository))
 
-	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
+	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository, banTree)).Name = "join-room"
 }
 
 func addMiddlewares(e *echo.Echo, api *echo.Group, rolesRepository db.RolesRepository) {
@@ -135,12 +136,14 @@ func main() {
 
 	hubMap := chat.NewHubMap()
 
+	banTree := filter.NewTree("assets/bannedList.txt")
+
 	userRepository, rolesRepository, roomsRepository,
 		messagesRepository, verificationsRepository = initDatabaseRepositories()
 
 
 	addMiddlewares(e, v1ApiGroup, rolesRepository)
-	createApiRoutes(v1ApiGroup, hubMap)
+	createApiRoutes(v1ApiGroup, hubMap, banTree)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),
