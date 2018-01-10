@@ -135,3 +135,20 @@ func TestGetUser(t *testing.T) {
 	assert.Equal(t, userToGet.Id, userId)
 	assert.Equal(t, userToGet.Username, userResponse["username"])
 }
+
+func TestLoginUser_UserDNE(t *testing.T) {
+	usersRepo := testutil.NewMockUserRepository()
+	rolesRepo := testutil.NewMockRolesRepository()
+
+	e := echo.New()
+	req := httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+
+	loginUserFunc := LoginUser(usersRepo, rolesRepo)
+	assert.NoError(t, loginUserFunc(c))
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}

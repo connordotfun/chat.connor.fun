@@ -125,6 +125,10 @@ func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Ha
 			})
 		}
 
+		if matchedUser == nil {
+			return c.JSON(http.StatusNotFound, model.NewErrorResponse("USER_NOT_FOUND"))
+		}
+
 		if bcrypt.CompareHashAndPassword([]byte(matchedUser.Secret), []byte(toLoginUser.Secret)) != nil {
 			return c.JSON(http.StatusUnauthorized, model.Response{
 				Error: &model.ResponseError{Type: "PASSWORD_MATCH_FAILED", Message: "Passwords don't match!"},
