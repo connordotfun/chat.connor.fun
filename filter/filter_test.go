@@ -5,15 +5,15 @@ import (
 )
 
 func BenchmarkCleanLong(b *testing.B) { // Executes in .9 ms
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	for i := 0; i < b.N; i++ {
 		filter.CleanSentence("this is a very long message.  i dont exxpect them to be much longer than this is")
 	}
 }
 
 func TestCleanSentence(t *testing.T) {
-	filter := NewFilter(NewTree())
-	filter.BanWord("orange")
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
+	//filter.BanWord("orange")
 	filter.BanWord("sample")
 	actualClean := filter.CleanSentence("the sample is orang3")
 	var expectedClean = "the ****** is ******"
@@ -24,7 +24,7 @@ func TestCleanSentence(t *testing.T) {
 }
 
 func TestOrange(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	filter.BanWord("apple")
 	actualClean := filter.CleanSentence("apple")
 	var expectedClean = "*****"
@@ -35,7 +35,7 @@ func TestOrange(t *testing.T) {
 }
 
 func TestCleanSentencePeriodSpace(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	filter.BanWord("orange")
 	filter.BanWord("orange")
 	actualClean := filter.CleanSentence("apple..orange")
@@ -47,7 +47,7 @@ func TestCleanSentencePeriodSpace(t *testing.T) {
 }
 
 func TestCleanSentencePeriodInCenter(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	actualClean := filter.CleanSentence("or.a..ng3")
 	var expectedClean = "*********"
 
@@ -57,7 +57,7 @@ func TestCleanSentencePeriodInCenter(t *testing.T) {
 }
 
 func TestPeriodCombo(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	actualClean := filter.CleanSentence("te.s")
 	var expectedClean = "****"
 
@@ -67,7 +67,7 @@ func TestPeriodCombo(t *testing.T) {
 }
 
 func TestGetScore(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	actualResult := filter.tree.distance("test", "")
 	var expectedResult = 4
 
@@ -86,7 +86,7 @@ func TestMinIntSlice(t *testing.T) {
 }
 
 func TestDistanceHello(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	actualResult := filter.tree.distance("hello", "hello")
 	var expectedResult = 0
 
@@ -96,7 +96,7 @@ func TestDistanceHello(t *testing.T) {
 }
 
 func TestDistanceDiffLength(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	actualResult := filter.tree.distance("a", "toz")
 	var expectedResult = 3
 
@@ -106,7 +106,7 @@ func TestDistanceDiffLength(t *testing.T) {
 }
 
 func TestDistanceEmpty(t *testing.T) {
-	filter := NewFilter(NewTree())
+	filter := NewFilter(NewTree("../assets/bannedList.txt"))
 	actualResult := filter.tree.distance("test", "")
 	var expectedResult = 4
 

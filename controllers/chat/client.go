@@ -42,10 +42,10 @@ func (c *Client) processMessage(messageBytes []byte) (*model.Message, error) {
 	message.Room = c.hub.Room
 	if c.user.Id != uuid.Nil {
 		message.Creator = &model.User{Id: c.user.Id, Username: c.user.Username}
-		message.Text = c.filter.CleanSentence(message.Text)
 	} else {
 		//return nil, errors.New("message has no creator")
 	}
+	message.Text = c.filter.CleanSentence(message.Text)
 	if err := c.messagesRepo.Add(&message); err != nil {
 		return nil, err
 	}

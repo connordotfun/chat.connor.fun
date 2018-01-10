@@ -135,7 +135,7 @@ func main() {
 
 	hubMap := chat.NewHubMap()
 
-	banTree := filter.NewTree()
+	banTree := filter.NewTree("assets/bannedList.txt")
 
 	userRepository, rolesRepository, roomsRepository,
 		messagesRepository, verificationsRepository = initDatabaseRepositories()

@@ -23,14 +23,14 @@ type MetricTree struct {
 	wordSet *wordSet
 }
 
-func NewTree() *MetricTree {
+func NewTree(path string) *MetricTree {
 	tree := &MetricTree{
 		root: nil,
 		tolerance: 3,
 		wordSet: newWordSet(),
 	}
 
-	file, _ := os.Open("assets/bannedList.txt")
+	file, _ := os.Open(path)
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
