@@ -14,48 +14,76 @@ import (
 	"errors"
 )
 
-func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verificationsRepo db.VerificationCodeRepository,
-	rolesRepo db.RolesRepository, host string, useEmailVerification bool) error {
+func doUserInitNoEmail(u *model.User, repo db.TransactionalRepository) (err error) {
+	tx := repo.CreateTransaction()
+	defer func() { //if there's an error, rollback
+		if err == nil {
+			tx.Commit()
+		} else {
+			tx.Rollback()
+		}
+	}()
 
-	if err := usersRepo.Add(u); err != nil {
+	if err := tx.Users().Add(u); err != nil {
 		return err
 	}
 
-	if err := rolesRepo.Add(u.Id, model.RoleAnon); err != nil {
+	if err := tx.Roles().Add(u.Id, model.RoleAnon); err != nil {
 		return err
 	}
-	if useEmailVerification {
-		if !strings.Contains(u.Email,"@") {
-			return errors.New("email not valid")
+
+	if err := tx.Roles().Add(u.Id, model.RoleNormal); err != nil {
+		return err
+	}
+	u.Roles = []model.Role{model.Roles.GetRole(model.RoleNormal), model.Roles.GetRole(model.RoleAnon)}
+
+	return nil
+}
+
+func doUserInitWithEmail(u *model.User, repo db.TransactionalRepository, host string) (err error) {
+	tx := repo.CreateTransaction()
+	defer func() { //if there's an error, rollback
+		if err == nil {
+			tx.Commit()
+		} else {
+			tx.Rollback()
 		}
-		verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
-		if err != nil {
-			return err
-		}
-		err = verificationsRepo.Add(verification)
-		if err != nil {
-			return err
-		}
-		err = email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(host, verification.Code))
-		if err != nil {
-			return err
-		}
-		if err := rolesRepo.Add(u.Id, model.RoleUnverified); err != nil {
-			return err
-		}
-		u.Roles = []model.Role{model.Roles.GetRole(model.RoleUnverified), model.Roles.GetRole(model.RoleAnon)}
-	} else {
-		u.Roles = []model.Role{model.Roles.GetRole(model.RoleNormal), model.Roles.GetRole(model.RoleAnon)}
-		if err := rolesRepo.Add(u.Id, model.RoleNormal); err != nil {
-			return err
-		}
+	}()
+
+	if err := tx.Users().Add(u); err != nil {
+		return err
+	}
+	if err := tx.Roles().Add(u.Id, model.RoleAnon); err != nil {
+		return err
+	}
+
+	if !strings.Contains(u.Email,"@") {
+		return errors.New("email not valid")
+	}
+
+	verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
+	if err != nil {
+		return err
+	}
+
+	if err := tx.Verifications().Add(verification); err != nil {
+		return err
+	}
+
+	if err := tx.Roles().Add(u.Id, model.RoleUnverified); err != nil {
+		return err
+	}
+
+	u.Roles = []model.Role{model.Roles.GetRole(model.RoleUnverified), model.Roles.GetRole(model.RoleAnon)}
+
+	if err := email.SendAccountVerificationEmail(u.Email, u.Username, makeAccountVerificationLink(host, verification.Code)); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
-		verificationsRepo db.VerificationCodeRepository, useEmailVerification bool) echo.HandlerFunc {
+func CreateUser(repository db.TransactionalRepository, useEmailVerification bool) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var u model.User
 		if err := c.Bind(&u); err != nil {
@@ -64,6 +92,14 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 				Data: nil,
 			})
 		}
+
+		if foundUser, _ := repository.Users().GetByUsername(u.Username); foundUser != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("USER_EXISTS"))
+		}
+		if foundUser, _ :=repository.Users().GetByEmail(u.Email); foundUser != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("EMAIL_IN_USE"))
+		}
+
 		u.Id = uuid.NewV4()
 		hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 		if err != nil {
@@ -74,7 +110,12 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 		}
 		u.Secret = string(hashedSecret)
 
-		err = handleNewUserInit(&u, userRepo, verificationsRepo, rolesRepo, c.Request().Host, useEmailVerification)
+
+		if useEmailVerification {
+			err = doUserInitWithEmail(&u, repository, c.Request().Host)
+		} else {
+			err = doUserInitNoEmail(&u, repository)
+		}
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("USER_INIT_FAILED"))
 		}
@@ -86,8 +127,10 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 	}
 }
 
-func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+func GetUser(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		userRepo := repository.Users()
+		rolesRepo := repository.Roles()
 		idStr := c.Param("id")
 		id, err := uuid.FromString(idStr)
 		if err != nil {
@@ -108,8 +151,10 @@ func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Hand
 	}
 }
 
-func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+func LoginUser(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {  //TODO: generate JWTs
+		userRepo := repository.Users()
+		rolesRepo := repository.Roles()
 		var toLoginUser model.User
 		if err := c.Bind(&toLoginUser); err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -167,7 +212,7 @@ func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Ha
 	}
 }
 
-func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
+func UpdateUser(repository db.TransactionalRepository) echo.HandlerFunc {
 	return nil
 }
 

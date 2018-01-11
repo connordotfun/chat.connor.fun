@@ -26,34 +26,26 @@ import (
 )
 
 
-var (
-	userRepository db.UserRepository
-	rolesRepository db.RolesRepository
-	roomsRepository db.RoomsRepository
-	messagesRepository db.MessagesRepository
-	verificationsRepository db.VerificationCodeRepository
-)
+func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, repo db.TransactionalRepository) {
 
-func createApiRoutes(api *echo.Group, hubMap *chat.HubMap) {
+	api.POST("/users", controllers.CreateUser(repo, false)).Name = "create-user"
+	api.GET("/users/:id", controllers.GetUser(repo)).Name = "get-user"
+	api.PUT("/users/:id", controllers.UpdateUser(repo))
 
-	api.POST("/users", controllers.CreateUser(userRepository, rolesRepository, verificationsRepository, false)).Name = "create-user"
-	api.GET("/users/:id", controllers.GetUser(userRepository, rolesRepository)).Name = "get-user"
-	api.PUT("/users/:id", controllers.UpdateUser(userRepository))
+	api.POST("/login", controllers.LoginUser(repo)).Name = "login-user"
 
-	api.POST("/login", controllers.LoginUser(userRepository, rolesRepository)).Name = "login-user"
+	api.GET("/messages", controllers.GetMessages(repo)).Name = "get-messages"
+	api.GET("/messages/:id", controllers.GetMessage(repo)).Name = "get-message"
+	api.PUT("/messages/:id", controllers.UpdateMessage(repo)).Name = "update-message"
 
-	api.GET("/messages", controllers.GetMessages(messagesRepository)).Name = "get-messages"
-	api.GET("/messages/:id", controllers.GetMessage(messagesRepository)).Name = "get-message"
-	api.PUT("/messages/:id", controllers.UpdateMessage(messagesRepository)).Name = "update-message"
-
-	api.GET("/rooms/nearby", controllers.GetNearbyRooms(roomsRepository)).Name = "get-nearby-rooms"
+	api.GET("/rooms/nearby", controllers.GetNearbyRooms(repo)).Name = "get-nearby-rooms"
 	api.GET("/rooms/:room/users", controllers.GetRoomMembers(hubMap)).Name = "get-room-members"
-	api.GET("/rooms/:room", controllers.GetRoom(roomsRepository, hubMap)).Name = "get-room"
-	api.POST("/rooms", controllers.CreateRoom(roomsRepository))
+	api.GET("/rooms/:room", controllers.GetRoom(repo, hubMap)).Name = "get-room"
+	api.POST("/rooms", controllers.CreateRoom(repo))
 
-	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(verificationsRepository, userRepository, rolesRepository))
+	api.PUT("/verifications/accountverification", controllers.VerifyUserAccount(repo))
 
-	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, roomsRepository, messagesRepository)).Name = "join-room"
+	api.GET("/rooms/:room/ws", chat.HandleWebsocket(hubMap, repo)).Name = "join-room"
 }
 
 func addMiddlewares(e *echo.Echo, api *echo.Group, rolesRepository db.RolesRepository) {
@@ -80,7 +72,7 @@ func addMiddlewares(e *echo.Echo, api *echo.Group, rolesRepository db.RolesRepos
 	}, jwtmiddleware.JWTProtocolHeaderExtractor, rolesRepository))
 }
 
-func initDatabaseRepositories() (db.UserRepository, db.RolesRepository,
+func initDatabaseRepositories() (*sqlx.DB, db.UserRepository, db.RolesRepository,
 		db.RoomsRepository, db.MessagesRepository, db.VerificationCodeRepository){
 	database, err := sqlx.Open("postgres", config.DatabaseURL)
 	if err != nil {
@@ -111,7 +103,7 @@ func initDatabaseRepositories() (db.UserRepository, db.RolesRepository,
 		panic(err)
 	}
 
-	return userRepository, rolesRepository, roomsRepository, messagesRepository, verificationsRepo
+	return database, userRepository, rolesRepository, roomsRepository, messagesRepository, verificationsRepo
 }
 
 func main() {
@@ -136,12 +128,11 @@ func main() {
 
 	hubMap := chat.NewHubMap()
 
-	userRepository, rolesRepository, roomsRepository,
-		messagesRepository, verificationsRepository = initDatabaseRepositories()
+	transactionalRepo := db.NewTransactionalRepository(initDatabaseRepositories())
 
 
-	addMiddlewares(e, v1ApiGroup, rolesRepository)
-	createApiRoutes(v1ApiGroup, hubMap)
+	addMiddlewares(e, v1ApiGroup, transactionalRepo.Roles())
+	createApiRoutes(v1ApiGroup, hubMap, transactionalRepo)
 
 	t := &Template{
 		templates: template.Must(template.ParseGlob("frontend/build/*.html")),

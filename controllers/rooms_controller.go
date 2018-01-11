@@ -8,25 +8,24 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
 	"github.com/satori/go.uuid"
-	"strconv"
+	"github.com/aaronaaeng/chat.connor.fun/util"
 )
 
-func GetNearbyRooms(roomsRepo db.RoomsRepository) echo.HandlerFunc {
+func GetNearbyRooms(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		roomsRepo := repository.Rooms()
+
 		latStr := c.QueryParam("lat")
 		lonStr := c.QueryParam("lon")
 		radiusStr := c.QueryParam("radius")
 
-		lat, err := strconv.ParseFloat(latStr, 64)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
-		}
-		lon, err := strconv.ParseFloat(lonStr, 64)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
-		}
-		radius, err := strconv.ParseFloat(radiusStr, 64)
-		if err != nil {
+		parser := util.FloatParser{}
+
+		lat := parser.ParseFloat(latStr, 64)
+		lon := parser.ParseFloat(lonStr, 64)
+		radius := parser.ParseFloat(radiusStr, 64)
+
+		if parser.Err != nil {
 			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
 		}
 
@@ -79,8 +78,9 @@ func GetRoomMembers(hubMap *chat.HubMap) echo.HandlerFunc { //there's no good wa
 	}
 }
 
-func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.HandlerFunc {
+func GetRoom(repository db.TransactionalRepository, hubMap *chat.HubMap) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		roomsRepository := repository.Rooms()
 		roomName := c.Param("room")
 		hub, ok := hubMap.Load(roomName)
 		var room *model.ChatRoom
@@ -109,8 +109,9 @@ func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.Handl
 	}
 }
 
-func CreateRoom(rooms db.RoomsRepository) echo.HandlerFunc {
+func CreateRoom(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		rooms := repository.Rooms()
 		var chatRoom model.ChatRoom
 		if err := c.Bind(&chatRoom); err != nil {
 			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BIND_FAILED"))

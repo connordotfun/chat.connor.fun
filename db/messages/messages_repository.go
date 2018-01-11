@@ -4,18 +4,19 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
-type repository struct {
-	db *sqlx.DB
+type pqMessagesRepository struct {
+	db db.DataSource
 }
 
-func New(db *sqlx.DB) (*repository, error) {
+func New(db *sqlx.DB) (*pqMessagesRepository, error) {
 	_, err := db.Exec(createIfNotExistsQuery)
 	if err != nil {
 		return nil, err
 	}
-	return &repository{db: db}, nil
+	return &pqMessagesRepository{db: db}, nil
 }
 
 func constructMessageFromJoin(rows *sqlx.Rows) (*model.Message, error) {
@@ -49,7 +50,11 @@ func constructMessageFromJoin(rows *sqlx.Rows) (*model.Message, error) {
 	return message, nil
 }
 
-func (r repository) Add(m *model.Message) error {
+func (r pqMessagesRepository) NewFromSource(source db.DataSource) db.MessagesRepository {
+	return &pqMessagesRepository{db: source}
+}
+
+func (r pqMessagesRepository) Add(m *model.Message) error {
 	params := map[string]interface{} {
 		"id": m.Id,
 		"user_id": m.Creator.Id,
@@ -62,7 +67,7 @@ func (r repository) Add(m *model.Message) error {
 	return err
 }
 
-func (r repository) Update(id uuid.UUID, newText string) (*model.Message, error) {
+func (r pqMessagesRepository) Update(id uuid.UUID, newText string) (*model.Message, error) {
 	params := map[string]interface{} {
 		"id": id,
 		"text": newText,
@@ -77,7 +82,7 @@ func (r repository) Update(id uuid.UUID, newText string) (*model.Message, error)
 	return resultMessage, err
 }
 
-func (r repository) GetById(id uuid.UUID) (*model.Message, error) {
+func (r pqMessagesRepository) GetById(id uuid.UUID) (*model.Message, error) {
 	params := map[string]interface{} {
 		"id": id,
 	}
@@ -90,13 +95,17 @@ func (r repository) GetById(id uuid.UUID) (*model.Message, error) {
 	return message, nil
 }
 
-func (r repository) getWithParams(params map[string]interface{}, queryStr string) ([]*model.Message, error) {
+func (r pqMessagesRepository) getWithParams(params map[string]interface{}, queryStr string) ([]*model.Message, error) {
 	query, err := r.db.PrepareNamed(queryStr)
 	if err != nil {
 		return nil, err
 	}
 	messages := make([]*model.Message, 0)
 	rows, err := query.Queryx(params)
+	defer func() {
+		rows.Close()
+	}()
+
 	for rows.Next() {
 		message, err := constructMessageFromJoin(rows)
 		if err != nil {
@@ -108,14 +117,14 @@ func (r repository) getWithParams(params map[string]interface{}, queryStr string
 	return messages, err
 }
 
-func (r repository) GetByUserId(userId uuid.UUID) ([]*model.Message, error) {
+func (r pqMessagesRepository) GetByUserId(userId uuid.UUID) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"user_id": userId,
 	}
 	return r.getWithParams(params, selectByUserIdQuery)
 }
 
-func (r repository) GetTopByUserId(userId uuid.UUID, count int) ([]*model.Message, error) {
+func (r pqMessagesRepository) GetTopByUserId(userId uuid.UUID, count int) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"user_id": userId,
 		"count": count,
@@ -123,14 +132,14 @@ func (r repository) GetTopByUserId(userId uuid.UUID, count int) ([]*model.Messag
 	return r.getWithParams(params, selectTopByUserIdQuery)
 }
 
-func (r repository) GetByRoomId(roomId uuid.UUID) ([]*model.Message, error) {
+func (r pqMessagesRepository) GetByRoomId(roomId uuid.UUID) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"room_id": roomId,
 	}
 	return r.getWithParams(params, selectByRoomIdQuery)
 }
 
-func (r repository) GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message, error) {
+func (r pqMessagesRepository) GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"room_id": roomId,
 		"count": count,
@@ -138,7 +147,7 @@ func (r repository) GetTopByRoom(roomId uuid.UUID, count int) ([]*model.Message,
 	return r.getWithParams(params, selectTopByRoomQuery)
 }
 
-func (r repository) GetByUserAndRoom(userId uuid.UUID, roomId uuid.UUID) ([]*model.Message, error) {
+func (r pqMessagesRepository) GetByUserAndRoom(userId uuid.UUID, roomId uuid.UUID) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"user_id": userId,
 		"room_id": roomId,
@@ -146,7 +155,7 @@ func (r repository) GetByUserAndRoom(userId uuid.UUID, roomId uuid.UUID) ([]*mod
 	return r.getWithParams(params, selectByUserAndRoomQuery)
 }
 
-func (r repository) GetTopByUserAndRoom(userId uuid.UUID, roomId uuid.UUID, count int) ([]*model.Message, error) {
+func (r pqMessagesRepository) GetTopByUserAndRoom(userId uuid.UUID, roomId uuid.UUID, count int) ([]*model.Message, error) {
 	params := map[string]interface{} {
 		"user_id": userId,
 		"room_id": roomId,

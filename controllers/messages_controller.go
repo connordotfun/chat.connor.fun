@@ -71,8 +71,9 @@ func getMessagesUsersAndRoom(c echo.Context, messagesRepo db.MessagesRepository,
 	return c.JSON(http.StatusOK, model.NewDataResponse(messages))
 }
 
-func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
+func GetMessages(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		messagesRepo := repository.Messages()
 		roomIdStr := c.QueryParam("room_id")
 		userIdStr := c.QueryParam("user_id")
 
@@ -92,8 +93,9 @@ func GetMessages(messagesRepo db.MessagesRepository) echo.HandlerFunc {
 	}
 }
 
-func GetMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
+func GetMessage(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		messagesRepo := repository.Messages()
 		messagesId, err := uuid.FromString(c.Param("id"))
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_ID"))
@@ -110,8 +112,9 @@ func GetMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
 	}
 }
 
-func UpdateMessage(messagesRepo db.MessagesRepository) echo.HandlerFunc {
+func UpdateMessage(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		messagesRepo := repository.Messages()
 		messagesId, err := uuid.FromString(c.Param("id"))
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_ID"))

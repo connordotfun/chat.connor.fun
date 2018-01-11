@@ -4,6 +4,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
 	"time"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type MockVerificationsRepo struct {
@@ -12,6 +13,10 @@ type MockVerificationsRepo struct {
 
 func NewMockVerificationsRepo() *MockVerificationsRepo {
 	return &MockVerificationsRepo{Data: map[string]model.VerificationCode{}}
+}
+
+func (r *MockVerificationsRepo) NewFromSource(source db.DataSource) db.VerificationCodeRepository {
+	return r
 }
 
 func (r *MockVerificationsRepo) Add(code *model.VerificationCode) error {
