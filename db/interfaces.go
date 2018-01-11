@@ -3,7 +3,28 @@ package db
 import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/satori/go.uuid"
+	"github.com/jmoiron/sqlx"
+	"database/sql"
 )
+
+
+type Repository interface {
+	Messages() MessagesRepository
+	Users() UserRepository
+	Roles() RolesRepository
+	Rooms() RoomsRepository
+	Verifications() VerificationCodeRepository
+}
+
+type DataSource interface {
+	sqlx.Queryer
+	sqlx.Execer
+	sqlx.Preparer
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	PrepareNamed(query string) (*sqlx.NamedStmt, error)
+	Select(dest interface{}, query string, args ...interface{}) error
+}
 
 type UserRepository interface {
 	Add(user *model.User) error

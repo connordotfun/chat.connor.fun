@@ -4,10 +4,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type pgRolesRepository struct {
-	db *sqlx.DB
+	db db.DataSource
 }
 
 func New(database *sqlx.DB) (*pgRolesRepository, error) {

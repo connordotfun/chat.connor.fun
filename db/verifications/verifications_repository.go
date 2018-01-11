@@ -4,10 +4,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"time"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type pqVerificationCodeRepository struct {
-	db *sqlx.DB
+	db db.DataSource
 }
 
 func New(db *sqlx.DB) (*pqVerificationCodeRepository, error) {
