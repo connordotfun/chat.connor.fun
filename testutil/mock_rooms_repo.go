@@ -3,6 +3,7 @@ package testutil
 import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/model"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type MockRoomsRepository struct {
@@ -11,6 +12,10 @@ type MockRoomsRepository struct {
 
 func NewMockRoomsRepository() *MockRoomsRepository {
 	return &MockRoomsRepository{map[uuid.UUID]model.ChatRoom{}}
+}
+
+func (r *MockRoomsRepository) NewFromSource(source db.DataSource) db.RoomsRepository {
+	return r
 }
 
 func (r MockRoomsRepository) Add(room *model.ChatRoom) error {

@@ -27,6 +27,9 @@ func New(db *sqlx.DB) (*pgRoomsRepository, error) {
 	return &pgRoomsRepository{db: db}, nil
 }
 
+func (r pgRoomsRepository) NewFromSource(source db.DataSource) db.RoomsRepository {
+	return &pgRoomsRepository{db: source}
+}
 
 func (r pgRoomsRepository) Add(room *model.ChatRoom) error {
 	_, err := r.db.NamedExec(insertRoomQuery, &room)

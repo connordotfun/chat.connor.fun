@@ -20,6 +20,10 @@ func New(db *sqlx.DB) (*pqVerificationCodeRepository, error) {
 }
 
 
+func (r *pqVerificationCodeRepository) NewFromSource(source db.DataSource) db.VerificationCodeRepository{
+	return &pqVerificationCodeRepository{db: source}
+}
+
 func (r *pqVerificationCodeRepository) Add(code *model.VerificationCode) error {
 	_, err := r.db.NamedExec(insertCodeQuery, code)
 	return err

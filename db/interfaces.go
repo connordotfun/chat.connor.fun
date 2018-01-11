@@ -8,7 +8,19 @@ import (
 )
 
 
+type TransactionalRepository interface {
+	CreateTransaction() Transaction
+	Repository
+}
+
+type Transaction interface {
+	Commit() error
+	Rollback() error
+	Repository
+}
+
 type Repository interface {
+	NewFromSource(source DataSource) Repository
 	Messages() MessagesRepository
 	Users() UserRepository
 	Roles() RolesRepository
@@ -27,6 +39,7 @@ type DataSource interface {
 }
 
 type UserRepository interface {
+	NewFromSource(source DataSource) UserRepository
 	Add(user *model.User) error
 	Update(user *model.User) error
 	GetAll() ([]*model.User, error)
@@ -35,12 +48,14 @@ type UserRepository interface {
 }
 
 type RolesRepository interface {
+	NewFromSource(source DataSource) RolesRepository
 	Add(userId uuid.UUID, roleName string) error
 	GetUserRoles(userId uuid.UUID) ([]model.Role, error)
 	RemoveUserRole(userId uuid.UUID, roleName string) error
 }
 
 type RoomsRepository interface {
+	NewFromSource(source DataSource) RoomsRepository
 	Add(room *model.ChatRoom) error
 	GetById(id uuid.UUID) (*model.ChatRoom, error)
 	GetByName(name string) (*model.ChatRoom, error)
@@ -48,6 +63,7 @@ type RoomsRepository interface {
 }
 
 type MessagesRepository interface {
+	NewFromSource(source DataSource) MessagesRepository
 	Add(message *model.Message) error
 	Update(id uuid.UUID, newText string) (*model.Message, error)
 	GetById(id uuid.UUID) (*model.Message, error)
@@ -63,6 +79,7 @@ type MessagesRepository interface {
 }
 
 type VerificationCodeRepository interface {
+	NewFromSource(source DataSource) VerificationCodeRepository
 	Add(code *model.VerificationCode) error
 	Invalidate(code string) error
 	GetByCode(code string) (*model.VerificationCode, error)

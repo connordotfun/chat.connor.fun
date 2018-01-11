@@ -19,6 +19,10 @@ func New(db *sqlx.DB) (*pgUsersRepository, error) {
 	return &pgUsersRepository{db}, err
 }
 
+func (r pgUsersRepository) NewFromSource(source db.DataSource) db.UserRepository {
+	return &pgUsersRepository{db: source}
+}
+
 func (r pgUsersRepository) Add(user *model.User) error {
 	_, err := r.db.NamedExec(insertUserQuery, user)
 	if err != nil {

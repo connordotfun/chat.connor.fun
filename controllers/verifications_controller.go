@@ -18,8 +18,10 @@ func getVerificationCode(c echo.Context) string {
 	return postData.Code
 }
 
-func VerifyUserAccount(verificationsRepo db.VerificationCodeRepository, usersRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+func VerifyUserAccount(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		verificationsRepo := repository.Verifications()
+		rolesRepo := repository.Roles()
 		ac := c.(context.AuthorizedContext)
 
 		code := getVerificationCode(c)

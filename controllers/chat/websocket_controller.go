@@ -39,8 +39,10 @@ func makeResponseHeader(ac context.AuthorizedContext) http.Header {
 	return nil
 }
 
-func HandleWebsocket(hubs *HubMap, roomsRepo db.RoomsRepository, messagesRepo db.MessagesRepository) echo.HandlerFunc {
+func HandleWebsocket(hubs *HubMap, repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		roomsRepo := repository.Rooms()
+		messagesRepo := repository.Messages()
 		if !config.Debug && !isOriginValid(c.Request().Header.Get("Origin"), c.Request().Host) {
 			return c.NoContent(http.StatusForbidden)
 		}

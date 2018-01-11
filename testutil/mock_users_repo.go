@@ -4,6 +4,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type MockUserRepository struct {
@@ -12,6 +13,10 @@ type MockUserRepository struct {
 
 func NewMockUserRepository() *MockUserRepository {
 	return &MockUserRepository{Users: map[uuid.UUID]model.User{}}
+}
+
+func (r *MockUserRepository) NewFromSource(source db.DataSource) db.UserRepository {
+	return r
 }
 
 func (r *MockUserRepository) Add(user *model.User) error {

@@ -69,10 +69,17 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 	messagesRepo := testutil.NewMockMessagesRepository()
 	roomsRepo := testutil.NewMockRoomsRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository{
+			MessagesRepo: messagesRepo,
+			RoomsRepo: roomsRepo,
+		},
+	}
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, repo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -102,10 +109,17 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 	messagesRepo := testutil.NewMockMessagesRepository()
 	roomsRepo := testutil.NewMockRoomsRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository{
+			MessagesRepo: messagesRepo,
+			RoomsRepo: roomsRepo,
+		},
+	}
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, repo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -158,10 +172,17 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 	messagesRepo := testutil.NewMockMessagesRepository()
 	roomsRepo := testutil.NewMockRoomsRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository{
+			MessagesRepo: messagesRepo,
+			RoomsRepo: roomsRepo,
+		},
+	}
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, repo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {
@@ -194,10 +215,17 @@ func TestHandleWebsocket_ReadOnly(t *testing.T) {
 	messagesRepo := testutil.NewMockMessagesRepository()
 	roomsRepo := testutil.NewMockRoomsRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository{
+			MessagesRepo: messagesRepo,
+			RoomsRepo: roomsRepo,
+		},
+	}
+
 	e := echo.New()
 
 	hubMap := NewHubMap()
-	handleWsFunc := HandleWebsocket(hubMap, roomsRepo, messagesRepo)
+	handleWsFunc := HandleWebsocket(hubMap, repo)
 
 	shouldBeTrue := false
 	handlerFunc := func(c echo.Context) error {

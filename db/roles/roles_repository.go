@@ -19,6 +19,9 @@ func New(database *sqlx.DB) (*pgRolesRepository, error) {
 	return &pgRolesRepository{db: database}, nil
 }
 
+func (r pgRolesRepository) NewFromSource(source db.DataSource) db.RolesRepository {
+	return &pgRolesRepository{db: source}
+}
 
 func (r pgRolesRepository) Add(userId uuid.UUID, role string) error {
 	params := map[string]interface{} {

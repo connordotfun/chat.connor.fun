@@ -16,6 +16,12 @@ import (
 func TestGetMessage(t *testing.T) {
 	messagesRepo := testutil.NewMockMessagesRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			MessagesRepo: messagesRepo,
+		},
+	}
+
 	e := echo.New()
 	req := httptest.NewRequest("GET", "/api/v1/messages/slakjdakdj", strings.NewReader(""))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -30,7 +36,7 @@ func TestGetMessage(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(messageToGet.Id.String())
 
-	getMessageFunc := GetMessage(messagesRepo)
+	getMessageFunc := GetMessage(repo)
 
 	assert.NoError(t, getMessageFunc(c))
 	assert.Equal(t, http.StatusOK, rec.Code)
@@ -52,6 +58,12 @@ func TestUpdateMessage(t *testing.T) {
 
 	messagesRepo := testutil.NewMockMessagesRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			MessagesRepo: messagesRepo,
+		},
+	}
+
 	e := echo.New()
 	req := httptest.NewRequest("GET", "/api/v1/messages/slakjdakdj", strings.NewReader(updateJson))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -66,7 +78,7 @@ func TestUpdateMessage(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(messageToGet.Id.String())
 
-	updateMessageFunc := UpdateMessage(messagesRepo)
+	updateMessageFunc := UpdateMessage(repo)
 
 	assert.NoError(t, updateMessageFunc(c))
 

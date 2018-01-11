@@ -32,6 +32,14 @@ func TestCreateUser(t *testing.T) {
 	rolesRepo := testutil.NewMockRolesRepository()
 	verisRepo := testutil.NewMockVerificationsRepo()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			UsersRepo: userRepo,
+			RolesRepo: rolesRepo,
+			VerificationsRepo: verisRepo,
+		},
+	}
+
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -39,7 +47,7 @@ func TestCreateUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
+	createUserFunc := CreateUser(repo, false)
 	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
@@ -71,6 +79,14 @@ func TestLoginUser(t *testing.T) {
 	rolesRepo := testutil.NewMockRolesRepository()
 	verisRepo := testutil.NewMockVerificationsRepo()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			UsersRepo: userRepo,
+			RolesRepo: rolesRepo,
+			VerificationsRepo: verisRepo,
+		},
+	}
+
 	config.JWTSecretKey = "secret"
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/users", strings.NewReader(testUserJson1))
@@ -79,7 +95,7 @@ func TestLoginUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
+	createUserFunc := CreateUser(repo, false)
 	assert.NoError(t, createUserFunc(c))
 
 
@@ -89,7 +105,7 @@ func TestLoginUser(t *testing.T) {
 
 	c = e.NewContext(req, rec)
 
-	loginUserFunc := LoginUser(userRepo, rolesRepo)
+	loginUserFunc := LoginUser(repo)
 	assert.NoError(t, loginUserFunc(c))
 
 	var response model.Response
@@ -107,6 +123,13 @@ func TestGetUser(t *testing.T) {
 	userRepo := testutil.NewMockUserRepository()
 	rolesRepo := testutil.NewMockRolesRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			UsersRepo: userRepo,
+			RolesRepo: rolesRepo,
+		},
+	}
+
 	userToGet := model.User{Id: uuid.NewV4(), Username: "test", Secret: "Test"}
 	userRepo.Add(&userToGet)
 
@@ -119,7 +142,7 @@ func TestGetUser(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(userToGet.Id.String())
 
-	getUserFunc := GetUser(userRepo, rolesRepo)
+	getUserFunc := GetUser(repo)
 
 	assert.NoError(t, getUserFunc(c))
 
@@ -140,6 +163,13 @@ func TestLoginUser_UserDNE(t *testing.T) {
 	usersRepo := testutil.NewMockUserRepository()
 	rolesRepo := testutil.NewMockRolesRepository()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			UsersRepo: usersRepo,
+			RolesRepo: rolesRepo,
+		},
+	}
+
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -147,7 +177,7 @@ func TestLoginUser_UserDNE(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	loginUserFunc := LoginUser(usersRepo, rolesRepo)
+	loginUserFunc := LoginUser(repo)
 	assert.NoError(t, loginUserFunc(c))
 
 	assert.Equal(t, http.StatusNotFound, rec.Code)

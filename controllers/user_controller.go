@@ -54,9 +54,11 @@ func handleNewUserInit(u *model.User, usersRepo db.UserRepository, verifications
 	return nil
 }
 
-func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
-		verificationsRepo db.VerificationCodeRepository, useEmailVerification bool) echo.HandlerFunc {
+func CreateUser(repository db.TransactionalRepository, useEmailVerification bool) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		userRepo := repository.Users()
+		rolesRepo := repository.Roles()
+		verificationsRepo := repository.Verifications()
 		var u model.User
 		if err := c.Bind(&u); err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -86,8 +88,10 @@ func CreateUser(userRepo db.UserRepository, rolesRepo db.RolesRepository,
 	}
 }
 
-func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+func GetUser(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		userRepo := repository.Users()
+		rolesRepo := repository.Roles()
 		idStr := c.Param("id")
 		id, err := uuid.FromString(idStr)
 		if err != nil {
@@ -108,8 +112,10 @@ func GetUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Hand
 	}
 }
 
-func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.HandlerFunc {
+func LoginUser(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {  //TODO: generate JWTs
+		userRepo := repository.Users()
+		rolesRepo := repository.Roles()
 		var toLoginUser model.User
 		if err := c.Bind(&toLoginUser); err != nil {
 			return c.JSON(http.StatusBadRequest, model.Response{
@@ -167,7 +173,7 @@ func LoginUser(userRepo db.UserRepository, rolesRepo db.RolesRepository) echo.Ha
 	}
 }
 
-func UpdateUser(userRepo db.UserRepository) echo.HandlerFunc {
+func UpdateUser(repository db.TransactionalRepository) echo.HandlerFunc {
 	return nil
 }
 

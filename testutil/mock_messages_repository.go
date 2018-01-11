@@ -4,6 +4,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type messageRepoFilter func(message *model.Message) bool
@@ -14,6 +15,10 @@ type MockMessagesRepository struct {
 
 func NewMockMessagesRepository() *MockMessagesRepository {
 	return &MockMessagesRepository{Messages: map[uuid.UUID]model.Message{}}
+}
+
+func (r *MockMessagesRepository) NewFromSource(source db.DataSource) db.MessagesRepository {
+	return r
 }
 
 func (r MockMessagesRepository) Add(message *model.Message) error {

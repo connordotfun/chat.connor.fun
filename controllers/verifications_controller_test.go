@@ -22,6 +22,14 @@ func TestVerifyUserAccount_SuccessfulVerify(t *testing.T) {
 	rolesRepo := testutil.NewMockRolesRepository()
 	verisRepo := testutil.NewMockVerificationsRepo()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			UsersRepo: usersRepo,
+			RolesRepo: rolesRepo,
+			VerificationsRepo: verisRepo,
+		},
+	}
+
 	newUser := model.User{
 		Id: uuid.NewV4(),
 	}
@@ -36,7 +44,7 @@ func TestVerifyUserAccount_SuccessfulVerify(t *testing.T) {
 
 	verisRepo.Add(verification)
 
-	verifyUserFunc := VerifyUserAccount(verisRepo, usersRepo, rolesRepo)
+	verifyUserFunc := VerifyUserAccount(repo)
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/verifications/accountverification",
@@ -66,6 +74,14 @@ func TestVerifyUserAccount_WrongUser(t *testing.T) {
 	rolesRepo := testutil.NewMockRolesRepository()
 	verisRepo := testutil.NewMockVerificationsRepo()
 
+	repo := &testutil.MockTransactionalRepository{
+		MockRepository: testutil.MockRepository {
+			UsersRepo: usersRepo,
+			RolesRepo: rolesRepo,
+			VerificationsRepo: verisRepo,
+		},
+	}
+
 	newUser := model.User{
 		Id: uuid.NewV4(),
 	}
@@ -84,7 +100,7 @@ func TestVerifyUserAccount_WrongUser(t *testing.T) {
 
 	verisRepo.Add(verification)
 
-	verifyUserFunc := VerifyUserAccount(verisRepo, usersRepo, rolesRepo)
+	verifyUserFunc := VerifyUserAccount(repo)
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/verifications/accountverification",

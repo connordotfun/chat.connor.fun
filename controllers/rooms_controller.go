@@ -11,8 +11,10 @@ import (
 	"strconv"
 )
 
-func GetNearbyRooms(roomsRepo db.RoomsRepository) echo.HandlerFunc {
+func GetNearbyRooms(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		roomsRepo := repository.Rooms()
+
 		latStr := c.QueryParam("lat")
 		lonStr := c.QueryParam("lon")
 		radiusStr := c.QueryParam("radius")
@@ -79,8 +81,9 @@ func GetRoomMembers(hubMap *chat.HubMap) echo.HandlerFunc { //there's no good wa
 	}
 }
 
-func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.HandlerFunc {
+func GetRoom(repository db.TransactionalRepository, hubMap *chat.HubMap) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		roomsRepository := repository.Rooms()
 		roomName := c.Param("room")
 		hub, ok := hubMap.Load(roomName)
 		var room *model.ChatRoom
@@ -109,8 +112,9 @@ func GetRoom(roomsRepository db.RoomsRepository, hubMap *chat.HubMap) echo.Handl
 	}
 }
 
-func CreateRoom(rooms db.RoomsRepository) echo.HandlerFunc {
+func CreateRoom(repository db.TransactionalRepository) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		rooms := repository.Rooms()
 		var chatRoom model.ChatRoom
 		if err := c.Bind(&chatRoom); err != nil {
 			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BIND_FAILED"))
