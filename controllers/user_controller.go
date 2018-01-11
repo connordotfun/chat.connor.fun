@@ -50,6 +50,10 @@ func doUserInitWithEmail(u *model.User, repo db.TransactionalRepository, host st
 		}
 	}()
 
+	if valid, reason := u.IsEmailValid(); !valid {
+		return errors.New("Bad Email: " + reason)
+	}
+
 	if err := tx.Users().Add(u); err != nil {
 		return err
 	}
@@ -91,6 +95,13 @@ func CreateUser(repository db.TransactionalRepository, useEmailVerification bool
 				Error: &model.ResponseError{Type: "BAD_BINDING", Message: err.Error()},
 				Data: nil,
 			})
+		}
+
+		if valid, reason := u.IsUsernameValid(); !valid {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_USERNAME: " + reason))
+		}
+		if valid, reason := u.IsSecretValid(); !valid {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("BAD_SECRET: " + reason))
 		}
 
 		if foundUser, _ := repository.Users().GetByUsername(u.Username); foundUser != nil {
