@@ -28,9 +28,7 @@ const (
 )
 
 func TestCreateUser(t *testing.T) {
-	userRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-	verisRepo := testutil.NewMockVerificationsRepo()
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -39,7 +37,7 @@ func TestCreateUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
+	createUserFunc := CreateUser(repo, false)
 	assert.NoError(t, createUserFunc(c))
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
@@ -67,9 +65,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	userRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-	verisRepo := testutil.NewMockVerificationsRepo()
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	config.JWTSecretKey = "secret"
 	e := echo.New()
@@ -79,7 +75,7 @@ func TestLoginUser(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	createUserFunc := CreateUser(userRepo, rolesRepo, verisRepo, false)
+	createUserFunc := CreateUser(repo, false)
 	assert.NoError(t, createUserFunc(c))
 
 
@@ -89,7 +85,7 @@ func TestLoginUser(t *testing.T) {
 
 	c = e.NewContext(req, rec)
 
-	loginUserFunc := LoginUser(userRepo, rolesRepo)
+	loginUserFunc := LoginUser(repo)
 	assert.NoError(t, loginUserFunc(c))
 
 	var response model.Response
@@ -104,11 +100,10 @@ func TestLoginUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	userRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	userToGet := model.User{Id: uuid.NewV4(), Username: "test", Secret: "Test"}
-	userRepo.Add(&userToGet)
+	repo.Users().Add(&userToGet)
 
 	req := httptest.NewRequest("POST", "/api/v1/users/", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -119,7 +114,7 @@ func TestGetUser(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues(userToGet.Id.String())
 
-	getUserFunc := GetUser(userRepo, rolesRepo)
+	getUserFunc := GetUser(repo)
 
 	assert.NoError(t, getUserFunc(c))
 
@@ -137,8 +132,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestLoginUser_UserDNE(t *testing.T) {
-	usersRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
@@ -147,7 +141,7 @@ func TestLoginUser_UserDNE(t *testing.T) {
 
 	c := e.NewContext(req, rec)
 
-	loginUserFunc := LoginUser(usersRepo, rolesRepo)
+	loginUserFunc := LoginUser(repo)
 	assert.NoError(t, loginUserFunc(c))
 
 	assert.Equal(t, http.StatusNotFound, rec.Code)

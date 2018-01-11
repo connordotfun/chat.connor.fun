@@ -4,10 +4,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"time"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type pqVerificationCodeRepository struct {
-	db *sqlx.DB
+	db db.DataSource
 }
 
 func New(db *sqlx.DB) (*pqVerificationCodeRepository, error) {
@@ -18,6 +19,10 @@ func New(db *sqlx.DB) (*pqVerificationCodeRepository, error) {
 	return &pqVerificationCodeRepository{db}, err
 }
 
+
+func (r *pqVerificationCodeRepository) NewFromSource(source db.DataSource) db.VerificationCodeRepository{
+	return &pqVerificationCodeRepository{db: source}
+}
 
 func (r *pqVerificationCodeRepository) Add(code *model.VerificationCode) error {
 	_, err := r.db.NamedExec(insertCodeQuery, code)
@@ -43,6 +48,10 @@ func (r *pqVerificationCodeRepository) GetByCode(code string) (*model.Verificati
 	}
 	verificationCode := new(model.VerificationCode)
 	rows, err := query.Queryx(params)
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}

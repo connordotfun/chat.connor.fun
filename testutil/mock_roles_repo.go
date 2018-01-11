@@ -4,6 +4,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/satori/go.uuid"
 	"errors"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type MockRolesRepository struct {
@@ -12,6 +13,10 @@ type MockRolesRepository struct {
 
 func NewMockRolesRepository() *MockRolesRepository {
 	return &MockRolesRepository{map[uuid.UUID]map[string]bool{}}
+}
+
+func (r *MockRolesRepository) NewFromSource(source db.DataSource) db.RolesRepository {
+	return r
 }
 
 func (r *MockRolesRepository) Add(userId uuid.UUID, role string) error {

@@ -4,6 +4,7 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type MockUserRepository struct {
@@ -12,6 +13,10 @@ type MockUserRepository struct {
 
 func NewMockUserRepository() *MockUserRepository {
 	return &MockUserRepository{Users: map[uuid.UUID]model.User{}}
+}
+
+func (r *MockUserRepository) NewFromSource(source db.DataSource) db.UserRepository {
+	return r
 }
 
 func (r *MockUserRepository) Add(user *model.User) error {
@@ -44,6 +49,16 @@ func (r *MockUserRepository) GetById(id uuid.UUID) (*model.User, error) {
 func (r *MockUserRepository) GetByUsername(username string) (*model.User, error) {
 	for _, v := range r.Users {
 		if v.Username == username {
+			toReturn := v
+			return &toReturn, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *MockUserRepository) GetByEmail(email string) (*model.User, error) {
+	for _, v := range r.Users {
+		if v.Email == email {
 			toReturn := v
 			return &toReturn, nil
 		}

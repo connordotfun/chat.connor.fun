@@ -4,10 +4,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type pgRoomsRepository struct {
-	db *sqlx.DB
+	db db.DataSource
 }
 
 func New(db *sqlx.DB) (*pgRoomsRepository, error) {
@@ -26,6 +27,9 @@ func New(db *sqlx.DB) (*pgRoomsRepository, error) {
 	return &pgRoomsRepository{db: db}, nil
 }
 
+func (r pgRoomsRepository) NewFromSource(source db.DataSource) db.RoomsRepository {
+	return &pgRoomsRepository{db: source}
+}
 
 func (r pgRoomsRepository) Add(room *model.ChatRoom) error {
 	_, err := r.db.NamedExec(insertRoomQuery, &room)
@@ -53,6 +57,10 @@ func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
 		"name": name,
 	}
 	rows, err := r.db.NamedQuery(selectRoomByNameQuery, params)
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +99,10 @@ func constructRelativeRoom(rows *sqlx.Rows) (*model.RelativeRoom, error) {
 
 func (r pgRoomsRepository) GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error) {
 	rows, err := r.db.NamedQuery(selectWithinRadiusQuery, area)
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}

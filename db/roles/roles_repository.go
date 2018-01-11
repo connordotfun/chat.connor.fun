@@ -4,10 +4,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"github.com/satori/go.uuid"
+	"github.com/aaronaaeng/chat.connor.fun/db"
 )
 
 type pgRolesRepository struct {
-	db *sqlx.DB
+	db db.DataSource
 }
 
 func New(database *sqlx.DB) (*pgRolesRepository, error) {
@@ -18,6 +19,9 @@ func New(database *sqlx.DB) (*pgRolesRepository, error) {
 	return &pgRolesRepository{db: database}, nil
 }
 
+func (r pgRolesRepository) NewFromSource(source db.DataSource) db.RolesRepository {
+	return &pgRolesRepository{db: source}
+}
 
 func (r pgRolesRepository) Add(userId uuid.UUID, role string) error {
 	params := map[string]interface{} {
@@ -30,6 +34,9 @@ func (r pgRolesRepository) Add(userId uuid.UUID, role string) error {
 
 func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]model.Role, error) {
 	rows, err := r.db.NamedQuery(getRolesByUserQuery, map[string]interface{}{"user_id": userId})
+	defer func() {
+		rows.Close()
+	}()
 
 	if err != nil {
 		return nil, err
