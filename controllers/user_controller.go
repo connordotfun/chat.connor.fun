@@ -17,7 +17,7 @@ import (
 func doUserInitNoEmail(u *model.User, repo db.TransactionalRepository) (err error) {
 	tx := repo.CreateTransaction()
 	defer func() { //if there's an error, rollback
-		if err != nil {
+		if err == nil {
 			tx.Commit()
 		} else {
 			tx.Rollback()
@@ -37,13 +37,13 @@ func doUserInitNoEmail(u *model.User, repo db.TransactionalRepository) (err erro
 	}
 	u.Roles = []model.Role{model.Roles.GetRole(model.RoleNormal), model.Roles.GetRole(model.RoleAnon)}
 
-	return err
+	return nil
 }
 
 func doUserInitWithEmail(u *model.User, repo db.TransactionalRepository, host string) (err error) {
 	tx := repo.CreateTransaction()
 	defer func() { //if there's an error, rollback
-		if err != nil {
+		if err == nil {
 			tx.Commit()
 		} else {
 			tx.Rollback()
@@ -92,6 +92,14 @@ func CreateUser(repository db.TransactionalRepository, useEmailVerification bool
 				Data: nil,
 			})
 		}
+
+		if foundUser, _ := repository.Users().GetByUsername(u.Username); foundUser != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("USER_EXISTS"))
+		}
+		if foundUser, _ :=repository.Users().GetByEmail(u.Email); foundUser != nil {
+			return c.JSON(http.StatusBadRequest, model.NewErrorResponse("EMAIL_IN_USE"))
+		}
+
 		u.Id = uuid.NewV4()
 		hashedSecret, err := bcrypt.GenerateFromPassword([]byte(u.Secret), bcrypt.DefaultCost)
 		if err != nil {

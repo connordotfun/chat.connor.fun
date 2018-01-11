@@ -45,6 +45,7 @@ type UserRepository interface {
 	GetAll() ([]*model.User, error)
 	GetById(id uuid.UUID) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
+	GetByEmail(email string) (*model.User, error)
 }
 
 type RolesRepository interface {

@@ -83,3 +83,23 @@ func (r pgUsersRepository) GetByUsername(username string) (*model.User, error) {
 	}
 	return nil, nil
 }
+
+func (r pgUsersRepository) GetByEmail(email string) (*model.User, error) {
+	var user model.User
+	rows, err := r.db.NamedQuery(getUserByEmailQuery, map[string]interface{}{"email": email})
+	defer func() {
+		rows.Close()
+	}()
+
+	if err != nil {
+		return nil, err
+	}
+
+	if rows.Next() {
+		if err := rows.StructScan(&user); err != nil {
+			return nil, err
+		}
+		return &user, nil
+	}
+	return nil, nil
+}

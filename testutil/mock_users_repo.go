@@ -55,3 +55,13 @@ func (r *MockUserRepository) GetByUsername(username string) (*model.User, error)
 	}
 	return nil, nil
 }
+
+func (r *MockUserRepository) GetByEmail(email string) (*model.User, error) {
+	for _, v := range r.Users {
+		if v.Email == email {
+			toReturn := v
+			return &toReturn, nil
+		}
+	}
+	return nil, nil
+}
