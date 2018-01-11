@@ -8,7 +8,7 @@ import (
 	"github.com/aaronaaeng/chat.connor.fun/model"
 	"errors"
 	"github.com/satori/go.uuid"
-	"strconv"
+	"github.com/aaronaaeng/chat.connor.fun/util"
 )
 
 func GetNearbyRooms(repository db.TransactionalRepository) echo.HandlerFunc {
@@ -19,16 +19,13 @@ func GetNearbyRooms(repository db.TransactionalRepository) echo.HandlerFunc {
 		lonStr := c.QueryParam("lon")
 		radiusStr := c.QueryParam("radius")
 
-		lat, err := strconv.ParseFloat(latStr, 64)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
-		}
-		lon, err := strconv.ParseFloat(lonStr, 64)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
-		}
-		radius, err := strconv.ParseFloat(radiusStr, 64)
-		if err != nil {
+		parser := util.FloatParser{}
+
+		lat := parser.ParseFloat(latStr, 64)
+		lon := parser.ParseFloat(lonStr, 64)
+		radius := parser.ParseFloat(radiusStr, 64)
+
+		if parser.Err != nil {
 			return c.JSON(http.StatusBadRequest, "BAD_QUERY")
 		}
 
