@@ -21,3 +21,15 @@ func (r *MockTransaction) Commit() error {
 func (r *MockTransaction) Rollback() error {
 	return nil
 }
+
+func NewEmptyMockTransactionalRepo() *MockTransactionalRepository {
+	return &MockTransactionalRepository{
+		MockRepository: MockRepository{
+			UsersRepo: NewMockUserRepository(),
+			RolesRepo: NewMockRolesRepository(),
+			RoomsRepo: NewMockRoomsRepository(),
+			MessagesRepo: NewMockMessagesRepository(),
+			VerificationsRepo: NewMockVerificationsRepo(),
+		},
+	}
+}

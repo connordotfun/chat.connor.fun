@@ -70,17 +70,7 @@ func TestVerifyUserAccount_SuccessfulVerify(t *testing.T) {
 }
 
 func TestVerifyUserAccount_WrongUser(t *testing.T) {
-	usersRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-	verisRepo := testutil.NewMockVerificationsRepo()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository {
-			UsersRepo: usersRepo,
-			RolesRepo: rolesRepo,
-			VerificationsRepo: verisRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	newUser := model.User{
 		Id: uuid.NewV4(),
@@ -90,15 +80,15 @@ func TestVerifyUserAccount_WrongUser(t *testing.T) {
 		Id: uuid.NewV4(),
 	}
 
-	usersRepo.Add(&newUser)
-	rolesRepo.Add(newUser.Id, model.RoleAnon)
-	rolesRepo.Add(newUser.Id, model.RoleUnverified)
+	repo.Users().Add(&newUser)
+	repo.Roles().Add(newUser.Id, model.RoleAnon)
+	repo.Roles().Add(newUser.Id, model.RoleUnverified)
 
 	verification, err := model.GenerateVerificationCode(newUser.Id, vericode.CodeTypeAccountVerification)
 	assert.NoError(t, err)
 	assert.NotNil(t, verification)
 
-	verisRepo.Add(verification)
+	repo.Verifications().Add(verification)
 
 	verifyUserFunc := VerifyUserAccount(repo)
 
@@ -116,7 +106,7 @@ func TestVerifyUserAccount_WrongUser(t *testing.T) {
 	assert.NoError(t, verifyUserFunc(ac))
 	assert.Equal(t, 403, rec.Code)
 
-	userRoles := rolesRepo.Roles[newUser.Id]
+	userRoles := repo.RolesRepo.Roles[newUser.Id]
 	assert.Equal(t, 2, len(userRoles))
 	assert.False(t, userRoles[model.RoleNormal])
 	assert.True(t, userRoles[model.RoleUnverified])

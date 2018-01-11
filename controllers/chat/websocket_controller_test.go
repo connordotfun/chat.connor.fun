@@ -66,15 +66,7 @@ func (c *testWsClient) read() (model.Message, error) {
 }
 
 func TestHandleWebsocket_UpgradeWS(t *testing.T) {
-	messagesRepo := testutil.NewMockMessagesRepository()
-	roomsRepo := testutil.NewMockRoomsRepository()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository{
-			MessagesRepo: messagesRepo,
-			RoomsRepo: roomsRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 
@@ -106,15 +98,7 @@ func TestHandleWebsocket_UpgradeWS(t *testing.T) {
 
 
 func TestHandleWebsocket_MultipleClients(t *testing.T) {
-	messagesRepo := testutil.NewMockMessagesRepository()
-	roomsRepo := testutil.NewMockRoomsRepository()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository{
-			MessagesRepo: messagesRepo,
-			RoomsRepo: roomsRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 
@@ -169,15 +153,7 @@ func TestHandleWebsocket_MultipleClients(t *testing.T) {
 }
 
 func TestHandleWebsocket_IllegalMessage(t *testing.T) {
-	messagesRepo := testutil.NewMockMessagesRepository()
-	roomsRepo := testutil.NewMockRoomsRepository()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository{
-			MessagesRepo: messagesRepo,
-			RoomsRepo: roomsRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 
@@ -212,15 +188,7 @@ func TestHandleWebsocket_IllegalMessage(t *testing.T) {
 }
 
 func TestHandleWebsocket_ReadOnly(t *testing.T) {
-	messagesRepo := testutil.NewMockMessagesRepository()
-	roomsRepo := testutil.NewMockRoomsRepository()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository{
-			MessagesRepo: messagesRepo,
-			RoomsRepo: roomsRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 

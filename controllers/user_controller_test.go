@@ -28,17 +28,7 @@ const (
 )
 
 func TestCreateUser(t *testing.T) {
-	userRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-	verisRepo := testutil.NewMockVerificationsRepo()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository {
-			UsersRepo: userRepo,
-			RolesRepo: rolesRepo,
-			VerificationsRepo: verisRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/user", strings.NewReader(testUserJson1))
@@ -75,17 +65,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestLoginUser(t *testing.T) {
-	userRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-	verisRepo := testutil.NewMockVerificationsRepo()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository {
-			UsersRepo: userRepo,
-			RolesRepo: rolesRepo,
-			VerificationsRepo: verisRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	config.JWTSecretKey = "secret"
 	e := echo.New()
@@ -120,18 +100,10 @@ func TestLoginUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	userRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository {
-			UsersRepo: userRepo,
-			RolesRepo: rolesRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	userToGet := model.User{Id: uuid.NewV4(), Username: "test", Secret: "Test"}
-	userRepo.Add(&userToGet)
+	repo.Users().Add(&userToGet)
 
 	req := httptest.NewRequest("POST", "/api/v1/users/", strings.NewReader(testUserJson1))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -160,15 +132,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestLoginUser_UserDNE(t *testing.T) {
-	usersRepo := testutil.NewMockUserRepository()
-	rolesRepo := testutil.NewMockRolesRepository()
-
-	repo := &testutil.MockTransactionalRepository{
-		MockRepository: testutil.MockRepository {
-			UsersRepo: usersRepo,
-			RolesRepo: rolesRepo,
-		},
-	}
+	repo := testutil.NewEmptyMockTransactionalRepo()
 
 	e := echo.New()
 	req := httptest.NewRequest("POST", "/api/v1/login", strings.NewReader(testUserJson1))
