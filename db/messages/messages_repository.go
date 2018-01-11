@@ -102,6 +102,10 @@ func (r pqMessagesRepository) getWithParams(params map[string]interface{}, query
 	}
 	messages := make([]*model.Message, 0)
 	rows, err := query.Queryx(params)
+	defer func() {
+		rows.Close()
+	}()
+
 	for rows.Next() {
 		message, err := constructMessageFromJoin(rows)
 		if err != nil {

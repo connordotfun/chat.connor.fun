@@ -48,6 +48,10 @@ func (r *pqVerificationCodeRepository) GetByCode(code string) (*model.Verificati
 	}
 	verificationCode := new(model.VerificationCode)
 	rows, err := query.Queryx(params)
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}

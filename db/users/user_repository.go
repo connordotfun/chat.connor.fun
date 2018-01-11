@@ -47,6 +47,10 @@ func (r pgUsersRepository) GetAll() ([]*model.User, error) {
 func (r pgUsersRepository) GetById(id uuid.UUID) (*model.User, error) {
 	var user model.User
 	rows, err := r.db.NamedQuery(getUserByIdQuery, map[string]interface{}{"id": id})
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +67,10 @@ func (r pgUsersRepository) GetById(id uuid.UUID) (*model.User, error) {
 func (r pgUsersRepository) GetByUsername(username string) (*model.User, error) {
 	var user model.User
 	rows, err := r.db.NamedQuery(getUserByUsernameQuery, map[string]interface{}{"username": username})
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}

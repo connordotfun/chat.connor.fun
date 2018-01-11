@@ -57,6 +57,10 @@ func (r pgRoomsRepository) GetByName(name string) (*model.ChatRoom, error) {
 		"name": name,
 	}
 	rows, err := r.db.NamedQuery(selectRoomByNameQuery, params)
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +99,10 @@ func constructRelativeRoom(rows *sqlx.Rows) (*model.RelativeRoom, error) {
 
 func (r pgRoomsRepository) GetWithinArea(area *model.GeoArea) ([]*model.RelativeRoom, error) {
 	rows, err := r.db.NamedQuery(selectWithinRadiusQuery, area)
+	defer func() {
+		rows.Close()
+	}()
+
 	if err != nil {
 		return nil, err
 	}

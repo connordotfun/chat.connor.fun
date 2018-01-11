@@ -34,6 +34,9 @@ func (r pgRolesRepository) Add(userId uuid.UUID, role string) error {
 
 func (r pgRolesRepository) GetUserRoles(userId uuid.UUID) ([]model.Role, error) {
 	rows, err := r.db.NamedQuery(getRolesByUserQuery, map[string]interface{}{"user_id": userId})
+	defer func() {
+		rows.Close()
+	}()
 
 	if err != nil {
 		return nil, err
