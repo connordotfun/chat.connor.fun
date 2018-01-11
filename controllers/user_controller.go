@@ -61,10 +61,6 @@ func doUserInitWithEmail(u *model.User, repo db.TransactionalRepository, host st
 		return err
 	}
 
-	if !strings.Contains(u.Email,"@") {
-		return errors.New("email not valid")
-	}
-
 	verification, err := model.GenerateVerificationCode(u.Id, vericode.CodeTypeAccountVerification)
 	if err != nil {
 		return err
