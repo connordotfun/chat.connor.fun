@@ -103,8 +103,8 @@ func TestInit(t *testing.T) {
 func TestRepository_Create(t *testing.T) {
 	repo := initTables()
 
-	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
-	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Email: "123@abc.com", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Email: "321@abc.com", Secret: "test"}
 
 	err := repo.Add(user1)
 	assert.NoError(t, err)
@@ -131,8 +131,8 @@ func TestRepository_Create(t *testing.T) {
 func TestRepository_GetAll(t *testing.T) {
 	repo := initTables()
 
-	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
-	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Email: "123@abc.com", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Email: "321@abc.com", Secret: "test"}
 
 	err := repo.Add(user1)
 	assert.NoError(t, err)
@@ -149,8 +149,8 @@ func TestRepository_GetAll(t *testing.T) {
 func TestRepository_GetById(t *testing.T) {
 	repo := initTables()
 
-	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
-	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Email: "123@abc.com", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Email: "321@abc.com", Secret: "test"}
 
 	err := repo.Add(user1)
 	assert.NoError(t, err)
@@ -172,8 +172,8 @@ func TestRepository_GetById(t *testing.T) {
 func TestRepository_GetByUsername(t *testing.T) {
 	repo := initTables()
 
-	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
-	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Email: "123@abc.com", Secret: "test"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Email: "321@abc.com", Secret: "test"}
 
 	err := repo.Add(user1)
 	assert.NoError(t, err)
