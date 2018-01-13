@@ -6,22 +6,36 @@ import Landing from '../Landing'
 import Login from '../Login'
 import Register from '../Register'
 
+import VerifyLanding from '../VerifyLanding'
+import VerifyAccount from '../VerifyAccount'
+
 import Chat from '../Chat'
 import Home from '../Home'
 
-import Lock from '../../components/Lock/HOC'
+import LockRoute from '../../components/Lock/HOC'
+import Lock from '../../components/Lock/Semantic'
 
 @inject('commonStore')
 @observer
 class App extends Component {
     render() {
-        if (this.props.commonStore.token) {
+        if (this.props.commonStore.token && this.props.commonStore.user) {
             return (
-                <Switch>
-                    <Route exact path="/" component={Lock(Home, "normalUser", this.props.commonStore.user)}/>
-                    <Route path="/at/:room" component={Lock(Chat, "normalUser", this.props.commonStore.user)}/>
-                    <Route component={Lock(Home, "normalUser", this.props.commonStore.user)}/>
-                </Switch>
+                [
+                    <Lock minRole="unverifiedUser" user={this.props.commonStore.user}>
+                        <Switch>
+                            <Route path="/verify/account/:code" component={VerifyAccount} />
+                            <Route component={VerifyLanding}/>
+                        </Switch>
+                    </Lock>,
+                    <Lock minRole="normalUser" user={this.props.commonStore.user}>
+                        <Switch>
+                            <Route exact path="/" component={LockRoute(Home, "normalUser", this.props.commonStore.user)}/>
+                            <Route path="/at/:room" component={LockRoute(Chat, "normalUser", this.props.commonStore.user)}/>
+                            <Route component={LockRoute(Home, "normalUser", this.props.commonStore.user)}/>
+                        </Switch>
+                    </Lock>
+                ]
             )
         } else {
             return (
