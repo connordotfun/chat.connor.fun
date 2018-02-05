@@ -22,7 +22,7 @@ class RegisterForm extends Component {
         return (
             <div className="RegisterForm">
                 <form onSubmit={this.handleSubmitForm}>
-                    <h3>Make an account</h3>
+                    <h3>Make an account to start chatting.</h3>
                     <fieldset className="form-group">
                         <input
                         className="form-control form-control-lg"
@@ -54,11 +54,10 @@ class RegisterForm extends Component {
                     </fieldset>
 
                     <button
-                        className="convex"
                         type="submit"
                         disabled={this.props.authStore.inProgress}
                     >
-                        Make Account
+                        Get Started
                     </button>
                 </form>
                 {this.props.authStore.errors ? <p>{this.props.authStore.errors}</p> : null}

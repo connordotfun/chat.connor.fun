@@ -1,23 +1,146 @@
+@import url('https://fonts.googleapis.com/css?family=Josefin+Sans:400,600,700|Zilla+Slab:400,500,500i');
+
+/*
+
+background: #4568DC; 
+background: -webkit-linear-gradient(to right, #B06AB3, #4568DC); 
+background: linear-gradient(to right, #B06AB3, #4568DC);
+
+background: #4776E6; 
+background: -webkit-linear-gradient(to right, #8E54E9, #4776E6); 
+background: linear-gradient(to right, #8E54E9, #4776E6); 
+*/
+
 .Landing {
+    display: flex;
+    flex-direction: row;
     box-sizing: border-box;
-    padding: 5px;
     width: 100%;
     height: auto;
     min-height: 100%;
-  }
+    text-align: center;
+    align-items: center;
+    justify-content: space-around;
+    background: #4776E6; 
+    background: -webkit-linear-gradient(to right, #8E54E9, #4776E6); 
+    background: linear-gradient(to right, #8E54E9, #4776E6); 
+    color: white;
+    
+}
 
-.Landing button {
-  color: black;
+.branding .brand-title {
+  font-family: "Josefin Sans";
+  font-size: 6em;
+  margin: 0 auto;
+}
+
+.branding .subtitle {
+  font-family: "Zilla Slab";
+  font-weight: 500;
   font-style: italic;
-  padding: 5px;
+  line-height: 50px;
 }
 
-.Landing button:hover {
-    background-color: #808080;
+.branding .logo {
+  height: 50px;
+  vertical-align: middle;
+  margin: 0 10px;
+}
+
+.account-container .register-box {
+  width: 400px;
+  height: 350px;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.1);
+}
+
+.RegisterForm h3 {
+  font-family: "Josefin Sans";
+  color: black;
+  font-weight: 600;
+  font-size: 1.5em;
+  margin-top: 0;
+}
+
+.register-box .RegisterForm {
+  height: 100%;
+}
+
+.RegisterForm form {
+  padding: 25px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.RegisterForm fieldset {
+  margin: 0;
+}
+
+.RegisterForm input {
+  font-family: "Zilla Slab";
+  height: 40px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.RegisterForm button {
+  height: 35px;
+  width: 100%;
+  margin: 10px 0;
+  background-color: #2e6dff;
+  color: white;
+  font-family: "Josefin Sans";
+  border: initial;
+  border-radius: 5px;
+  font-size: 1em;
+  font-style: normal;
+  box-shadow: 0px 0px 8px 1px rgba(0,0,0,0.1);
+  transition: 0.2s background-color;
+}
+
+.RegisterForm button:hover {
+  cursor: pointer;
+  background-color: #4d82ff;
 }
   
-  @media screen and (max-width:1023px) {
+@media screen and (max-width:1023px) {
+  .Landing {
+    flex-direction: column;
+    justify-content: space-between;
   }
-  
-  @media screen and (min-width:1024px) {
+
+  .account-container {
+    flex-grow: 1;
+    height: 100%;
   }
+
+  .account-container .register-box {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .RegisterForm input {
+    font-size: 1.2em;
+  }
+
+  .RegisterForm button {
+    font-size: 1.2em;
+    height: 50px;
+  }
+
+  .branding {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .branding .subtitle {
+    display: none;
+  }
+}
+
+@media screen and (min-width:1024px) {
+}
