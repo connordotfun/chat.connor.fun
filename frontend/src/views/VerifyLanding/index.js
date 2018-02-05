@@ -8,6 +8,7 @@ import './index.css'
 class VerifyLanding extends Component {
     componentWillMount() {
         this.props.history.replace('/')
+        document.getElementsByTagName('body')[0].classList = []
     }
     
     render() {

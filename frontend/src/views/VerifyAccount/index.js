@@ -7,6 +7,7 @@ import './index.css'
 @observer
 class VerifyAccount extends Component {
     componentWillMount() {
+        document.getElementsByTagName('body')[0].classList = []
         this.props.authStore.verifyAccount(this.props.match.params.code)
     }
     
