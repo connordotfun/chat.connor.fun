@@ -1,13 +1,129 @@
 .Login {
-    box-sizing: border-box;
-    padding: 5px;
+  display: flex;
+  flex-direction: row;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  text-align: center;
+  align-items: center;
+  justify-content: space-around;
+  background: #4776E6; 
+  background: -webkit-linear-gradient(to right, #8E54E9, #4776E6); 
+  background: linear-gradient(to right, #8E54E9, #4776E6); 
+  color: white;
+}
+
+.branding .brand-title {
+  font-family: "Josefin Sans";
+  font-size: 6em;
+  margin: 0 auto;
+}
+
+.branding .subtitle {
+  font-family: "Zilla Slab";
+  font-weight: 500;
+  font-style: italic;
+  line-height: 50px;
+}
+
+.branding .logo {
+  height: 50px;
+  vertical-align: middle;
+  margin: 0 10px;
+}
+
+.account-container .login-box {
+  width: 400px;
+  height: 250px;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.1);
+}
+
+.UserForm h3 {
+  font-family: "Josefin Sans";
+  color: black;
+  font-weight: 600;
+  font-size: 1.5em;
+  margin-top: 0;
+}
+
+.login-box .UserForm {
+  height: 100%;
+}
+
+.UserForm form {
+  padding: 25px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.UserForm fieldset {
+  margin: 0;
+}
+
+.UserForm input {
+  font-family: "Zilla Slab";
+  height: 40px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.UserForm button {
+  height: 35px;
+  width: 100%;
+  margin: 10px 0;
+  background-color: #2e6dff;
+  color: white;
+  font-family: "Josefin Sans";
+  border: initial;
+  border-radius: 5px;
+  font-size: 1em;
+  font-style: normal;
+  box-shadow: 0px 0px 8px 1px rgba(0,0,0,0.1);
+  transition: 0.2s background-color;
+}
+
+.UserForm button:hover {
+  cursor: pointer;
+  background-color: #4d82ff;
+}
+  
+@media screen and (max-width:1023px) {
+  .Login {
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .account-container {
+    flex-grow: 1;
     width: 100%;
-    height: auto;
-    min-height: 100%;
   }
-  
-  @media screen and (max-width:1023px) {
+
+  .account-container .login-box {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
   }
-  
-  @media screen and (min-width:1024px) {
+
+  .UserForm input {
+    font-size: 1.2em;
   }
+
+  .UserForm button {
+    font-size: 1.2em;
+    height: 50px;
+  }
+
+  .branding {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .branding .subtitle {
+    display: none;
+  }
+}
