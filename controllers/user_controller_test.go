@@ -18,7 +18,7 @@ import (
 
 const (
 	testUserJson1 = `
-		{"username": "test", "secret": "test"}
+		{"username": "test", "email":"abc@abc.com", "secret": "test12345"}
 	`
 	testUserJsonResponse1 = `{"error":null,"data":{"id":1,"username":"test"}}`
 
@@ -61,7 +61,7 @@ func TestCreateUser(t *testing.T) {
 	var response model.Response
 	err = json.Unmarshal([]byte(rec.Body.String()), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, "USER_INIT_FAILED", response.Error.Type)
+	assert.Equal(t, "USER_EXISTS", response.Error.Type)
 }
 
 func TestLoginUser(t *testing.T) {

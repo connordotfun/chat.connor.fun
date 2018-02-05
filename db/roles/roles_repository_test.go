@@ -129,9 +129,9 @@ func TestRepository_AddRole(t *testing.T) {
 func TestRepository_GetUserRoles(t *testing.T) {
 	userRepo, roleRepo := initTables()
 
-	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Secret: "test"}
-	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Secret: "test"}
-	user3 := &model.User{Id: uuid.NewV4(), Username: "user3", Secret: "test"}
+	user1 := &model.User{Id: uuid.NewV4(), Username: "user1", Email: "abc@123.com", Secret: "testtest"}
+	user2 := &model.User{Id: uuid.NewV4(), Username: "user2", Email: "cba@123.com", Secret: "testtest"}
+	user3 := &model.User{Id: uuid.NewV4(), Username: "user3", Email: "123@123.com", Secret: "testtest"}
 
 	userRepo.Add(user1)
 	userRepo.Add(user2)

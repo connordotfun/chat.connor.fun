@@ -14,7 +14,7 @@ class UserForm extends Component {
         return (
             <div className="UserForm">
                 <form onSubmit={this.handleSubmitForm}>
-                    <h3>Log In</h3>
+                    <h3>Log in to start chatting</h3>
                     <fieldset className="form-group">
                         <input
                         className="form-control form-control-lg"
@@ -40,7 +40,7 @@ class UserForm extends Component {
                         type="submit"
                         disabled={this.props.authStore.inProgress}
                     >
-                        Sign in
+                        Log in
                     </button>
                 </form>
                 {this.props.authStore.errors ? <p>{this.props.authStore.errors}</p> : null}
