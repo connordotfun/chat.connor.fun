@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import './index.css'
 import { inject, observer } from 'mobx-react'
+import { Link } from 'react-router-dom'
 
 @inject('authStore') @observer
 class RegisterForm extends Component {
@@ -9,21 +10,20 @@ class RegisterForm extends Component {
     }
     handleUserChange = e => this.props.authStore.setUsername(e.target.value);
     handlePasswordChange = e => this.props.authStore.setPassword(e.target.value);
+    handleEmailChange = e => this.props.authStore.setEmail(e.target.value)
     handleSubmitForm = e => {
         e.preventDefault()
         try {
             this.props.authStore.register()
         } catch (error) {
             console.log(error)
-        } finally {
-            this.props.authStore.login()
         }
     }
     render() {
         return (
             <div className="RegisterForm">
                 <form onSubmit={this.handleSubmitForm}>
-                    <h3>Make an account</h3>
+                    <h3>Make an account to start chatting.</h3>
                     <fieldset className="form-group">
                         <input
                         className="form-control form-control-lg"
@@ -44,13 +44,24 @@ class RegisterForm extends Component {
                         />
                     </fieldset>
 
+                    <fieldset className="form-group">
+                        <input
+                        className="form-control form-control-lg"
+                        type="email"
+                        placeholder="Email"
+                        value={this.props.authStore.values.email}
+                        onChange={this.handleEmailChange}
+                        />
+                    </fieldset>
+
                     <button
-                        className="convex"
                         type="submit"
                         disabled={this.props.authStore.inProgress}
                     >
-                        Make Account
+                        Get Started
                     </button>
+                    <p className="login-desc">Have an account? <Link to="/login">Log in</Link>.</p>
+                    <Link to="/login"><button className="login-button">Log in</button></Link>
                 </form>
                 {this.props.authStore.errors ? <p>{this.props.authStore.errors}</p> : null}
             </div>

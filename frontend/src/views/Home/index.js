@@ -9,12 +9,13 @@ import './index.css'
 class Home extends Component {
     componentWillMount() {
         this.props.history.replace('/')
+        document.getElementsByTagName('body')[0].classList = []
     }
     
     render() {
         return (
             <div className="Home convex">
-                <h1>Welcome back, {this.props.commonStore.username}!</h1>
+                <h1>Welcome back, {this.props.commonStore.user.username}!</h1>
                 <p>Here's a list of channels you can join.</p>
                 <ul>
                     <li><Link to='/at/farrand'>Farrand</Link></li>
