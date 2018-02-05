@@ -104,6 +104,16 @@ background: linear-gradient(to right, #8E54E9, #4776E6);
   cursor: pointer;
   background-color: #4d82ff;
 }
+
+.RegisterForm .login-desc {
+  margin: 0;
+  color: black;
+  font-family: "Zilla Slab";
+}
+
+.RegisterForm .login-button {
+  display: none;
+}
   
 @media screen and (max-width:1023px) {
   .Landing {
@@ -129,6 +139,14 @@ background: linear-gradient(to right, #8E54E9, #4776E6);
   .RegisterForm button {
     font-size: 1.2em;
     height: 50px;
+  }
+
+  .RegisterForm .login-desc {
+    display: none;
+  }
+
+  .RegisterForm .login-button {
+    display: block;
   }
 
   .branding {

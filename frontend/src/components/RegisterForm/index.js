@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import './index.css'
 import { inject, observer } from 'mobx-react'
+import { Link } from 'react-router-dom'
 
 @inject('authStore') @observer
 class RegisterForm extends Component {
@@ -59,6 +60,8 @@ class RegisterForm extends Component {
                     >
                         Get Started
                     </button>
+                    <p className="login-desc">Have an account? <Link to="/login">Log in</Link>.</p>
+                    <Link to="/login"><button className="login-button">Log in</button></Link>
                 </form>
                 {this.props.authStore.errors ? <p>{this.props.authStore.errors}</p> : null}
             </div>
