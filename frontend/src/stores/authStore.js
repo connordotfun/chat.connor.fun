@@ -57,7 +57,6 @@ class AuthStore {
       secret: this.values.password,
       email: this.values.email
     })
-    .then((res) => console.log(res.data))
     .catch(action((err) => {
       this.errors = err.response.data.error
       throw this.errors
@@ -71,13 +70,34 @@ class AuthStore {
   @action verifyAccount(code) {
     this.inProgress = true
     this.errors = undefined
-    axios.put('/verifications/accountverification', {code})
+    axios.put('/api/v1/verifications/accountverification', {code}, {
+      headers: {'Authorization': 'Bearer ' + commonStore.token}
+    })
     .catch(action((err) => {
       this.errors = err.response.data.error
       throw this.errors
     }))
     .finally(action(() => {
-      this.login()
+      console.log('getting user')
+      this.getUser()
+      this.inProgress = false
+    }))
+  }
+
+  @action getUser() {
+    this.inProgress = true
+    this.errors = undefined
+    axios.get('/api/v1/users/' + commonStore.user.id, {
+      headers: {'Authorization': 'Bearer ' + commonStore.token}
+    })
+    .catch(action((err) => {
+      this.errors = err.response.data.error
+      throw this.errors
+    }))
+    .then(action((res) => {
+      commonStore.setUser(res.data.data)
+    }))
+    .finally(action(() => {
       this.inProgress = false
     }))
   }

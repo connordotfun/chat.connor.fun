@@ -9,6 +9,7 @@ import './index.css'
 class Home extends Component {
     componentWillMount() {
         this.props.history.replace('/')
+        document.getElementsByTagName('body')[0].classList = []
     }
     
     render() {

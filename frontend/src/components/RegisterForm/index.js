@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import './index.css'
 import { inject, observer } from 'mobx-react'
+import { Link } from 'react-router-dom'
 
 @inject('authStore') @observer
 class RegisterForm extends Component {
@@ -22,7 +23,7 @@ class RegisterForm extends Component {
         return (
             <div className="RegisterForm">
                 <form onSubmit={this.handleSubmitForm}>
-                    <h3>Make an account</h3>
+                    <h3>Make an account to start chatting.</h3>
                     <fieldset className="form-group">
                         <input
                         className="form-control form-control-lg"
@@ -54,12 +55,13 @@ class RegisterForm extends Component {
                     </fieldset>
 
                     <button
-                        className="convex"
                         type="submit"
                         disabled={this.props.authStore.inProgress}
                     >
-                        Make Account
+                        Get Started
                     </button>
+                    <p className="login-desc">Have an account? <Link to="/login">Log in</Link>.</p>
+                    <Link to="/login"><button className="login-button">Log in</button></Link>
                 </form>
                 {this.props.authStore.errors ? <p>{this.props.authStore.errors}</p> : null}
             </div>
