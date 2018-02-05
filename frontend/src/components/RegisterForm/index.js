@@ -9,14 +9,13 @@ class RegisterForm extends Component {
     }
     handleUserChange = e => this.props.authStore.setUsername(e.target.value);
     handlePasswordChange = e => this.props.authStore.setPassword(e.target.value);
+    handleEmailChange = e => this.props.authStore.setEmail(e.target.value)
     handleSubmitForm = e => {
         e.preventDefault()
         try {
             this.props.authStore.register()
         } catch (error) {
             console.log(error)
-        } finally {
-            this.props.authStore.login()
         }
     }
     render() {
@@ -41,6 +40,16 @@ class RegisterForm extends Component {
                         placeholder="Password"
                         value={this.props.authStore.values.password}
                         onChange={this.handlePasswordChange}
+                        />
+                    </fieldset>
+
+                    <fieldset className="form-group">
+                        <input
+                        className="form-control form-control-lg"
+                        type="email"
+                        placeholder="Email"
+                        value={this.props.authStore.values.email}
+                        onChange={this.handleEmailChange}
                         />
                     </fieldset>
 

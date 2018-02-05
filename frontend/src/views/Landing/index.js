@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import { observer, inject } from 'mobx-react'
-
-import UserForm from '../../components/UserForm'
-import RegisterForm from '../../components/RegisterForm'
+import { Link } from 'react-router-dom'
 
 import './index.css'
 
@@ -18,8 +16,8 @@ class Landing extends Component {
             <div className="Landing convex">
                 <h1>Welcome!</h1>
                 <p><em>chat.connor.fun</em> is a cool hangout place.</p>
-                <UserForm />
-                <RegisterForm />
+                <Link to="/login"><button className="convex">Log In</button></Link>
+                <Link to="/register"><button className="convex">Register</button></Link>
             </div>
         )
     }

@@ -1,20 +1,11 @@
-.Landing {
+.VerifyLanding {
     box-sizing: border-box;
     padding: 5px;
     width: 100%;
     height: auto;
     min-height: 100%;
+    font-family: "Millenium", "Hieroglyphics";
   }
-
-.Landing button {
-  color: black;
-  font-style: italic;
-  padding: 5px;
-}
-
-.Landing button:hover {
-    background-color: #808080;
-}
   
   @media screen and (max-width:1023px) {
   }

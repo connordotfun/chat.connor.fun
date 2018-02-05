@@ -3,7 +3,7 @@ import { observable, action, reaction } from 'mobx'
 class CommonStore {
   @observable appName = 'chat.connor.fun';
   @observable token = window.localStorage.getItem('jwt');
-  @observable username = undefined
+  @observable user = JSON.parse(window.localStorage.getItem('user'))
   @observable appLoaded = false;
 
   constructor() {
@@ -17,14 +17,25 @@ class CommonStore {
         }
       }
     )
+
+    reaction(
+      () => this.user,
+      user => {
+        if (user) {
+          window.localStorage.setItem('user', JSON.stringify(user))
+        } else {
+          window.localStorage.removeItem('user')
+        }
+      }
+    )
   }
 
   @action setToken(token) {
     this.token = token
   }
 
-  @action setUsername(username) {
-    this.username = username
+  @action setUser(user) {
+    this.user = user
   }
 
   @action setAppLoaded() {
