@@ -10,7 +10,6 @@ import (
 	"github.com/satori/go.uuid"
 	"github.com/aaronaaeng/chat.connor.fun/email"
 	"github.com/aaronaaeng/chat.connor.fun/model/vericode"
-	"strings"
 	"errors"
 )
 

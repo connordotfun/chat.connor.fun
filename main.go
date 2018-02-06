@@ -28,7 +28,7 @@ import (
 
 func createApiRoutes(api *echo.Group, hubMap *chat.HubMap, repo db.TransactionalRepository) {
 
-	api.POST("/users", controllers.CreateUser(repo, false)).Name = "create-user"
+	api.POST("/users", controllers.CreateUser(repo, true)).Name = "create-user"
 	api.GET("/users/:id", controllers.GetUser(repo)).Name = "get-user"
 	api.PUT("/users/:id", controllers.UpdateUser(repo))
 
