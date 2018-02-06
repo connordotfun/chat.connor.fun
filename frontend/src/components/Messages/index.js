@@ -13,7 +13,7 @@ class Messages extends Component {
             <div className="Messages">
                 {
                     this.props.messages.map((obj) => (
-                        <Message key={obj.id} message={obj.text} sender={obj.sender.username}/>
+                        <Message key={obj.id} date={new Date(obj.createTime * 1000)} message={obj.text} sender={obj.sender.username}/>
                     ))
                 }
             </div>

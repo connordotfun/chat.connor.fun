@@ -37,14 +37,7 @@ The repository must be placed at `$GOPATH/src/github.com/aaronaaeng/chat.connor.
 
 ### Go Dependencies
 
-`go get` the following:  
-- `github.com/jmoiron/sqlx`
-- `github.com/stretchr/testify`
-- `github.com/dgrijalva/jwt-go`
-- `github.com/labstack/echo`
-- `github.com/lib/pq`
-- `github.com/gorilla/websocket`
-- `github.com/posener/wstest`
+Just do 'dep ensure'
 
 ### Running 
 
@@ -57,4 +50,4 @@ The Postgres connection string can be overridden by setting
 the `DATABASE_URL` environment variable. By default, the server will run in debug mode. This
 can be overridden by setting the `CHAT_CONNOR_FUN_PROD`. The HMAC key used to sign JWTs
 can be overridden using the `SECRET_KEY` environment variable (this should always be done
-in production).
+in production). If email verification is enabled, `MAILJET_PUBLIC_KEY` and `MAILJET_PRIVATE_KEY` must be set as well.

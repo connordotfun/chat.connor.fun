@@ -3,10 +3,10 @@
     height: auto;
     max-height: 100px;
     grid-column-gap: 15px;
-    grid-template-columns: 40px 1fr;
+    grid-template-columns: 40px auto 1fr;
     grid-template-rows: 20px 1fr;
-    grid-template-areas: "avatar username"
-                         "avatar message";
+    grid-template-areas: "avatar username timestamp"
+                         "avatar message message";
     margin: 7.5px auto;
 }
 
@@ -22,8 +22,17 @@
 
 .Message .handle {
     grid-area: username;
+    line-height: 20px;
     font-weight: 700;
     font-size: 0.8em;
+}
+
+.Message .timestamp {
+    grid-area: timestamp;
+    line-height: 20px;
+    font-style: italic;
+    font-size: 0.7em;
+    color: #666;
 }
 
 .Message .content {
