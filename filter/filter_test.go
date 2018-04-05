@@ -4,30 +4,36 @@ import (
 	"testing"
 )
 
-var tree = newTree([]string{"test", "this", "apple", "orange", "flatiron", "next", "best", "last"})
-var filter = NewFilter(tree)
-
 func BenchmarkCleanLong(b *testing.B) { // Executes in .9 ms
+	censor := Censor{NewFilter(NewTree("../assets/testBannedList.txt"))}
 	for i := 0; i < b.N; i++ {
-		filter.CleanSentence("this is a very long message.  i dont exxpect them to be much longer than this is")
+		censor.CleanSentence("this is a very long message.  i dont exxpect them to be much longer than this is")
 	}
 }
 
-func TestBanWord(t *testing.T) {
-	filter.BanWord("sample")
-}
-
 func TestCleanSentence(t *testing.T) {
-	actualClean := filter.CleanSentence("the sample is orang3")
+	censor := Censor{NewFilter(NewTree("../assets/testBannedList.txt"))}
+	actualClean := censor.CleanSentence("the sample is orang3")
 	var expectedClean = "the ****** is ******"
 
 	if actualClean != expectedClean {
-		t.Fatalf("Expected %s but got %s", expectedClean, actualClean)
+		t.Fatalf("Expected '%s' but got '%s'", expectedClean, actualClean)
+	}
+}
+
+func TestOrange(t *testing.T) {
+	censor := Censor{NewFilter(NewTree("../assets/testBannedList.txt"))}
+	actualClean := censor.CleanSentence("apple")
+	var expectedClean = "*****"
+
+	if actualClean != expectedClean {
+		t.Fatalf("Expected '%s' but got '%s'", expectedClean, actualClean)
 	}
 }
 
 func TestCleanSentencePeriodSpace(t *testing.T) {
-	actualClean := filter.CleanSentence("apple..orange")
+	censor := Censor{NewFilter(NewTree("../assets/testBannedList.txt"))}
+	actualClean := censor.CleanSentence("apple..orange")
 	var expectedClean = "*************"
 
 	if actualClean != expectedClean {
@@ -36,24 +42,27 @@ func TestCleanSentencePeriodSpace(t *testing.T) {
 }
 
 func TestCleanSentencePeriodInCenter(t *testing.T) {
-	actualClean := filter.CleanSentence("or.a..ng3")
+	censor := Censor{NewFilter(NewTree("../assets/testBannedList.txt"))}
+	actualClean := censor.CleanSentence("or.a..ng3")
 	var expectedClean = "*********"
 
 	if actualClean != expectedClean {
-		t.Fatalf("Expected %s but got %s", expectedClean, actualClean)
+		t.Fatalf("Expected '%s' but got '%s'", expectedClean, actualClean)
 	}
 }
 
-func TestPeriodCombo(t *testing.T) {
-	actualClean := filter.CleanSentence("te.s")
+func TestRollingCombo(t *testing.T) {
+	censor := Censor{NewFilter(NewTree("../assets/testBannedList.txt"))}
+	actualClean := censor.CleanSentence("te.s")
 	var expectedClean = "****"
 
 	if actualClean != expectedClean {
-		t.Fatalf("Expected %s but got %s", expectedClean, actualClean)
+		t.Fatalf("Expected '%s' but got '%s'", expectedClean, actualClean)
 	}
 }
 
 func TestGetScore(t *testing.T) {
+	filter := NewFilter(NewTree("../assets/testBannedList.txt"))
 	actualResult := filter.tree.distance("test", "")
 	var expectedResult = 4
 
@@ -72,6 +81,7 @@ func TestMinIntSlice(t *testing.T) {
 }
 
 func TestDistanceHello(t *testing.T) {
+	filter := NewFilter(NewTree("../assets/testBannedList.txt"))
 	actualResult := filter.tree.distance("hello", "hello")
 	var expectedResult = 0
 
@@ -81,6 +91,7 @@ func TestDistanceHello(t *testing.T) {
 }
 
 func TestDistanceDiffLength(t *testing.T) {
+	filter := NewFilter(NewTree("../assets/testBannedList.txt"))
 	actualResult := filter.tree.distance("a", "toz")
 	var expectedResult = 3
 
@@ -90,6 +101,7 @@ func TestDistanceDiffLength(t *testing.T) {
 }
 
 func TestDistanceEmpty(t *testing.T) {
+	filter := NewFilter(NewTree("../assets/testBannedList.txt"))
 	actualResult := filter.tree.distance("test", "")
 	var expectedResult = 4
 

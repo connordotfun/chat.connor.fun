@@ -2,6 +2,30 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/aaronaaeng/chat.connor.fun"
+  packages = [
+    "config",
+    "context",
+    "controllers",
+    "controllers/auth",
+    "controllers/chat",
+    "controllers/jwtmiddleware",
+    "db",
+    "db/messages",
+    "db/roles",
+    "db/rooms",
+    "db/users",
+    "db/verifications",
+    "email",
+    "model",
+    "model/vericode",
+    "testutil",
+    "util"
+  ]
+  revision = "943a8b9463c24e4dd4e3acd7f0193f033eba0198"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -22,26 +46,50 @@
 [[projects]]
   branch = "master"
   name = "github.com/jmoiron/sqlx"
-  packages = [".","reflectx"]
+  packages = [
+    ".",
+    "reflectx"
+  ]
   revision = "de8647470aafe4854c976707c431dbe1eb2822c6"
 
 [[projects]]
   name = "github.com/labstack/echo"
-  packages = [".","middleware"]
+  packages = [
+    ".",
+    "middleware"
+  ]
   revision = "b338075a0fc6e1a0683dbf03d09b4957a289e26f"
   version = "3.2.6"
 
 [[projects]]
   name = "github.com/labstack/gommon"
-  packages = ["bytes","color","log","random"]
+  packages = [
+    "bytes",
+    "color",
+    "log",
+    "random"
+  ]
   revision = "57409ada9da0f2afad6664c49502f8c50fbd8476"
   version = "0.2.3"
 
 [[projects]]
   branch = "master"
   name = "github.com/lib/pq"
-  packages = [".","oid"]
+  packages = [
+    ".",
+    "oid"
+  ]
   revision = "83612a56d3dd153a94a629cd64925371c9adad78"
+
+[[projects]]
+  name = "github.com/mailjet/mailjet-apiv3-go"
+  packages = [
+    ".",
+    "fixtures",
+    "resources"
+  ]
+  revision = "4597cb4aae1236575fcd3f7c09544191e1e0aa35"
+  version = "2.4.5"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -64,7 +112,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/posener/wstest"
-  packages = [".","pipe"]
+  packages = [
+    ".",
+    "pipe"
+  ]
   revision = "a9f917d6b1498ca5dc74585e4cc1aff4be765092"
 
 [[projects]]
@@ -94,7 +145,12 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["acme","acme/autocert","bcrypt","blowfish"]
+  packages = [
+    "acme",
+    "acme/autocert",
+    "bcrypt",
+    "blowfish"
+  ]
   revision = "95a4943f35d008beabde8c11e5075a1b714e6419"
 
 [[projects]]
@@ -106,6 +162,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6e11b4f28639b1a68062b1f4f263437ef38748fcce7cd8f294787979616fe54d"
+  inputs-digest = "1ee1750b767cc93f3f34edcde17cde058c82b6489bdccf4a011e726b274027af"
   solver-name = "gps-cdcl"
   solver-version = 1

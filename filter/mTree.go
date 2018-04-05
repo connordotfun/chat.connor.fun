@@ -1,5 +1,10 @@
 package filter
 
+import (
+	"os"
+	"bufio"
+)
+
 type node struct {
 	word string
 	children map[int]*node
@@ -12,25 +17,29 @@ func newNode(inputWord string) *node {
 	}
 }
 
-type metricTree struct {
+type MetricTree struct {
 	root *node
 	tolerance int
-	wordSet *wordSet
 }
 
-func newTree(bannedList []string) *metricTree {
-	tree := &metricTree{
+func NewTree(path string) *MetricTree {
+	tree := &MetricTree{
 		root: nil,
 		tolerance: 3,
-		wordSet: newWordSet(),
 	}
-	for _, bannedWord := range bannedList{
-		tree.insertWord(bannedWord)
+
+	file, _ := os.Open(path)
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		lineStr := scanner.Text()
+		tree.insertWord(lineStr)
 	}
+
 	return tree
 }
 
-func (tree *metricTree) insertWord(word string) {
+func (tree *MetricTree) insertWord(word string) {
 	if tree.root == nil {
 		tree.root = newNode(word)
 	} else {
@@ -39,7 +48,7 @@ func (tree *metricTree) insertWord(word string) {
 }
 
 /* The "search" case if you will */
-func (tree *metricTree) insertWordInternal(node *node) {
+func (tree *MetricTree) insertWordInternal(node *node) {
 	var parent = tree.root
 
 	var dist = tree.distance(parent.word, node.word)
@@ -53,7 +62,7 @@ func (tree *metricTree) insertWordInternal(node *node) {
 }
 
 /*  This calculates the Levenshtein distance between two words.  Think string alignment. */
-func (tree *metricTree) distance(s1, s2 string) int {
+func (tree *MetricTree) distance(s1, s2 string) int {
 	s1Len := len(s1)
 	s2Len := len(s2)
 
@@ -99,7 +108,7 @@ func (tree *metricTree) distance(s1, s2 string) int {
  *  to this function.  The smallest value is used to create the score. The score the percent
  *  of the input that matches the closest word in the tree plus the input's modifier.
  */
-func (tree *metricTree) getScore(word string, modifier float64) (score float64){
+func (tree *MetricTree) getScore(word string, modifier float64) (score float64){
 	distList := []int{}
 	resultStrings := tree.getScoreRec(word, tree.root)
 	for i := 0; i < len(resultStrings); i++ {
@@ -115,7 +124,7 @@ func (tree *metricTree) getScore(word string, modifier float64) (score float64){
 }
 
 /* The "search" case if you will */
-func (tree *metricTree) getScoreRec(word string, root *node) []string {
+func (tree *MetricTree) getScoreRec(word string, root *node) []string {
 	dist := tree.distance(word, root.word)
 	similarWords := []string{}
 	if dist < tree.tolerance {
